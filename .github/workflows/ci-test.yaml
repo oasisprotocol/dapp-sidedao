@@ -1,0 +1,48 @@
+name: Build and test
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          # NB: node 18 (18.16 currently) has issues running hardhat compile below. Use node-version: 18 once we bump hardhat to at least 2.16.1 which resolves this issue.
+          node-version: 18.15
+      - uses: pnpm/action-setup@v2.2.4
+        name: Install pnpm
+        with:
+          version: 8
+          run_install: false
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: |
+          echo "pnpm_cache_dir=$(pnpm store path)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
+        with:
+          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-store-
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Build backend
+        working-directory: hardhat
+        run: pnpm build
+      - name: Build TypeChain contracts
+        working-directory: contracts
+        run: pnpm build
+      - name: Test backend
+        working-directory: hardhat
+        run: pnpm test
+      - name: Build frontend
+        working-directory: frontend
+        run: pnpm build

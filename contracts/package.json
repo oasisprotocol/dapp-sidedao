@@ -1,0 +1,46 @@
+{
+  "private": true,
+  "name": "@oasisprotocol/demo-voting-contracts",
+  "version": "1.0.0",
+  "license": "MIT",
+  "module": "./lib/esm/index.js",
+  "main": "./lib/cjs/index.cjs",
+  "types": "./lib/cjs/index.d.ts",
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=8"
+  },
+  "files": [
+    "lib",
+    "src"
+  ],
+  "scripts": {
+    "build:esm": "tsc && node ./scripts/prepare-package.cjs",
+    "build:cjs": "tsc -p tsconfig.cjs.json && node ./scripts/rename-cjs.mjs",
+    "build:types": "tsc -p tsconfig.types.json",
+    "build": "npm-run-all build:esm build:cjs build:types",
+    "prepublishOnly": "pnpm build"
+  },
+  "dependencies": {
+    "@ethereumjs/block": "^5.1.1",
+    "@ethereumjs/common": "^4.2.0",
+    "ethers": "^6.10.0"
+  },
+  "exports": {
+    ".": {
+      "import": "./lib/esm/index.js",
+      "types": "./lib/types/index.d.ts",
+      "require": "./lib/cjs/index.cjs"
+    }
+  },
+  "devDependencies": {
+    "@types/debug": "^4.1.12",
+    "@types/node": "^20.11.5",
+    "npm-run-all": "^4.1.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "peerDependencies": {
+    "ethers": "6.x"
+  }
+}

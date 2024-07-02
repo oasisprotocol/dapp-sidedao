@@ -1,0 +1,20 @@
+{
+  "include": [
+    "./src/*.ts",
+    "./src/contracts"
+  ],
+  "exclude": [
+    "./src/contracts/hardhat.d.ts"
+  ],
+  "compilerOptions": {
+    "declaration": true,
+    "rootDir": "src",
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "strict": true,
+    "target": "es2020",
+    "module": "es2020",
+    "outDir": "./lib/esm"
+  },
+}
