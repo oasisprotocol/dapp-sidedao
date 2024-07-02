@@ -5,7 +5,7 @@ import { AbiCoder, BytesLike, EventLog, JsonRpcProvider, ZeroHash,
          decodeRlp, encodeRlp, formatEther, getBytes, parseEther
         } from "ethers";
 
-import { signVotingRequest, getHolderBalance, fetchStorageProof, RequestType, getBlockHeaderRLP, fetchAccountProof, guessStorageSlot } from "@oasisprotocol/demo-voting-contracts";
+import { signVotingRequest, getHolderBalance, fetchStorageProof, RequestType, getBlockHeaderRLP, fetchAccountProof, guessStorageSlot } from "@oasisprotocol/side-dao-contracts";
 
 import { PollManager, TokenHolderACL, AllowAllACL, VoterAllowListACL, GaslessVoting,
          StorageProofACL, HeaderCache, StorageProof, AccountCache

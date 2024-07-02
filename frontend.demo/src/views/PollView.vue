@@ -18,13 +18,13 @@ import {
   xchainRPC,
   fetchStorageProof,
   tokenDetailsFromProvider,
-} from '@oasisprotocol/demo-voting-contracts';
+} from '@oasisprotocol/side-dao-contracts';
 import type {
   PollManager,
   Poll,
   AclOptionsXchain,
   TokenInfo,
-} from '@oasisprotocol/demo-voting-contracts';
+} from '@oasisprotocol/side-dao-contracts';
 import { usePollManager, useGaslessVoting, usePollManagerWithSigner } from '../contracts';
 import { Network, useEthereumStore } from '../stores/ethereum';
 

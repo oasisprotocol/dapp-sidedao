@@ -5,13 +5,13 @@ import {
   GaslessVoting__factory,
   IPollManagerACL__factory,
   IPollACL__factory,
-} from '@oasisprotocol/demo-voting-contracts';
+} from '@oasisprotocol/side-dao-contracts';
 import type {
   PollManager,
   GaslessVoting,
   IPollACL,
   IPollManagerACL,
-} from '@oasisprotocol/demo-voting-contracts';
+} from '@oasisprotocol/side-dao-contracts';
 
 import { useEthereumStore } from './stores/ethereum';
 

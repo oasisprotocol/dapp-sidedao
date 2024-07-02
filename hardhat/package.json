@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "@oasisprotocol/demo-voting-hardhat",
+  "name": "@oasisprotocol/side-dao-hardhat",
   "version": "1.0.0",
   "license": "MIT",
   "main": "./lib/cjs/index.js",
@@ -33,7 +33,7 @@
     "ethers": "^6.10.0"
   },
   "devDependencies": {
-    "@oasisprotocol/demo-voting-contracts": "workspace:^",
+    "@oasisprotocol/side-dao-contracts": "workspace:^",
     "@nomicfoundation/hardhat-ethers": "^3.0.5",
     "@oasisprotocol/sapphire-contracts": "^0.2.7",
     "@oasisprotocol/sapphire-hardhat": "^2.19.4",

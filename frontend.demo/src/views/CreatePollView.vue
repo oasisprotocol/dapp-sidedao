@@ -8,7 +8,7 @@ import RemoveIcon from '@/components/RemoveIcon.vue';
 import AddIcon from '@/components/AddIcon.vue';
 import SuccessInfo from '@/components/SuccessInfo.vue';
 import { retry, Pinata, encryptJSON } from '@/utils';
-import type { PollManager, AclOptions, Poll } from '@oasisprotocol/demo-voting-contracts';
+import type { PollManager, AclOptions, Poll } from '@oasisprotocol/side-dao-contracts';
 import { getAddress, parseEther, JsonRpcProvider, AbiCoder } from 'ethers';
 
 import { usePollManager, usePollManagerWithSigner } from '../contracts';
@@ -23,7 +23,7 @@ import {
   tokenDetailsFromProvider,
   xchain_ChainNamesToChainId,
   xchainRPC,
-} from '@oasisprotocol/demo-voting-contracts';
+} from '@oasisprotocol/side-dao-contracts';
 
 const eth = useEthereumStore();
 const dao = usePollManager();

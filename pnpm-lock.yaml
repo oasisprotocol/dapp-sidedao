@@ -48,7 +48,7 @@ importers:
       '@metamask/jazzicon':
         specifier: github:metamask/jazzicon
         version: https://codeload.github.com/metamask/jazzicon/tar.gz/4fe23bbbe5088e128cb24082972e28d87e76d156
-      '@oasisprotocol/demo-voting-contracts':
+      '@oasisprotocol/side-dao-contracts':
         specifier: workspace:^
         version: link:../contracts
       '@oasisprotocol/sapphire-paratime':
@@ -206,7 +206,7 @@ importers:
       '@nomicfoundation/hardhat-ethers':
         specifier: ^3.0.5
         version: 3.0.5(ethers@6.10.0)(hardhat@2.19.4)
-      '@oasisprotocol/demo-voting-contracts':
+      '@oasisprotocol/side-dao-contracts':
         specifier: workspace:^
         version: link:../contracts
       '@oasisprotocol/sapphire-contracts':
