@@ -1,8 +1,11 @@
-# Demo Voting App
+# Side DAO: Private Sidekick for DAOs
 
-This is a demo voting app running natively on Oasis Sapphire with built-in
-support for "gasless" voting. The app is a fork of the [OPL Secret Ballot].
+This is a dApp for running ad-hoc unofficial opinion polls for DAO members.
 
+The app is a fork of the [Oasis Demo Voting App],
+which in in turn a fork of the [OPL Secret Ballot].
+
+[Oasis Demo Voting App]: https://github.com/oasisprotocol/demo-voting/tree/CedarMist/per-dao-stuff
 [OPL Secret Ballot]: https://github.com/oasisprotocol/playground/tree/main/opl-secret-ballot
 
 This monorepo is set up for `pnpm`. Install dependencies by running:
