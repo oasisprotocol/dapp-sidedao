@@ -45,7 +45,7 @@ the number of proxy accounts that can be used to pay for the gas for voters
 and the amount of tokens each of those accounts will be initially funded.
 
 The deployed DAO contract address will be reported. Remember it and store it
-inside the `frontend` folder's `.env.development`, for example:
+inside the `frontend.demo` folder's `.env.development`, for example:
 
 ```
 VITE_DAO_V1_ADDR=0x5FbDB2315678afecb367f032d93F642f64180aa3
@@ -134,11 +134,11 @@ npx hardhat deploy --network sapphire
 
 [Sapphire Localnet]: https://github.com/oasisprotocol/oasis-web3-gateway/pkgs/container/sapphire-dev
 
-## Frontend
+## Demo frontend
 
 After compiling the backend, updating `.env.development` with the corresponding
-DAO address and chain ID, move to the `frontend` folder to compile and
-Hot-Reload frontend for Development:
+DAO address and chain ID, move to the `frontend.demo` folder to compile and
+Hot-Reload demo frontend for Development:
 
 ```sh
 pnpm dev
@@ -166,7 +166,7 @@ correct account nonce.
 
 [Pinata JWT key]: https://docs.pinata.cloud/docs/getting-started#2-generate-your-api-keys
 
-### Frontend Deployment
+### Demo frontend Deployment
 
 You can build assets for deployment by running:
 
