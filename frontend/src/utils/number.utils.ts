@@ -1,4 +1,4 @@
-import { MascotChoices } from '../types'
+
 
 const numPercentageFormat = new Intl.NumberFormat(undefined, {
   style: 'percent',
@@ -21,12 +21,6 @@ export abstract class NumberUtils {
     const int = parseInt(from, 10)
 
     return Number.isNaN(int) || !Number.isFinite(int) ? null : int
-  }
-
-  static isValidMascotChoiceId(choiceId: number | null): choiceId is MascotChoices {
-    if (choiceId === null) return false
-
-    return Number.isInteger(choiceId) && choiceId >= 0 && choiceId <= 2
   }
 
   static toPercentageString(n: number): string {

@@ -1,7 +1,4 @@
 export type { DataEntry } from './data-entry'
 export type { Poll } from './poll'
-export type { PollChoice } from './poll-choice'
-export type { VotesStorage } from './votes-storage'
-export type { MascotChoices } from './mascot-choices'
 export type { IconSize } from './icon-size'
 export type { IconProps } from './icon-props'

@@ -1,4 +1,3 @@
-import { PollChoice } from '../types'
 
 // EIP-3085: wallet_addEthereumChain RPC Method
 interface AddEthereumChainParameter {
@@ -11,7 +10,7 @@ interface AddEthereumChainParameter {
     decimals: number
   }
   rpcUrls: string[]
-  blockExplorerUrls: string[]
+  blockExplorerUrls: string[] | null
 }
 
 export const CHAINS: Map<bigint, AddEthereumChainParameter> = new Map([
@@ -41,41 +40,31 @@ export const CHAINS: Map<bigint, AddEthereumChainParameter> = new Map([
       blockExplorerUrls: ['https://explorer.oasis.io/testnet/sapphire'],
     },
   ],
+  [
+    23293n,
+    {
+      chainId: '0x5afd',
+      chainName: 'Sapphire Localnet',
+      iconUrls: ['https://votee.oasis.io/rose.png'],
+      nativeCurrency: {
+        name: 'ROSE',
+        symbol: 'ROSE',
+        decimals: 18,
+      },
+      rpcUrls: [ 'http://localhost:8545/', 'ws://localhost:8546'],
+      blockExplorerUrls: null,
+    },
+  ],
+
 ])
 
 export const NETWORK_NAMES: Record<string, string> = {
   'Oasis Sapphire': 'Sapphire',
   'Oasis Sapphire Testnet': 'Sapphire Testnet',
+  'Sapphire Localnet': 'Sapphire Localnet',
 }
 
 export const MAX_GAS_LIMIT = 150000n
-
-/**
- * This array indexes correspond to the matching choiceId of the poll
- * Desert Owl = 0
- * Capybara = 1
- * Fennec Fox = 2
- */
-export const POLL_CHOICES: readonly PollChoice[] = Object.freeze([
-  {
-    name: 'Capybara',
-    description:
-      'A friendly capybara with a rose in its hand, symbolizing the interoperability pioneered by the Oasis Network.',
-    imagePath: '/cappybara.webp',
-  },
-  {
-    name: 'Desert Owl',
-    description:
-      'A wise owl with scrolls in its claws, symbolizing the knowledge pioneered by the Oasis Network.',
-    imagePath: '/owl.webp',
-  },
-  {
-    name: 'Fennec Fox',
-    description:
-      'A nimble fox with sunglasses on its eyes, symbolizing the privacy pioneered by the Oasis Network.',
-    imagePath: '/fox.webp',
-  },
-])
 
 export const METAMASK_HOME_PAGE_URL = 'https://metamask.io/'
 export const VOTING_LANDING_PAGE_URL = 'https://oasisprotocol.org/oasis-mascot-voting'

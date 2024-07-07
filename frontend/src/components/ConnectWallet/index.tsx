@@ -6,17 +6,13 @@ import { toErrorString, UnknownNetworkError } from '../../utils/errors'
 import { ConnectedAccount } from '../ConnectedAccount'
 import { useAppState } from '../../hooks/useAppState'
 import classes from './index.module.css'
-import { CaretRightIcon } from '../icons/CaretRightIcon'
 
 interface Props {
   mobileSticky: boolean
 }
 
 export const ConnectWallet: FC<Props> = ({ mobileSticky }) => {
-  const {
-    state: { isDesktopScreen },
-    setAppError,
-  } = useAppState()
+  const { setAppError } = useAppState()
 
   const [isLoading, setIsLoading] = useState(false)
   const [providerAvailable, setProviderAvailable] = useState(true)
@@ -76,7 +72,7 @@ export const ConnectWallet: FC<Props> = ({ mobileSticky }) => {
         <a href={METAMASK_HOME_PAGE_URL} target={'_blank'} rel={'noopener noreferrer'}>
           <Button
             className={classes.connectWalletBtn}
-            color={mobileSticky ? 'primary' : 'secondary'}
+            color={'primary'}
             disabled={isLoading}
           >
             Install MetaMask
@@ -86,7 +82,7 @@ export const ConnectWallet: FC<Props> = ({ mobileSticky }) => {
       {!isConnected && providerAvailable && isUnknownNetwork && (
         <Button
           className={classes.connectWalletBtn}
-          color={mobileSticky ? 'primary' : 'secondary'}
+          color={'primary'}
           disabled={isLoading}
           onClick={handleSwitchNetwork}
         >
@@ -96,13 +92,12 @@ export const ConnectWallet: FC<Props> = ({ mobileSticky }) => {
       {!isConnected && providerAvailable && !isUnknownNetwork && (
         <Button
           className={classes.connectWalletBtn}
-          color={mobileSticky ? 'primary' : 'secondary'}
+          color={'primary'}
           disabled={isLoading}
           onClick={handleConnectWallet}
         >
           <label className={classes.connectWalletBtnLabel}>
             Connect wallet
-            <CaretRightIcon size={isDesktopScreen ? 'medium' : 'small'} />
           </label>
         </Button>
       )}

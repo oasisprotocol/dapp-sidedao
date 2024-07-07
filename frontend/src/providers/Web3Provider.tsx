@@ -1,38 +1,26 @@
-import { FC, PropsWithChildren, useCallback, useEffect, useState } from 'react'
+import { FC, PropsWithChildren, useCallback,
+  useState } from 'react'
 import * as sapphire from '@oasisprotocol/sapphire-paratime'
 import {
-  MAX_GAS_LIMIT,
   CHAINS,
-  VITE_CONTRACT_POLLMANAGER,
   VITE_NETWORK,
-  VITE_PROPOSAL_ID,
-  VITE_WEB3_GATEWAY,
-  VITE_ACL_NATIVEBALANCE_MIN_BALANCE_WEI,
 } from '../constants/config'
 import {
-  handleKnownContractCallExceptionErrors,
-  handleKnownErrors,
-  handleKnownEthersErrors,
-  UpcomingPollError,
   UnknownNetworkError,
 } from '../utils/errors'
 import { Web3Context, Web3ProviderContext, Web3ProviderState } from './Web3Context'
 import { useEIP1193 } from '../hooks/useEIP1193'
-import { BigNumberish, BrowserProvider, JsonRpcProvider, toBeHex, ZeroAddress } from 'ethers'
-import { PollManager__factory } from '@oasisprotocol/dapp-voting-backend/src/contracts'
-// import { PollManager__factory } from '@oasisprotocol/side-dao-contracts'
-
-const EMPTY_IN_DATA = new Uint8Array([])
+import {
+  BrowserProvider,
+} from 'ethers'
 
 const web3ProviderInitialState: Web3ProviderState = {
   isConnected: false,
-  isVoidSignerConnected: false,
   ethProvider: null,
   sapphireEthProvider: null,
   account: null,
   explorerBaseUrl: null,
   chainName: null,
-  pollManagerVoidSigner: null,
 }
 
 export const Web3ContextProvider: FC<PropsWithChildren> = ({ children }) => {
@@ -45,29 +33,6 @@ export const Web3ContextProvider: FC<PropsWithChildren> = ({ children }) => {
   const [state, setState] = useState<Web3ProviderState>({
     ...web3ProviderInitialState,
   })
-
-  useEffect(() => {
-    const initVoidSinger = async () => {
-      if (!VITE_WEB3_GATEWAY || !VITE_CONTRACT_POLLMANAGER) return
-
-      const staticNetworkJsonRpcProvider = new JsonRpcProvider(VITE_WEB3_GATEWAY, undefined, {
-        staticNetwork: true,
-      })
-
-      const pollManagerWithoutSigner = await PollManager__factory.connect(
-        VITE_CONTRACT_POLLMANAGER,
-        staticNetworkJsonRpcProvider
-      )
-
-      setState(prevState => ({
-        ...prevState,
-        pollManagerVoidSigner: pollManagerWithoutSigner,
-        isVoidSignerConnected: true,
-      }))
-    }
-
-    initVoidSinger()
-  }, [])
 
   const _connectionChanged = (isConnected: boolean) => {
     setState(prevState => ({
@@ -102,7 +67,7 @@ export const Web3ContextProvider: FC<PropsWithChildren> = ({ children }) => {
     }
 
     const { blockExplorerUrls, chainName } = CHAINS.get(chainId)!
-    const [explorerBaseUrl] = blockExplorerUrls
+    const [explorerBaseUrl] = blockExplorerUrls || [null]
 
     setState(prevState => ({
       ...prevState,
@@ -187,126 +152,11 @@ export const Web3ContextProvider: FC<PropsWithChildren> = ({ children }) => {
     return switchNetworkEIP1193(chainId)
   }
 
-  const getTransaction = async (txHash: string) => {
-    if (!txHash) {
-      throw new Error('[txHash] is required!')
-    }
-
-    const { sapphireEthProvider } = state
-
-    if (!sapphireEthProvider) {
-      throw new Error('[sapphireEthProvider] not initialized!')
-    }
-
-    const txReceipt = await sapphireEthProvider.waitForTransaction(txHash)
-    if (txReceipt?.status === 0) throw new Error('Transaction failed')
-
-    return await sapphireEthProvider.getTransaction(txHash)
-  }
-
-  const getPoll = async () => {
-    const { pollManagerVoidSigner } = state
-
-    if (!pollManagerVoidSigner) {
-      throw new Error('[pollManagerWithoutSigner] not initialized!')
-    }
-
-    // TODO: Special case for zero address proposalId
-    if (VITE_PROPOSAL_ID === ZeroAddress) {
-      throw new UpcomingPollError()
-    }
-
-    return await pollManagerVoidSigner.PROPOSALS(toBeHex(VITE_PROPOSAL_ID)).catch(handleKnownErrors)
-  }
-
-  const canVoteOnPoll = async () => {
-    const { pollManagerVoidSigner, account } = state
-
-    if (!pollManagerVoidSigner) {
-      throw new Error('[pollManagerVoidSigner] not initialized!')
-    }
-
-    if (!account) {
-      throw new Error('[account] Wallet not connected!')
-    }
-
-    return await pollManagerVoidSigner
-      .canVoteOnPoll(VITE_PROPOSAL_ID, account, EMPTY_IN_DATA)
-      .then(canVoteBigint => Promise.resolve(canVoteBigint === 1n))
-      .catch(ex => {
-        handleKnownErrors(ex)
-        handleKnownContractCallExceptionErrors(ex, Promise.resolve(false))
-
-        return Promise.resolve(false)
-      })
-  }
-
-  const vote = async (choiceId: BigNumberish) => {
-    const { sapphireEthProvider } = state
-
-    if (!sapphireEthProvider) {
-      throw new Error('[sapphireEthProvider] not initialized!')
-    }
-
-    const signer = sapphire.wrapEthersSigner(await sapphireEthProvider.getSigner())
-    const pollManager = PollManager__factory.connect(VITE_CONTRACT_POLLMANAGER, signer)
-
-    const unsignedTx = await pollManager.vote.populateTransaction(VITE_PROPOSAL_ID, choiceId, EMPTY_IN_DATA)
-    unsignedTx.gasLimit = MAX_GAS_LIMIT
-    unsignedTx.value = 0n
-
-    return await signer.sendTransaction(unsignedTx).catch(handleKnownEthersErrors)
-  }
-
-  const getVoteCounts = async () => {
-    const { pollManagerVoidSigner } = state
-
-    if (!pollManagerVoidSigner) {
-      throw new Error('[pollManagerVoidSigner] not initialized!')
-    }
-
-    return await pollManagerVoidSigner.getVoteCounts(VITE_PROPOSAL_ID).catch(handleKnownErrors)
-  }
-
-  const _getBalance = async () => {
-    const { account, sapphireEthProvider } = state
-
-    if (!account || !sapphireEthProvider) {
-      throw new Error('[Web3Context] Unable to fetch balance!')
-    }
-
-    return await sapphireEthProvider.getBalance(account)
-  }
-
-  const verifyMinBalanceOfNativeBalanceACL = async (): Promise<boolean> => {
-    // Skip in case minBalance is unset, the contract can be using a different ACL
-    if (VITE_ACL_NATIVEBALANCE_MIN_BALANCE_WEI === 0n) {
-      return true
-    }
-
-    const { pollManagerVoidSigner } = state
-
-    if (!pollManagerVoidSigner) {
-      throw new Error('[pollManagerVoidSigner] not initialized!')
-    }
-
-    const gasPrice = await pollManagerVoidSigner.vote.estimateGas(VITE_PROPOSAL_ID, 0n, EMPTY_IN_DATA)
-    const fee = MAX_GAS_LIMIT * gasPrice
-    const balance = await _getBalance()
-    return balance - fee > VITE_ACL_NATIVEBALANCE_MIN_BALANCE_WEI
-  }
-
   const providerState: Web3ProviderContext = {
     state,
     isProviderAvailable,
     connectWallet,
     switchNetwork,
-    getTransaction,
-    getPoll,
-    canVoteOnPoll,
-    vote,
-    getVoteCounts,
-    verifyMinBalanceOfNativeBalanceACL,
   }
 
   return <Web3Context.Provider value={providerState}>{children}</Web3Context.Provider>

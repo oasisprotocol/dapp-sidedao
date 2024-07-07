@@ -1,19 +1,38 @@
-import { FC } from 'react'
-import { Outlet } from 'react-router-dom'
+import { FC, PropsWithChildren } from 'react';
 import classes from './index.module.css'
 import { LogoIcon } from '../icons/LogoIcon'
 import { ConnectWallet } from '../ConnectWallet'
-import { Alert } from '../Alert'
 import { useAppState } from '../../hooks/useAppState'
-import { Button } from '../Button'
 import { StringUtils } from '../../utils/string.utils'
 import { useInView } from 'react-intersection-observer'
 import { LayoutBase } from '../LayoutBase'
-import { UpcomingVotePage } from '../../pages/UpcomingVotePage'
+import { Button } from '../Button';
+import { Alert } from '../Alert';
+import { Link } from 'react-router-dom';
 
-export const Layout: FC = () => {
+type LayoutVariation = "landing" | "dashboard" | "light" | "dark"
+
+const layoutClasses: Partial<Record<LayoutVariation, string>> = {
+  landing: 'landing-layout',
+  dashboard: "dashboard-layout",
+  dark: "dark-layout",
+}
+
+const logoColor: Record<LayoutVariation, string> = {
+  landing: "#000062",
+  dark: "white",
+  dashboard: "#000062",
+  light: "#000062",
+}
+
+export const Layout: FC<PropsWithChildren & {variation: LayoutVariation}> = ({variation,children}) => {
   const {
-    state: { isInitialLoading, appError, isMobileScreen, isUpcomingVote },
+    state: {
+      // isInitialLoading,
+      appError,
+      isMobileScreen,
+      // isUpcomingVote
+    },
     clearAppError,
   } = useAppState()
 
@@ -25,21 +44,24 @@ export const Layout: FC = () => {
   return (
     <>
       {isMobileScreen && <div className={classes.inViewPlaceholder} ref={ref} />}
-      <LayoutBase>
+      <LayoutBase extraClasses={layoutClasses[variation]}>
         <header
           className={StringUtils.clsx(
             classes.header,
-            isMobileScreen && !inView ? classes.headerSticky : undefined
+            isMobileScreen && !inView ? classes.headerSticky : undefined,
           )}
         >
-          <LogoIcon className={classes.logo} />
-          {!isInitialLoading && !isUpcomingVote && <ConnectWallet mobileSticky={isMobileScreen && !inView} />}
+          <Link to={'/'}>
+            <LogoIcon className={classes.logo} color={logoColor[variation]} />
+          </Link>
+          <h1>Oasis</h1>
+          {
+            // !isInitialLoading && !isUpcomingVote &&
+            <ConnectWallet mobileSticky={isMobileScreen && !inView} />
+          }
         </header>
-        <section className={classes.subHeader}>
-          <h1>Oasis Mascot</h1>
-        </section>
         <section>
-          {!isInitialLoading && appError && (
+        {appError && (
             <Alert
               type="error"
               actions={
@@ -51,11 +73,11 @@ export const Layout: FC = () => {
               {StringUtils.truncate(appError)}
             </Alert>
           )}
-          {isInitialLoading && (
-            <Alert headerText="Please wait" type="loading" actions={<span>Fetching poll...</span>} />
-          )}
-          {!isInitialLoading && !appError && !isUpcomingVote && <Outlet />}
-          {!isInitialLoading && !appError && isUpcomingVote && <UpcomingVotePage />}
+          {/*{isInitialLoading && (*/}
+          {/*  <Alert headerText="Please wait" type="loading" actions={<span>Fetching poll...</span>} />*/}
+          {/*)}*/}
+          {!appError && children}
+          {/*{!isInitialLoading && !appError && isUpcomingVote && <UpcomingVotePage />}*/}
         </section>
       </LayoutBase>
     </>

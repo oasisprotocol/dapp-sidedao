@@ -1,28 +1,34 @@
-import { FC } from 'react'
-import { Layout } from './components/Layout'
-import { createHashRouter, RouterProvider } from 'react-router-dom'
-import { HomePage } from './pages/HomePage'
+import { FC, ReactNode } from 'react';
+import { createHashRouter, Outlet, RouterProvider } from 'react-router-dom';
 import { EIP1193ContextProvider } from './providers/EIP1193Provider'
 import { Web3ContextProvider } from './providers/Web3Provider'
-import { ResultsPage } from './pages/ResultsPage'
 import { AppStateContextProvider } from './providers/AppStateProvider'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { RouterErrorBoundary } from './components/RouterErrorBoundary'
+import { EthereumContextProvider } from './providers/EthereumProvider';
+import { PollPage } from './pages/PollPage';
+import { LandingPage } from './pages/LandingPage';
+import { useWeb3 } from './hooks/useWeb3';
+import { DashboardPage } from './pages/DashboardPage';
+
+export const EnforceWallet: FC<{content: ReactNode}> = ({content}) => useWeb3().state.isConnected
+  ? content
+  : <LandingPage />
 
 const router = createHashRouter([
   {
     path: '/',
-    element: <Layout />,
+    element: <Outlet />,
     errorElement: <RouterErrorBoundary />,
     children: [
       {
-        path: 'results',
-        element: <ResultsPage />,
+        path: '',
+        element: <EnforceWallet content={<DashboardPage />} />
       },
       {
-        path: '',
-        element: <HomePage />,
-      },
+        path: 'polls/:pollId',
+        element: <PollPage />,
+      }
     ],
   },
 ])
@@ -30,13 +36,15 @@ const router = createHashRouter([
 export const App: FC = () => {
   return (
     <ErrorBoundary>
-      <EIP1193ContextProvider>
-        <Web3ContextProvider>
-          <AppStateContextProvider>
-            <RouterProvider router={router} />
-          </AppStateContextProvider>
-        </Web3ContextProvider>
-      </EIP1193ContextProvider>
+      <EthereumContextProvider>
+        <EIP1193ContextProvider>
+          <Web3ContextProvider>
+            <AppStateContextProvider>
+              <RouterProvider router={router} />
+            </AppStateContextProvider>
+          </Web3ContextProvider>
+        </EIP1193ContextProvider>
+      </EthereumContextProvider>
     </ErrorBoundary>
   )
 }

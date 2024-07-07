@@ -19,6 +19,7 @@ export interface EIP1193Error extends Error {
 }
 
 export const handleKnownErrors = (error: Error): void => {
+  console.log("Looking at error", error)
   const errorMessage = (error?.message ?? '').toLowerCase()
 
   switch (errorMessage) {

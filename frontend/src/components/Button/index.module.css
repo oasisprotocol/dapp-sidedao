@@ -46,7 +46,7 @@
 
 .buttonSolid {
   &.buttonPrimary {
-    background-color: var(--palatinate-blue);
+    background-color: #010038;
     color: var(--white);
   }
 

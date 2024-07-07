@@ -43,12 +43,10 @@ body {
   font-weight: normal;
   line-height: 150%;
   color: var(--white);
+  color: black;
   text-align: left;
-  background-color: var(--palatinate-blue);
-  background-image: url('/background.webp');
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
+  /*background-color: var(--palatinate-blue);*/
+  /*background-color: #000062;*/
   min-height: 100dvh;
 }
 
@@ -97,4 +95,44 @@ h3 {
     line-height: 130%;
     letter-spacing: -0.03em;
   }
+}
+
+.landing-layout {
+  height: 100dvh;
+  background-image: url('/background.svg');
+  background-size: 2000px 2000px;
+  background-position: center center;
+  background-repeat: no-repeat;
+  color: #000062;
+}
+
+.dashboard-layout {
+  height: 100dvh;
+  background: linear-gradient(180deg, #E6E5FF 0%, #D2D1FF 100%);
+}
+
+.dark-layout {
+  height: 100dvh;
+  background: #130FFF;
+  color: white;
+}
+
+.landing {
+
+  /* Auto layout */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0px;
+  gap: 24px;
+
+  position: absolute;
+  width: 416px;
+  height: 242px;
+  left: calc(50% - 416px/2);
+  top: calc(50% - 242px/2);
+
+  color: black;
+
+
 }
