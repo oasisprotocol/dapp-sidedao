@@ -1,0 +1,147 @@
+.cardHeaderText {
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 23px;
+  letter-spacing: 0;
+  text-align: center;
+  margin-bottom: 1.5625rem;
+  opacity: 0.8;
+  text-wrap: balance;
+}
+
+.mascotCards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(218px, 1fr));
+  grid-gap: 2.0625rem;
+  margin-bottom: 2.25rem;
+}
+
+.mascotCardActions {
+  display: flex;
+  justify-content: center;
+  margin-top: auto;
+}
+
+.cardAction {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+
+  > * {
+    align-self: center;
+  }
+}
+
+.voteBtnLabel {
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.voteBtnLabelDisabled {
+  justify-content: center;
+  cursor: not-allowed;
+  user-select: none;
+}
+
+.cardFooterText {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 21px;
+  letter-spacing: 0;
+  text-align: center;
+  color: var(--palatinate-blue);
+}
+
+.insufficientBalanceAlertActions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  > * {
+    align-self: center;
+  }
+}
+
+.cardInfoText {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 150%;
+  letter-spacing: 0;
+  text-align: center;
+  margin-top: -1.325rem;
+  margin-bottom: 1rem;
+}
+
+.landingPageLink {
+  color: var(--dark-gunmetal);
+}
+
+.mascotCardSelectBtn {
+  min-width: 97px;
+}
+
+.mascotCardSelectedCheckIcon {
+  position: absolute;
+  top: -0.9375rem;
+  right: -1.125rem;
+  width: 30px;
+  height: 30px;
+  border-radius: 25%;
+  color: var(--green-sheen);
+  /* TODO: Fix border */
+  background: var(--white);
+}
+
+@media screen and (max-width: 1000px) {
+  .mascotCards {
+    grid-template-columns: 1fr;
+    grid-auto-flow: row;
+    grid-gap: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .headerText {
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 130%;
+    letter-spacing: 0;
+    text-align: left;
+    margin-top: 0.625rem;
+    margin-bottom: 2rem;
+  }
+
+  .landingPageLink {
+    color: var(--white);
+  }
+
+  .mascotCardActions {
+    width: 100%;
+  }
+
+  .mascotCardSelectBtn {
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 137.5%;
+    letter-spacing: 0;
+  }
+
+  .cardAction {
+    > * {
+      align-self: stretch;
+    }
+  }
+
+  .cardInfoText {
+    margin-top: 0;
+  }
+
+  .cardFooterText {
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 130%;
+    letter-spacing: -0.03em;
+  }
+}
