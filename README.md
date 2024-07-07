@@ -31,20 +31,20 @@ Move to the `hardhat` folder and build smart contracts:
 Start the hardhat node:
 
 ```sh
-npx hardhat node
+make build
 ```
 
 Deploy smart contracts to that local network:
 
 ```sh
-npx hardhat deploy --network sapphire-localnet
+make deploy-localnet
 ```
 
 You can use the `--gaslessAccounts` and `--gaslessFunds` parameters to set
 the number of proxy accounts that can be used to pay for the gas for voters
 and the amount of tokens each of those accounts will be initially funded.
 
-The deployed DAO contract address will be reported. Remember it and store it
+The deployed DAO contract addresses will be stored
 inside the `frontend.demo` folder's `.env.development`, for example:
 
 ```
