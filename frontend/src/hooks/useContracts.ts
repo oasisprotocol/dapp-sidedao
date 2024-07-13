@@ -17,7 +17,7 @@ export const useContracts = (eth: EthereumContext) => {
 
   const [pollManager, setPollManager] = useState<PollManager | undefined>();
   const [pollManagerAddress, setPollManagerAddress] = useState<string | undefined>()
-  const [pollManagerWithSigner, setPollManagerWithSIgner] = useState<PollManager | undefined>();
+  const [pollManagerWithSigner, setPollManagerWithSigner] = useState<PollManager | undefined>();
   const [aclAddress, setAclAddress] = useState<string | undefined>();
   const [pollACL, setPollACL] = useState<IPollACL | undefined>();
   const [pollManagerACL, setPollManagerACL] = useState<IPollManagerACL | undefined>();
