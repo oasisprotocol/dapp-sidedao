@@ -17,6 +17,14 @@ const PollLoading: FC = () => {
   )
 }
 
+const WaitingForResults: FC = () => {
+  return (
+    <Layout variation="light">
+      <Alert headerText="Poll closed, please wait" type="loading" actions={<span>Waiting for results to land...</span>} />
+    </Layout>
+  )
+}
+
 export const PollPage: FC = () => {
   const eth = useEthereum()
   const { pollId} = useParams()
@@ -32,20 +40,42 @@ export const PollPage: FC = () => {
     // isClosed,
     selectedChoice, setSelectedChoice, canSelect,
     canVote, vote, isVoting,
+    isMine,
+    canClosePoll,
+    closePoll,
+    isClosing,
+    hasClosed,
     pollResults,
   } = usePollData(eth, pollId!)
   // console.log("Error:", error, "poll?", !!loadedPoll)
+  console.log("Has voted?", hasVoted, "existingVote:", existingVote, "active?", active, "hasClosed:", hasClosed)
   if (error) {
     return <Layout variation={"landing"}><Alert type='error' headerText={error} /></Layout>
   }
+
   const poll = loadedPoll?.ipfsParams
+
+  // Closed poll, now waiting for results
+  if (hasClosed) return <WaitingForResults />
+
+  // Currently loading stuff
   if (isLoading || !poll) return <PollLoading />
 
-  if (hasVoted) {
-    if (existingVote) {
+  // You have voted. Thanks!
+  if (hasVoted && active) {
+    if (existingVote !== undefined) {
       return (
         <Layout variation={"dark"}>
-          <ThanksForVote poll={poll} myVote={existingVote} remainingTime={remainingTime} remainingTimeString={remainingTimeString} />
+          <ThanksForVote
+            poll={poll}
+            myVote={existingVote}
+            remainingTime={remainingTime}
+            remainingTimeString={remainingTimeString}
+            isMine={isMine}
+            canClose={canClosePoll}
+            closePoll={closePoll}
+            isClosing={isClosing}
+          />
         </Layout>
       )
     } else {
@@ -54,9 +84,7 @@ export const PollPage: FC = () => {
     }
   }
 
-
-  // TODO: show something special if the poll has just been closed (isClosed)
-
+  // Active vote
   if (active) {
     return <EnforceWallet content={
       <Layout variation="light">
@@ -70,14 +98,19 @@ export const PollPage: FC = () => {
           canVote={canVote}
           vote={vote}
           isVoting={isVoting}
+          isMine={isMine}
+          canClose={canClosePoll}
+          isClosing={isClosing}
+          closePoll={closePoll}
         />
       </Layout>
     } />
   } else {
+    // Completed vote
     if (!pollResults) return <PollLoading />
     return (
       <Layout variation="dark">
-        <CompletedPoll poll={poll} results={pollResults}/>
+        <CompletedPoll poll={poll} results={pollResults} isMine={isMine}/>
       </Layout>
     )
 

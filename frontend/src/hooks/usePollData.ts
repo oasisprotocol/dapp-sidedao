@@ -43,7 +43,7 @@ export type PollResults = {
 }
 
 export type RemainingTime = {
-  pastDue: boolean
+  isPastDue: boolean
   totalSeconds: number
   days: number
   hours: number
@@ -52,11 +52,11 @@ export type RemainingTime = {
 }
 
 const calculateRemainingTimeFrom = (deadline: number, now: number): RemainingTime => {
-  const pastDue = now > deadline
+  const isPastDue = now > deadline
   const totalSeconds = Math.floor((Math.abs(deadline - now)))
 
   return {
-    pastDue,
+    isPastDue,
     totalSeconds,
     days: Math.floor(totalSeconds / (24 * 3600)),
     hours: Math.floor(totalSeconds % (24 * 3600) / 3600),
@@ -70,7 +70,7 @@ const getTextDescriptionOfTime = (remaining: RemainingTime | undefined): string 
   const hasDays = !!remaining.days
   const hasHours = hasDays || !!remaining.hours
   const hasMinutes = hasHours || !!remaining.minutes
-  if (remaining.pastDue) {
+  if (remaining.isPastDue) {
     return `Voting finished ${hasDays ? remaining.days + " days, " : ""}${hasHours ? remaining.hours + " hours, " : ""}${hasMinutes ? remaining.minutes + " minutes, " : ""}${remaining.seconds} seconds ago.`;
   } else {
     return `Poll closes in ${hasDays ? remaining.days + " days, " : ""}${hasHours ? remaining.hours + " hours, " : ""}${hasMinutes ? remaining.minutes + " minutes, " : ""}${remaining.seconds} seconds.`;
@@ -101,14 +101,14 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
     pollACL,
   } = useContracts(eth)
 
-  const proposalId = `0x${pollId}`;
+    const proposalId = `0x${pollId}`;
 
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
-  const [isClosed, setIsClosed] = useState(false);
+  const [hasClosed, setHasClosed] = useState(false);
   const [pollLoaded, setPollLoaded] = useState(true)
   const [poll, setPoll] = useState<LoadedPoll>();
   const [winningChoice, setWinningChoice] = useState<bigint | undefined>(undefined);
@@ -117,8 +117,8 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
   const [voteCounts, setVoteCounts] = useState<bigint[]>([]);
   const [pollResults, setPollResults] = useState<PollResults>()
   const [votes, setVotes] = useState<ListOfVotes>({ ...noVotes });
-  const [canClosePoll, setCanClosePoll] = useState<Boolean>(false);
-  const [canAclVote, setCanAclVote] = useState<Boolean>(false);
+  const [canClosePoll, setCanClosePoll] = useState(false);
+  const [canAclVote, setCanAclVote] = useState(false);
   const [gvAddresses, setGvAddresses] = useState<string[]>([]);
   const [gvBalances, setGvBalances] = useState<bigint[]>([]);
   const [gvTotalBalance, setGvTotalBalance] = useState<bigint>(0n);
@@ -135,24 +135,27 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
   const [canSelect, setCanSelect] = useState(false)
   const [remainingTime, setRemainingTime] = useState<RemainingTime>()
   const [remainingTimeString, setRemainingTimeString] = useState<string | undefined>()
+  const [isMine, setIsMine] = useState(false)
 
   useEffect(
     () => setCanVote(!!eth.state.address &&
+      !isClosing &&
       winningChoice === undefined &&
       selectedChoice !== undefined &&
       existingVote === undefined &&
       canAclVote != false
     ),
-    [eth.state.address, winningChoice, selectedChoice, existingVote]
+    [eth.state.address, winningChoice, selectedChoice, existingVote, isClosing]
   );
 
   useEffect(
     () => setCanSelect(
+      !remainingTime?.isPastDue &&
       (winningChoice === undefined) && (
         (eth.state.address === undefined) ||
         (existingVote === undefined)
       )),
-    [winningChoice, eth.state.address, existingVote]
+    [winningChoice, eth.state.address, existingVote, remainingTime?.isPastDue]
   );
 
   useEffect(
@@ -167,23 +170,24 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
   )
 
   const closePoll = useCallback(async (): Promise<void> => {
-    await eth.switchNetwork(); // ensure we're on the correct network first!
-    const tx = await signerDao!.close(proposalId);
-    console.log('Close proposal tx', tx);
     setIsClosing(true)
+    await eth.switchNetwork(); // ensure we're on the correct network first!
+    // console.log("Preparing close tx...")
+    const tx = await signerDao!.close(proposalId);
+    // console.log('Close proposal tx', tx);
     try {
       const receipt = await tx.wait();
 
       if (receipt!.status != 1) throw new Error('close ballot tx failed');
       else {
-        setIsClosed(true)
+        setHasClosed(true)
       }
     } catch (e) {
       console.log(e);
     } finally {
       setIsClosing(false)
     }
-  }, [eth, proposalId])
+  }, [eth, proposalId, signerDao])
 
   const doVote = useCallback(async (): Promise<void> => {
     if (selectedChoice === undefined) throw new Error('no choice selected');
@@ -368,6 +372,8 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
     }
     // console.log("Attempting to load", proposalId)
 
+    setPoll(undefined)
+
     let loadedData: LoadedData
     try {
       setIsLoading(true)
@@ -503,11 +509,12 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
           winner: poll.proposal.topChoice.toString(),
           votes,
         }
+        const noVotes = !loadedPollResults.totalVotes
         poll.ipfsParams.choices.forEach((choice, index) => {
           loadedPollResults.choices[index.toString()] = {
             choice,
             votes: voteCounts[index],
-            rate: Math.round(Number(1000n * voteCounts[index] / loadedPollResults.totalVotes) / 10),
+            rate: noVotes ? 0 : Math.round(Number(1000n * voteCounts[index] / loadedPollResults.totalVotes) / 10),
             winner: index.toString() === winningChoice?.toString()
           }
         })
@@ -515,6 +522,23 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
       }
     }, [poll, voteCounts, winningChoice, votes]
   )
+
+  useEffect(()=>{
+    if (hasClosed) {
+      if (!poll) {
+        console.log("No poll loaded, waiting to load")
+      } else if (poll.proposal.active) {
+        console.log("Apparently, we have closed a poll, but we still perceive it as active, so scheduling a reload...")
+        setTimeout(() => {
+          console.log("Reloading now")
+          setPollLoaded(false)
+        }, 5 * 1000)
+      } else {
+        console.log("We no longer perceive it as active, so we can stop reloading")
+        setHasClosed(false)
+      }
+    }
+  }, [hasClosed, poll])
 
   // useEffect(() => {
   //   if (gvTotalBalance > 0n) {
@@ -533,6 +557,10 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
     },
     [dao, daoAddress, pollACL, gaslessVoting, userAddress, pollLoaded]
   );
+
+  useEffect(() => {
+    setIsMine(poll?.ipfsParams.creator?.toLowerCase() === userAddress?.toLowerCase())
+  }, [poll, userAddress])
 
   return {
     isLoading,
@@ -562,10 +590,11 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
     gvBalances,
     doTopUp,
 
+    isMine,
     canClosePoll,
     closePoll,
     isClosing,
-    isClosed,
+    hasClosed,
 
     voteCounts,
     winningChoice,

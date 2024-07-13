@@ -3,6 +3,8 @@ import classes from "./index.module.css"
 import { Poll } from '../../types'
 import { RemainingTime } from '../../hooks/usePollData';
 import { BigCountdown } from './BigCountdown';
+import { MineIndicator } from './MineIndicator';
+import { Button } from '../../components/Button';
 
 const VoteIcon: FC = () => {
   return (
@@ -18,13 +20,23 @@ const VoteIcon: FC = () => {
 const StatusInfo: FC<{
   remainingTime: RemainingTime | undefined,
   remainingTimeString: string | undefined
-}> = ({remainingTime, remainingTimeString}) => {
+  isMine: boolean
+  canClose: boolean, closePoll: () => {}, isClosing: boolean,
+}> = ({  remainingTime, remainingTimeString, isMine,
+                          canClose, closePoll, isClosing}) => {
+
+  const handleClose = () => {
+    if (canClose && window.confirm("Are you you you want to close this poll? This can't be undone.")) {
+      closePoll()
+    }
+  }
+
   if (remainingTime) {
-    if (remainingTime.pastDue) {
+    if (remainingTime.isPastDue) {
       return (
         <>
           <h4>{remainingTimeString}</h4>
-          <h4>Results will be available when the owner formally closes the vote.</h4>
+          <h4>Results will be available when the owner formally closes the poll.</h4>
         </>
       )
     } else {
@@ -36,9 +48,18 @@ const StatusInfo: FC<{
       );
     }
   } else {
-    return (
-      <h4>Results will be available when the owner closes the vote.</h4>
-    )
+    if (isMine) {
+      return (
+        <>
+          <h4>Results will be available when you close the poll.</h4>
+          <Button disabled={!canClose} onClick={handleClose} pending={isClosing}>{isClosing ? "Closing poll" : "Close poll"}</Button>
+        </>
+      )
+    } else {
+      return (
+        <h4>Results will be available when the owner closes the poll.</h4>
+      )
+    }
   }
 }
 
@@ -47,7 +68,12 @@ export const ThanksForVote: FC<{
   myVote: bigint
   remainingTime: RemainingTime | undefined
   remainingTimeString: string | undefined
-}> = ({  poll, myVote, remainingTime, remainingTimeString}) => {
+  isMine: boolean
+  canClose: boolean
+  isClosing: boolean
+  closePoll: () => {}
+}> = ({ poll, myVote, remainingTime, remainingTimeString, isMine,
+                                  canClose, closePoll, isClosing}) => {
   const {
     name,
     description,
@@ -56,13 +82,16 @@ export const ThanksForVote: FC<{
   return (
     <div className={classes.card}>
       <h2>Thanks for voting!</h2>
-      <h3>{name}</h3>
+      <h3>
+        {name}
+        {isMine && <MineIndicator creator={poll.creator}/>}
+      </h3>
       <h4>{description}</h4>
       <div className={`${classes.choice} ${classes.submitted}`}>
         <VoteIcon />
         {choices[Number(myVote)]}
       </div>
-      <StatusInfo remainingTime={remainingTime} remainingTimeString={remainingTimeString} />
+      <StatusInfo remainingTime={remainingTime} remainingTimeString={remainingTimeString} isMine={isMine} canClose={canClose} closePoll={closePoll} isClosing={isClosing} />
     </div>
   )
 }

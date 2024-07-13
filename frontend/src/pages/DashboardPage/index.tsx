@@ -19,7 +19,7 @@ export const DashboardPage: FC = () => {
     <Layout variation="dashboard">
       <h2>My polls</h2>
       { isLoadingPolls ? (
-        <Alert headerText="Please wait" type="loading" actions={<span>Fetching poll...</span>} />
+        <Alert headerText="Please wait" type="loading" actions={<span>Fetching polls...</span>} />
       ) : (
         <div className={ classes.pollCardList }>
           { myPolls.map((poll) => <PollCard key={poll.id} poll={poll} />) }
@@ -27,7 +27,7 @@ export const DashboardPage: FC = () => {
       )}
       <h2>Explore polls</h2>
       { isLoadingPolls ? (
-        <Alert headerText="Please wait" type="loading" actions={<span>Fetching poll...</span>} />
+        <Alert headerText="Please wait" type="loading" actions={<span>Fetching polls...</span>} />
       ) : (
         <div className={ classes.pollCardList }>
           { otherPolls.map((poll) => <PollCard key={poll.id} poll={poll} />) }

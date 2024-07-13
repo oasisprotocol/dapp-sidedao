@@ -2,17 +2,22 @@ import { FC } from 'react';
 import { Poll } from '../../types';
 import { PollResults } from '../../hooks/usePollData';
 import classes from "./index.module.css"
+import { MineIndicator } from './MineIndicator';
 
-export const CompletedPoll: FC<{poll: Poll, results: PollResults}> =
+export const CompletedPoll: FC<{poll: Poll, results: PollResults, isMine: boolean}> =
   ({
-     poll: {name, description},
+     poll,
      results: {choices, votes},
+     isMine,
    }) => {
     return (
       <div className={classes.card}>
         <h2>Results are in!</h2>
-        <h3>{name}</h3>
-        <h4>{description}</h4>
+        <h3>
+          {poll.name}
+          {isMine && <MineIndicator creator={poll.creator}/>}
+        </h3>
+        <h4>{poll.description}</h4>
         <>
           {Object.entries(choices)
             .map(([index, entry]) => (

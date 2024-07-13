@@ -3,6 +3,7 @@ import { Poll } from '../../types';
 import classes from "./index.module.css"
 import { Button } from '../../components/Button';
 import { RemainingTime } from '../../hooks/usePollData';
+import { MineIndicator } from './MineIndicator';
 
 export const ActivePoll: FC<{
   poll: Poll
@@ -14,14 +15,22 @@ export const ActivePoll: FC<{
   canVote: boolean,
   vote: () => Promise<void>;
   isVoting: boolean,
-
+  isMine: boolean,
+  canClose: boolean
+  isClosing: boolean;
+  closePoll: () => Promise<void>;
 }> =
   ({
-     poll: {name, description, choices},
+     poll,
      remainingTime, remainingTimeString,
      selectedChoice, canSelect, setSelectedChoice,
      canVote, vote, isVoting,
+     isMine, canClose, isClosing, closePoll
    }) => {
+
+    // console.log("isMine?", isMine, "canClose?", canClose)
+
+    const {name, description, choices} = poll
 
     const handleSelect = useCallback((index: number) => {
       if (canSelect) {
@@ -33,16 +42,21 @@ export const ActivePoll: FC<{
       }
     }, [canSelect, selectedChoice, setSelectedChoice])
 
-    const handleSubmit = () => {
-      vote()
-    }
+    const handleClose = useCallback(() => {
+      if (canClose && window.confirm("Are you sure you want to close this poll? This can't be undone.")) {
+        closePoll()
+      }
+    }, [close])
 
-    const pastDue = !!remainingTime?.pastDue
+    const isPastDue = !!remainingTime?.isPastDue
 
     // console.log("selected:", selectedChoice, "can select?", canSelect, "can Vote?", canVote, "voting?", isVoting)
     return (
       <div className={`${classes.card} ${classes.darkCard}`}>
-        <h2>{name}</h2>
+        <h2>
+          {name}
+          { isMine && <MineIndicator creator={poll.creator}/> }
+        </h2>
         <h4>{description}</h4>
         <>
           { choices
@@ -56,9 +70,16 @@ export const ActivePoll: FC<{
               </div>
             ))}
         </>
-        { !pastDue && <Button disabled={!canVote || isVoting} onClick={handleSubmit}>{isVoting ? "Submitting ..." : "Submit vote"}</Button> }
         { remainingTimeString && <h4>{remainingTimeString}</h4>}
-        { pastDue && <h4>Results will be available when the owner formally closes the vote.</h4>}
+        { isPastDue && <h4>Results will be available when {isMine ? "you close" : "the owner formally closes"} the poll.</h4>}
+        <div className={classes.buttons}>
+          { !isPastDue && <Button disabled={!canVote || isVoting} onClick={vote} pending={isVoting}>{isVoting ? "Submitting" : "Submit vote"}</Button> }
+          { isMine && (
+            <Button disabled={!canClose} color={(isMine && isPastDue) ? "primary" : "secondary"} onClick={handleClose} pending={isClosing}>
+              {isClosing ? "Closing poll" : "Close poll"}
+            </Button>
+          )}
+        </div>
       </div>
     )
   }
