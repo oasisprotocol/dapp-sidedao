@@ -45,8 +45,6 @@ body {
   color: var(--white);
   color: black;
   text-align: left;
-  /*background-color: var(--palatinate-blue);*/
-  /*background-color: #000062;*/
   min-height: 100dvh;
 }
 
@@ -103,7 +101,7 @@ h3 {
   background-size: 2000px 2000px;
   background-position: center center;
   background-repeat: no-repeat;
-  color: #000062;
+  color: var(--navy-blue);
 }
 
 .dashboard-layout {

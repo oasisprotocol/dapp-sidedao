@@ -19,10 +19,10 @@ const layoutClasses: Partial<Record<LayoutVariation, string>> = {
 }
 
 const logoColor: Record<LayoutVariation, string> = {
-  landing: "#000062",
+  landing: "var(--navy-blue)",
   dark: "white",
-  dashboard: "#000062",
-  light: "#000062",
+  dashboard: "var(--navy-blue)",
+  light: "var(--navy-blue)",
 }
 
 export const Layout: FC<PropsWithChildren & {variation: LayoutVariation}> = ({variation,children}) => {
