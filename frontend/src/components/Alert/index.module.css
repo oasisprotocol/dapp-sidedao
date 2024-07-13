@@ -2,7 +2,7 @@
   text-align: center;
 
   h2 {
-    color: var(--palatinate-blue);
+    color: var(--navy-blue);
     margin-top: 6rem;
     margin-bottom: 1rem;
   }
@@ -30,7 +30,7 @@
       font-weight: 500;
       line-height: 150%;
       letter-spacing: -0.03em;
-      color: var(--palatinate-blue);
+      color: var(--navy-blue);
     }
   }
 }
@@ -64,7 +64,7 @@
     width: 106px;
     height: 106px;
     border-radius: 50%;
-    background: linear-gradient(302.43deg, var(--medium-blue) -18.46%, var(--azure) 93.84%);
+    background: linear-gradient(302.43deg, var(--medium-blue) -18.46%, var(--navy-blue) 93.84%);
   }
 
   svg {
