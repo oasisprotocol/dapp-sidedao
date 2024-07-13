@@ -42,6 +42,18 @@ export type PollResults = {
   votes?: ListOfVotes | undefined
 }
 
+
+type LoadedData =
+  [
+    boolean,
+    bigint,
+    PollManager.ProposalParamsStructOutput
+  ] & {
+  active: boolean;
+  topChoice: bigint;
+  params: PollManager.ProposalParamsStructOutput;
+}
+
 const noVotes: ListOfVotes = { out_count: 0n, out_voters: [], out_choices: [] }
 
 export const usePollData = (eth: EthereumContext, pollId: string) => {
@@ -278,13 +290,37 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
     }
   }, [eth.state.signer])
 
-  const [initiated, setInitiated] = useState(false)
+  const [pollLoaded, setPollLoaded] = useState(true)
+
+  useEffect(
+    ( ) => setPollLoaded(false),
+    [pollId]
+  );
 
   const loadProposal = useCallback(async () => {
-    if (!dao || !daoAddress || !pollACL || !gaslessVoting || !userAddress) return
-    if (initiated) return
-    setInitiated(true)
-    const { active, params, topChoice } = await dao.PROPOSALS(proposalId);
+    if (!dao || !daoAddress || !pollACL || !gaslessVoting || !userAddress) {
+      // console.log("not loading, because dependencies are not yet available")
+      return
+    }
+    if (pollLoaded) {
+      // console.log("not loading, because already loaded")
+      return
+    }
+    // console.log("Attempting to load", proposalId)
+
+    let loadedData: LoadedData
+    try {
+      loadedData = await dao.PROPOSALS(proposalId);
+      setError("")
+    } catch(ex) {
+      setError("Failed to load poll. Are you sure the link is correct?")
+      setPoll(undefined)
+      return
+    } finally {
+      setPollLoaded(true)
+    }
+    console.log("Loaded data is", loadedData)
+    const { active, params, topChoice } = loadedData;
     if (params.acl === ZeroAddress) {
       console.log(`Empty params! No ACL, Poll ${proposalId} not found!`);
       // router.push({ path: `/NotFound/poll/${props.id}`, replace: true });
@@ -388,7 +424,7 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
       setGvTotalBalance(0n);
     }
 
-  }, [dao, daoAddress, pollACL, gaslessVoting, userAddress, initiated, eth.state.provider, xchainRPC, eth.state.signer, fetchStorageProof]);
+  }, [dao, daoAddress, pollACL, gaslessVoting, userAddress, pollLoaded, eth.state.provider, xchainRPC, eth.state.signer, fetchStorageProof]);
 
   useEffect(
     () => {
@@ -426,8 +462,10 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
   // }, [gvTotalBalance, gvAddresses]);
 
   useEffect(
-    () => { void loadProposal() },
-    [dao, daoAddress, pollACL, gaslessVoting, userAddress]
+    () => {
+      void loadProposal()
+    },
+    [dao, daoAddress, pollACL, gaslessVoting, userAddress, pollLoaded]
   );
 
   return {

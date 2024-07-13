@@ -8,15 +8,13 @@ import { Alert } from '../../components/Alert';
 // import classes from "./index.module.css"
 import { CompletedPollPage } from './CompletedPollPage';
 
-const ActivePollLoadingPage: FC = () => {
+const PollLoadingPage: FC = () => {
   return (
     <Layout variation="light">
       <Alert headerText="Please wait" type="loading" actions={<span>Fetching poll...</span>} />
     </Layout>
   )
 }
-
-const CompletedPollLoadingPage = ActivePollLoadingPage // TODO
 
 const ActivePollPage: FC<{poll: Poll}> = ({poll}) => {
   return (
@@ -28,11 +26,11 @@ const ActivePollPage: FC<{poll: Poll}> = ({poll}) => {
   )
 }
 
-
 export const PollPage: FC = () => {
   const eth = useEthereum()
   const { pollId} = useParams()
   const {
+    error,
     poll : loadedPoll,
     active,
     // hasVoted,
@@ -40,15 +38,20 @@ export const PollPage: FC = () => {
     // isClosed,
     pollResults,
   } = usePollData(eth, pollId!)
+  // console.log("Error:", error, "poll?", !!loadedPoll)
+  if (error) {
+    return <Layout variation={"landing"}><Alert type='error' headerText={error} /></Layout>
+  }
   const poll = loadedPoll?.ipfsParams
+  if (!poll) return <PollLoadingPage />
 
   // TODO: show something special if just voted (hasVoted)
   // TODO: show something special if the poll has just been closed (isClosed)
 
   if (active) {
-    return poll ? <ActivePollPage poll={poll} /> : <ActivePollLoadingPage />
+    return <ActivePollPage poll={poll} />
   } else {
-    if (!poll || !pollResults) return <CompletedPollLoadingPage />
+    if (!pollResults) return <PollLoadingPage />
     return <CompletedPollPage poll={poll} results={pollResults}/>
   }
 }
