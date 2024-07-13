@@ -42,6 +42,40 @@ export type PollResults = {
   votes?: ListOfVotes | undefined
 }
 
+export type RemainingTime = {
+  pastDue: boolean
+  totalSeconds: number
+  days: number
+  hours: number
+  minutes: number
+  seconds: number
+}
+
+const calculateRemainingTimeFrom = (deadline: number, now: number): RemainingTime => {
+  const pastDue = now > deadline
+  const totalSeconds = Math.floor((Math.abs(deadline - now)))
+
+  return {
+    pastDue,
+    totalSeconds,
+    days: Math.floor(totalSeconds / (24 * 3600)),
+    hours: Math.floor(totalSeconds % (24 * 3600) / 3600),
+    minutes: Math.floor(totalSeconds % 3600 / 60),
+    seconds: totalSeconds % 60
+  }
+}
+
+const getTextDescriptionOfTime = (remaining: RemainingTime | undefined): string | undefined => {
+  if (!remaining) return undefined;
+  const hasDays = !!remaining.days
+  const hasHours = hasDays || !!remaining.hours
+  const hasMinutes = hasHours || !!remaining.minutes
+  if (remaining.pastDue) {
+    return `Voting finished ${hasDays ? remaining.days + " days, " : ""}${hasHours ? remaining.hours + " hours, " : ""}${hasMinutes ? remaining.minutes + " minutes, " : ""}${remaining.seconds} seconds ago.`;
+  } else {
+    return `Poll closes in ${hasDays ? remaining.days + " days, " : ""}${hasHours ? remaining.hours + " hours, " : ""}${hasMinutes ? remaining.minutes + " minutes, " : ""}${remaining.seconds} seconds.`;
+  }
+}
 
 type LoadedData =
   [
@@ -75,6 +109,7 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
   const [hasVoted, setHasVoted] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [isClosed, setIsClosed] = useState(false);
+  const [pollLoaded, setPollLoaded] = useState(true)
   const [poll, setPoll] = useState<LoadedPoll>();
   const [winningChoice, setWinningChoice] = useState<bigint | undefined>(undefined);
   const [selectedChoice, setSelectedChoice] = useState<bigint | undefined>();
@@ -98,6 +133,8 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
   const [canVote, setCanVote] = useState(false)
 
   const [canSelect, setCanSelect] = useState(false)
+  const [remainingTime, setRemainingTime] = useState<RemainingTime>()
+  const [remainingTimeString, setRemainingTimeString] = useState<string | undefined>()
 
   useEffect(
     () => setCanVote(!!eth.state.address &&
@@ -292,12 +329,33 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
     }
   }, [eth.state.signer])
 
-  const [pollLoaded, setPollLoaded] = useState(true)
-
   useEffect(
     ( ) => setPollLoaded(false),
     [pollId]
   );
+
+  const updateRemainingTime = useCallback(
+    () => {
+      const deadline = poll?.ipfsParams.options.closeTimestamp
+      const now = new Date().getTime()/1000
+      const remaining = deadline ? calculateRemainingTimeFrom(deadline, now) : undefined;
+      setRemainingTime(remaining)
+      setRemainingTimeString(getTextDescriptionOfTime(remaining))
+      if (deadline) {
+        // console.log("Scheduling next update")
+        setTimeout(() => {
+          // console.log("Should update remainingTime")
+          updateRemainingTime()
+        }, 1000)
+      }
+    },
+    [poll, setRemainingTime]
+  )
+
+  useEffect(() => {
+    updateRemainingTime()
+  }, [poll]);
+
 
   const loadProposal = useCallback(async () => {
     if (!dao || !daoAddress || !pollACL || !gaslessVoting || !userAddress) {
@@ -491,6 +549,9 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
     selectedChoice,
     canSelect,
     setSelectedChoice,
+
+    remainingTime,
+    remainingTimeString,
 
     canVote,
     vote,

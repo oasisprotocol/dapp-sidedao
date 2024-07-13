@@ -14,16 +14,16 @@ export const CompletedPoll: FC<{poll: Poll, results: PollResults}> =
         <h3>{name}</h3>
         <h4>{description}</h4>
         <>
-          { Object.entries(choices)
-            .map(([index, entry])=> (
-                <div className={`${classes.choice} ${entry.winner ? classes.winner : ''}`} key={`choice-${index}`}>
-                  <div className={classes.sizeBar} style={{width: `${entry.rate}%`}}/>
-                  <div className={classes.above}>{entry.choice}</div>
-                  <div className={`${classes.percentage} ${classes.above}`}>{entry.rate}%</div>
-                </div>
+          {Object.entries(choices)
+            .map(([index, entry]) => (
+              <div className={`${classes.choice} ${entry.winner ? classes.winner : ''}`} key={`choice-${index}`}>
+                <div className={classes.sizeBar} style={{ width: `${entry.rate}%` }} />
+                <div className={classes.above}>{entry.choice}</div>
+                <div className={`${classes.percentage} ${classes.above}`}>{entry.rate}%</div>
+              </div>
             ))}
         </>
-        { !!votes?.out_count && (
+        {!!votes?.out_count && (
           <div>
             <h4>Individual votes:</h4>
             <>
@@ -31,7 +31,7 @@ export const CompletedPoll: FC<{poll: Poll, results: PollResults}> =
                 const [weight, choice] = votes.out_choices[index]
                 return (
                   <div key={`voter-${index}`}>
-                    {voter} ({weight.toString()}): { choices[choice.toString()].choice }
+                    {voter} ({weight.toString()}): {choices[choice.toString()].choice}
                   </div>
                 )
               })}

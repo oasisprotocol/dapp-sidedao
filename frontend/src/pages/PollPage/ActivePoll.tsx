@@ -2,24 +2,25 @@ import { FC, useCallback } from 'react';
 import { Poll } from '../../types';
 import classes from "./index.module.css"
 import { Button } from '../../components/Button';
+import { RemainingTime } from '../../hooks/usePollData';
 
 export const ActivePoll: FC<{
   poll: Poll
+  remainingTime: RemainingTime | undefined
+  remainingTimeString: string | undefined
   selectedChoice: bigint | undefined,
   canSelect: boolean,
   setSelectedChoice: (choice: bigint | undefined) => void,
   canVote: boolean,
   vote: () => Promise<void>;
   isVoting: boolean,
-  hasVoted: boolean,
-  existingVote: bigint | undefined,
+
 }> =
   ({
      poll: {name, description, choices},
+     remainingTime, remainingTimeString,
      selectedChoice, canSelect, setSelectedChoice,
      canVote, vote, isVoting,
-    hasVoted, existingVote,
-
    }) => {
 
     const handleSelect = useCallback((index: number) => {
@@ -29,17 +30,16 @@ export const ActivePoll: FC<{
         } else {
           setSelectedChoice(BigInt(index))
         }
-      // } else {
-      //   console.log("Ignoring clicking, since we can't select.")
       }
     }, [canSelect, selectedChoice, setSelectedChoice])
 
     const handleSubmit = () => {
-      console.log("Submitting")
       vote()
     }
 
-    console.log("selected:", selectedChoice, "can select?", canSelect, "can Vote?", canVote, "voting?", isVoting, "hasVoted?", hasVoted, "existing vote", existingVote)
+    const pastDue = !!remainingTime?.pastDue
+
+    // console.log("selected:", selectedChoice, "can select?", canSelect, "can Vote?", canVote, "voting?", isVoting)
     return (
       <div className={`${classes.card} ${classes.darkCard}`}>
         <h2>{name}</h2>
@@ -56,7 +56,9 @@ export const ActivePoll: FC<{
               </div>
             ))}
         </>
-        <Button disabled={!canVote || isVoting} onClick={handleSubmit}>{isVoting ? "Submitting ..." : "Submit vote"}</Button>
+        { !pastDue && <Button disabled={!canVote || isVoting} onClick={handleSubmit}>{isVoting ? "Submitting ..." : "Submit vote"}</Button> }
+        { remainingTimeString && <h4>{remainingTimeString}</h4>}
+        { pastDue && <h4>Results will be available when the owner formally closes the vote.</h4>}
       </div>
     )
   }

@@ -82,6 +82,12 @@
     border: 2px solid #130FFF;
 }
 
+.submitted {
+    border: 1px solid #010038;
+    justify-content: center;
+    gap: 10px;
+}
+
 .percentage {
     font-family: 'Inter';
     font-style: normal;
@@ -109,5 +115,44 @@
 .activeChoice:hover {
     background: #D2D1FF;
     box-shadow: 0 7px 7px 0 rgba(0, 0, 0, 0.17);
+
+}
+
+.countdownContainer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    color: #01001F;
+}
+
+.countdownCell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.countdownNumber {
+    width: 64px;
+    height: 45px;
+    text-align: center;
+
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 700;
+    font-size: 32px;
+    line-height: 140%;
+
+}
+
+.countdownUnit {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 11px;
+    line-height: 16px;
+    text-align: center;
 
 }
