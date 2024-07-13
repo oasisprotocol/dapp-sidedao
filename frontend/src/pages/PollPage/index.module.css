@@ -1,0 +1,90 @@
+.card {
+    box-sizing: border-box;
+
+    position: absolute;
+    width: 640px;
+    min-height: 496px;
+    left: calc(50% - 640px/2);
+    top: calc(50% - 496px/2);
+
+    background: #FFFFFF;
+    border: 1px solid #01001F;
+    border-radius: 16px;
+    color: #01001F;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px;
+    gap: 16px;
+
+}
+
+.card h2 {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 700;
+    font-size: 32px;
+    line-height: 140%;
+}
+
+.card h3 {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 32px;
+    line-height: 140%;
+}
+
+.card h4 {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 24px;
+}
+
+.choice {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
+
+    width: 560px;
+    height: 48px;
+
+    padding: 0em 2em;
+
+    background: #E6E5FF;
+    border-radius: 8px;
+
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 15px;
+}
+
+.above {
+    z-index: 10;
+}
+
+.winner {
+    border: 2px solid #130FFF;
+}
+
+.percentage {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 700;
+    font-size: 15px;
+    line-height: 24px;
+}
+
+.sizeBar {
+    position: absolute;
+    height: 100%;
+    border-radius: 8px 0px 0px 8px;
+    left: 0px;
+    background: #D2D1FFA0;
+}
