@@ -53,14 +53,14 @@ export const useContracts = (eth: EthereumContext) => {
   }, [pollManager])
 
   useEffect(() => {
-    if (!eth.state.provider) {
-      setPollManagerWithSIgner(undefined)
+    if (!eth.state.signer) {
+      setPollManagerWithSigner(undefined)
       return
     }
     const pollManagerAddr = import.meta.env.VITE_CONTRACT_POLLMANAGER;
     // console.log('PollManager at', pollManagerAddr);
-    setPollManagerWithSIgner(PollManager__factory.connect(pollManagerAddr, eth.state.signer));
-  }, [eth.state.provider, eth.state.signer])
+    setPollManagerWithSigner(PollManager__factory.connect(pollManagerAddr, eth.state.signer));
+  }, [eth.state.signer])
 
   useEffect(() => {
     if (!pollManager) {
