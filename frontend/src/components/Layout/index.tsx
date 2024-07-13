@@ -16,6 +16,7 @@ const layoutClasses: Partial<Record<LayoutVariation, string>> = {
   landing: 'landing-layout',
   dashboard: "dashboard-layout",
   dark: "dark-layout",
+  light: "light-layout",
 }
 
 const logoColor: Record<LayoutVariation, string> = {

@@ -115,6 +115,16 @@ h3 {
   color: white;
 }
 
+.light-layout {
+  height: 100dvh;
+  background: white;
+  color: var(--navy-blue);
+}
+
+.light-layout .card {
+  background: yellow;
+}
+
 .landing {
 
   /* Auto layout */

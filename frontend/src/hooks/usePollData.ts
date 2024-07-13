@@ -71,6 +71,7 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
 
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isVoting, setIsVoting] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [isClosed, setIsClosed] = useState(false);
@@ -260,17 +261,18 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
     setExistingVote(choice);
   }, [selectedChoice, gaslessVoting, signerDao, gvTotalBalance, eth.state.signer, eth.state.provider, gvAddresses, aclProof])
 
-  async function vote(e: Event): Promise<void> {
-    e.preventDefault();
+  async function vote(): Promise<void> {
     try {
       setError("")
-      setIsLoading(true)
+      setIsVoting(true)
       await doVote();
       setHasVoted(true)
-      //} catch (e: any) {
-      //  error.value = e.reason ?? e.message;
+    } catch (e: any) {
+      console.log(e);
+      // setError(e.reason ?? e.message);
+      setError("Failed to submit vote!");
     } finally {
-      setIsLoading(false)
+      setIsVoting(false)
     }
   }
 
@@ -310,6 +312,7 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
 
     let loadedData: LoadedData
     try {
+      setIsLoading(true)
       loadedData = await dao.PROPOSALS(proposalId);
       setError("")
     } catch(ex) {
@@ -318,8 +321,9 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
       return
     } finally {
       setPollLoaded(true)
+      setIsLoading(false)
     }
-    console.log("Loaded data is", loadedData)
+    // console.log("Loaded data is", loadedData)
     const { active, params, topChoice } = loadedData;
     if (params.acl === ZeroAddress) {
       console.log(`Empty params! No ACL, Poll ${proposalId} not found!`);
@@ -486,6 +490,7 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
 
     canVote,
     vote,
+    isVoting,
     hasVoted,
     existingVote,
 
