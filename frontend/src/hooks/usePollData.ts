@@ -92,7 +92,7 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
 
   const [isXChainACL, setIsXChainACL] = useState(false);
   const [xchainOptions, setXChainOptions] = useState<AclOptionsXchain | undefined>();
-  let aclProof: BytesLike = '';
+  const [aclProof, setAclProof] = useState<BytesLike>('');
   const [isWhitelistACL, setIsWhitelistACL] = useState(false);
 
   const [canVote, setCanVote] = useState(false)
@@ -367,32 +367,35 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
     if (!('xchain' in ipfsParams.acl.options)) {
       if ('token' in ipfsParams.acl.options) {
         const tokenAddress = ipfsParams.acl.options.token;
-        const aclProof = new Uint8Array();
+        const newAclProof = new Uint8Array();
+        setAclProof(newAclProof);
         setCanAclVote(0n != (await pollACL.canVoteOnPoll(
           daoAddress,
           proposalId,
           userAddress,
-          aclProof,
+          newAclProof,
         )));
         setAclTokenInfo(await tokenDetailsFromProvider(
           tokenAddress,
           eth.state.provider as unknown as JsonRpcProvider,
         ));
       } else if ('allowList' in ipfsParams.acl.options) {
-        aclProof = new Uint8Array();
+        const newAclProof = new Uint8Array();
+        setAclProof(newAclProof);
         setCanAclVote(0n != (await pollACL.canVoteOnPoll(
           daoAddress,
           proposalId,
           userAddress,
-          aclProof,
+          newAclProof,
         )));
       } else if ('allowAll' in ipfsParams.acl.options) {
-        aclProof = new Uint8Array();
+        const newAclProof = new Uint8Array();
+        setAclProof(newAclProof);
         setCanAclVote(0n != (await pollACL.canVoteOnPoll(
           daoAddress,
           proposalId,
           userAddress,
-          aclProof,
+          newAclProof,
         )));
       }
     } else {
@@ -402,18 +405,19 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
       const signer_addr = await eth.state.signer?.getAddress();
 
       if (signer_addr) {
-        aclProof = await fetchStorageProof(
+        const newAclProof = await fetchStorageProof(
           provider,
           xchain.blockHash,
           xchain.address,
           xchain.slot,
           signer_addr,
         );
+        setAclProof(newAclProof)
         setCanAclVote(0n != (await pollACL.canVoteOnPoll(
           daoAddress,
           proposalId,
           userAddress,
-          aclProof,
+          newAclProof,
         )));
       }
     }
