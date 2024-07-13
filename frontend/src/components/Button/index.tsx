@@ -1,6 +1,7 @@
 import classes from './index.module.css'
 import { FC, MouseEventHandler, PropsWithChildren } from 'react'
 import { StringUtils } from '../../utils/string.utils'
+import { SpinnerIcon } from '../icons/SpinnerIcon';
 
 type ButtonSize = 'small' | 'medium'
 type ButtonColor = 'primary' | 'secondary' | 'success'
@@ -15,6 +16,7 @@ interface Props extends PropsWithChildren {
   onClick?: MouseEventHandler<HTMLButtonElement>
   className?: string
   type?: 'submit' | 'reset' | 'button'
+  pending?: boolean
 }
 
 const sizeMap: Record<ButtonSize, string> = {
@@ -44,21 +46,29 @@ export const Button: FC<Props> = ({
   fullWidth,
   onClick,
   type,
+  pending
 }) => (
-  <button
-    className={StringUtils.clsx(
-      className,
-      classes.button,
-      disabled ? classes.buttonDisabled : undefined,
-      fullWidth ? classes.fullWidth : undefined,
-      colorMap[color],
-      sizeMap[size],
-      variantMap[variant]
-    )}
-    onClick={onClick}
-    disabled={disabled}
-    type={type}
-  >
-    {children}
-  </button>
+  <>
+    <button
+      className={StringUtils.clsx(
+        className,
+        classes.button,
+        disabled ? classes.buttonDisabled : undefined,
+        fullWidth ? classes.fullWidth : undefined,
+        colorMap[color],
+        sizeMap[size],
+        variantMap[variant]
+      )}
+      onClick={onClick}
+      disabled={disabled || pending}
+      type={type}
+    >
+      {children}
+    </button>
+    { pending && (
+      <div className={classes.rotating}>
+        <SpinnerIcon width={48} height={84} />
+      </div>
+    ) }
+  </>
 )

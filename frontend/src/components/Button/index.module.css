@@ -28,6 +28,17 @@
   }
 }
 
+.rotating {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 48px;
+  height: 48px;
+  svg {
+    animation: rotating 3s linear infinite;
+  }
+}
+
 .buttonSmall {
   font-size: 14px;
   line-height: 140%;
