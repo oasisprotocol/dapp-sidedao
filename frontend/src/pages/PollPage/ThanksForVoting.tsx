@@ -1,7 +1,6 @@
 import { FC } from 'react';
 import classes from "./index.module.css"
-import { Poll } from '../../types'
-import { RemainingTime } from '../../hooks/usePollData';
+import { PollData, RemainingTime } from '../../hooks/usePollData';
 import { BigCountdown } from './BigCountdown';
 import { MineIndicator } from './MineIndicator';
 import { Button } from '../../components/Button';
@@ -63,28 +62,29 @@ const StatusInfo: FC<{
   }
 }
 
-export const ThanksForVote: FC<{
-  poll: Poll,
-  myVote: bigint
-  remainingTime: RemainingTime | undefined
-  remainingTimeString: string | undefined
-  isMine: boolean
-  canClose: boolean
-  isClosing: boolean
-  closePoll: () => {}
-}> = ({ poll, myVote, remainingTime, remainingTimeString, isMine,
-                                  canClose, closePoll, isClosing}) => {
+export const ThanksForVote: FC<{ pollData: PollData }> = ({ pollData }) => {
+  const {
+    poll,
+    existingVote: myVote,
+    remainingTime,
+    remainingTimeString,
+    isMine,
+    canClose,
+    closePoll,
+    isClosing,
+  } = pollData
   const {
     name,
     description,
-    choices
-  } = poll
+    choices,
+    creator
+  } = poll!.ipfsParams
   return (
     <div className={classes.card}>
       <h2>Thanks for voting!</h2>
       <h3>
         {name}
-        {isMine && <MineIndicator creator={poll.creator}/>}
+        {isMine && <MineIndicator creator={creator}/>}
       </h3>
       <h4>{description}</h4>
       <div className={`${classes.choice} ${classes.submitted}`}>

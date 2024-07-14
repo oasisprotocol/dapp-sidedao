@@ -28,24 +28,17 @@ const WaitingForResults: FC = () => {
 export const PollPage: FC = () => {
   const eth = useEthereum()
   const { pollId} = useParams()
+  const pollData = usePollData(eth, pollId!)
   const {
     isLoading,
     error,
     poll : loadedPoll,
     active,
-    remainingTime,
-    remainingTimeString,
     hasVoted,
     existingVote,
-    selectedChoice, setSelectedChoice, canSelect,
-    canVote, gaslessPossible, vote, isVoting,
-    isMine,
-    canClosePoll,
-    closePoll,
-    isClosing,
     hasClosed,
     pollResults,
-  } = usePollData(eth, pollId!)
+  } = pollData
   // console.log("Error:", error, "poll?", !!loadedPoll)
   // console.log("Has voted?", hasVoted, "existingVote:", existingVote, "active?", active, "hasClosed:", hasClosed)
   if (error) {
@@ -65,16 +58,7 @@ export const PollPage: FC = () => {
     if (existingVote !== undefined) {
       return (
         <Layout variation={"dark"}>
-          <ThanksForVote
-            poll={poll}
-            myVote={existingVote}
-            remainingTime={remainingTime}
-            remainingTimeString={remainingTimeString}
-            isMine={isMine}
-            canClose={canClosePoll}
-            closePoll={closePoll}
-            isClosing={isClosing}
-          />
+          <ThanksForVote pollData={pollData} />
         </Layout>
       )
     } else {
@@ -87,22 +71,7 @@ export const PollPage: FC = () => {
   if (active) {
     return <EnforceWallet content={
       <Layout variation="light">
-        <ActivePoll
-          poll={poll}
-          remainingTime={remainingTime}
-          remainingTimeString={remainingTimeString}
-          selectedChoice={selectedChoice}
-          canSelect={canSelect}
-          setSelectedChoice={setSelectedChoice}
-          canVote={canVote}
-          gaslessPossible={gaslessPossible}
-          vote={vote}
-          isVoting={isVoting}
-          isMine={isMine}
-          canClose={canClosePoll}
-          isClosing={isClosing}
-          closePoll={closePoll}
-        />
+        <ActivePoll pollData={pollData} />
       </Layout>
     } />
   } else {
@@ -110,7 +79,7 @@ export const PollPage: FC = () => {
     if (!pollResults) return <PollLoading />
     return (
       <Layout variation="dark">
-        <CompletedPoll poll={poll} results={pollResults} isMine={isMine}/>
+        <CompletedPoll pollData={pollData} />
       </Layout>
     )
 

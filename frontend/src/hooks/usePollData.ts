@@ -117,7 +117,7 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
   const [voteCounts, setVoteCounts] = useState<bigint[]>([]);
   const [pollResults, setPollResults] = useState<PollResults>()
   const [votes, setVotes] = useState<ListOfVotes>({ ...noVotes });
-  const [canClosePoll, setCanClosePoll] = useState(false);
+  const [canClose, setCanClose] = useState(false);
   const [canAclVote, setCanAclVote] = useState(false);
   const [gvAddresses, setGvAddresses] = useState<string[]>([]);
   const [gvBalances, setGvBalances] = useState<bigint[]>([]);
@@ -162,9 +162,9 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
   useEffect(
     () => {
       if (pollACL && userAddress && daoAddress) {
-        pollACL.canManagePoll(daoAddress, proposalId, userAddress).then(setCanClosePoll)
+        pollACL.canManagePoll(daoAddress, proposalId, userAddress).then(setCanClose)
       } else {
-        setCanClosePoll(false)
+        setCanClose(false)
       }
     },
     [pollACL, daoAddress, proposalId, userAddress]
@@ -596,7 +596,7 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
     doTopUp,
 
     isMine,
-    canClosePoll,
+    canClose,
     closePoll,
     isClosing,
     hasClosed,
@@ -609,3 +609,5 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
 
   }
 }
+
+export type PollData = ReturnType<typeof usePollData>
