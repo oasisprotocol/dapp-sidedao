@@ -122,6 +122,7 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
   const [gvAddresses, setGvAddresses] = useState<string[]>([]);
   const [gvBalances, setGvBalances] = useState<bigint[]>([]);
   const [gvTotalBalance, setGvTotalBalance] = useState<bigint>(0n);
+  const [gaslessPossible, setGaslessPossible] = useState(false)
   const [isTokenHolderACL, setIsTokenHolderACL] = useState(false);
   const [aclTokenInfo, setAclTokenInfo] = useState<TokenInfo>();
 
@@ -199,7 +200,7 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
 
     let submitAndPay = true;
 
-    if (gvTotalBalance > 0n) {
+    if (gaslessPossible) {
       if (!eth.state.signer) {
         throw new Error('No signer!');
       }
@@ -300,7 +301,7 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
     }
 
     setExistingVote(choice);
-  }, [selectedChoice, gaslessVoting, signerDao, gvTotalBalance, eth.state.signer, eth.state.provider, gvAddresses, aclProof])
+  }, [selectedChoice, gaslessVoting, signerDao, gaslessPossible, eth.state.signer, eth.state.provider, gvAddresses, aclProof])
 
   async function vote(): Promise<void> {
     try {
@@ -540,16 +541,19 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
     }
   }, [hasClosed, poll])
 
-  // useEffect(() => {
-  //   if (gvTotalBalance > 0n) {
-  //     console.log(
-  //       'Gasless voting available',
-  //       formatEther(gvTotalBalance),
-  //       'ROSE balance, addresses:',
-  //       gvAddresses.join(', '),
-  //     );
-  //   }
-  // }, [gvTotalBalance, gvAddresses]);
+  useEffect(() => {
+    if (gvTotalBalance > 0n) {
+      setGaslessPossible(true)
+      // console.log(
+      //   'Gasless voting available',
+      //   formatEther(gvTotalBalance),
+      //   'ROSE balance, addresses:',
+      //   gvAddresses.join(', '),
+      // );
+    } else {
+      setGaslessPossible(false)
+    }
+  }, [gvTotalBalance, gvAddresses]);
 
   useEffect(
     () => {
@@ -582,6 +586,7 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
     remainingTimeString,
 
     canVote,
+    gaslessPossible,
     vote,
     isVoting,
     hasVoted,

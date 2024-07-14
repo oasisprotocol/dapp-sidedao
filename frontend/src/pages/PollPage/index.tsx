@@ -37,9 +37,8 @@ export const PollPage: FC = () => {
     remainingTimeString,
     hasVoted,
     existingVote,
-    // isClosed,
     selectedChoice, setSelectedChoice, canSelect,
-    canVote, vote, isVoting,
+    canVote, gaslessPossible, vote, isVoting,
     isMine,
     canClosePoll,
     closePoll,
@@ -48,7 +47,7 @@ export const PollPage: FC = () => {
     pollResults,
   } = usePollData(eth, pollId!)
   // console.log("Error:", error, "poll?", !!loadedPoll)
-  console.log("Has voted?", hasVoted, "existingVote:", existingVote, "active?", active, "hasClosed:", hasClosed)
+  // console.log("Has voted?", hasVoted, "existingVote:", existingVote, "active?", active, "hasClosed:", hasClosed)
   if (error) {
     return <Layout variation={"landing"}><Alert type='error' headerText={error} /></Layout>
   }
@@ -96,6 +95,7 @@ export const PollPage: FC = () => {
           canSelect={canSelect}
           setSelectedChoice={setSelectedChoice}
           canVote={canVote}
+          gaslessPossible={gaslessPossible}
           vote={vote}
           isVoting={isVoting}
           isMine={isMine}

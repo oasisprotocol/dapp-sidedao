@@ -144,3 +144,10 @@ h3 {
 
 
 }
+
+.niceLine {
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+  align-items: center;
+}

@@ -1,14 +1,4 @@
 
-.tank-container {
-    width: 24px;
-    height: 24px;
-}
-
-.tank {
-    top: 12.5%;
-    bottom: 12.5%;
-}
-
 .poll {
     width: 20%;
     box-sizing: border-box;

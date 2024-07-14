@@ -4,6 +4,8 @@ import classes from "./index.module.css"
 import { Button } from '../../components/Button';
 import { RemainingTime } from '../../hooks/usePollData';
 import { MineIndicator } from './MineIndicator';
+import { GasRequiredIcon } from '../../components/icons/GasRequiredIcon';
+import { NoGasRequiredIcon } from '../../components/icons/NoGasRequiredIcon';
 
 export const ActivePoll: FC<{
   poll: Poll
@@ -13,6 +15,7 @@ export const ActivePoll: FC<{
   canSelect: boolean,
   setSelectedChoice: (choice: bigint | undefined) => void,
   canVote: boolean,
+  gaslessPossible: boolean,
   vote: () => Promise<void>;
   isVoting: boolean,
   isMine: boolean,
@@ -24,7 +27,7 @@ export const ActivePoll: FC<{
      poll,
      remainingTime, remainingTimeString,
      selectedChoice, canSelect, setSelectedChoice,
-     canVote, vote, isVoting,
+     canVote, gaslessPossible, vote, isVoting,
      isMine, canClose, isClosing, closePoll
    }) => {
 
@@ -73,7 +76,20 @@ export const ActivePoll: FC<{
         { remainingTimeString && <h4>{remainingTimeString}</h4>}
         { isPastDue && <h4>Results will be available when {isMine ? "you close" : "the owner formally closes"} the poll.</h4>}
         <div className={classes.buttons}>
-          { !isPastDue && <Button disabled={!canVote || isVoting} onClick={vote} pending={isVoting}>{isVoting ? "Submitting" : "Submit vote"}</Button> }
+          { !isPastDue && (<div className={"niceLine"}>
+              {gaslessPossible ? <NoGasRequiredIcon /> : <GasRequiredIcon /> }
+              <Button
+                disabled={!canVote}
+                onClick={vote}
+                pending={isVoting}
+              >
+                {isVoting
+                  ? "Submitting"
+                  : "Submit vote"
+                }
+              </Button>
+            </div>
+          ) }
           { isMine && (
             <Button disabled={!canClose} color={(isMine && isPastDue) ? "primary" : "secondary"} onClick={handleClose} pending={isClosing}>
               {isClosing ? "Closing poll" : "Close poll"}
