@@ -5,6 +5,8 @@ import { PollData } from '../../hooks/usePollData';
 import { MineIndicator } from './MineIndicator';
 import { GasRequiredIcon } from '../../components/icons/GasRequiredIcon';
 import { NoGasRequiredIcon } from '../../components/icons/NoGasRequiredIcon';
+import { abbrAddr } from '../../utils/crypto.demo';
+import { formatEther, parseEther } from 'ethers';
 
 export const ActivePoll: FC<{ pollData: PollData }> = ({ pollData}) => {
   const {
@@ -16,12 +18,15 @@ export const ActivePoll: FC<{ pollData: PollData }> = ({ pollData}) => {
     setSelectedChoice,
     canVote,
     gaslessPossible,
+    gvAddresses,
+    gvBalances,
     vote,
     isVoting,
     isMine,
     canClose,
     isClosing,
     closePoll,
+    topUp
   } = pollData
 
   // console.log("isMine?", isMine, "canClose?", canClose)
@@ -43,6 +48,16 @@ export const ActivePoll: FC<{ pollData: PollData }> = ({ pollData}) => {
       closePoll()
     }
   }, [close])
+
+  const handleTopup = (address: string) => {
+    const amountString = window.prompt(`Topup voting subsidy account:\n\n  ${address}\n\nAmount (in ROSE):`, '1');
+    if (!amountString) return
+    const amount = parseEther(amountString)
+    if (amount > 0n) {
+      console.log("Should topup", address, amount)
+      void topUp(address, amount)
+    }
+  }
 
   const isPastDue = !!remainingTime?.isPastDue
 
@@ -93,7 +108,12 @@ export const ActivePoll: FC<{ pollData: PollData }> = ({ pollData}) => {
         <div>
           <h4>Gasless voting enabled:</h4>
           <div>
-
+            { gvAddresses.map((address,index)=> (
+              <div key={`gvAddress-${index}`} className={"niceLine"}>
+                { `${ abbrAddr(address) } (${ formatEther(gvBalances[index]) } ROSE)`}
+                <Button data-address={address} size={"small"} color={"secondary"} onClick={() => handleTopup(address)}>Topup</Button>
+              </div>
+            ))}
           </div>
         </div>
       )}

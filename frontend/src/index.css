@@ -126,7 +126,6 @@ h3 {
 }
 
 .landing {
-
   /* Auto layout */
   display: flex;
   flex-direction: column;
@@ -139,10 +138,7 @@ h3 {
   height: 242px;
   left: calc(50% - 416px/2);
   top: calc(50% - 242px/2);
-
   color: black;
-
-
 }
 
 .niceLine {
@@ -150,4 +146,5 @@ h3 {
   flex-direction: row;
   align-content: center;
   align-items: center;
+  gap: 8px
 }

@@ -14,7 +14,6 @@ import {
   // formatEther,
   getBytes,
   JsonRpcProvider,
-  parseEther,
   Transaction,
   TransactionReceipt,
   ZeroAddress,
@@ -318,21 +317,15 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
     }
   }
 
-  const doTopUp = useCallback(async (addr: string) => {
-    let result = prompt(`TopUp voting subsidy account:\n\n  ${addr}\n\nAmount (in ROSE):`, '1');
-    if (!result) {
-      return;
-    }
-    result = result.trim();
-    const amount = parseEther(result);
-    if (amount > 0n) {
-      await eth.state.signer?.sendTransaction({
-        to: addr,
-        value: amount,
-        data: '0x',
-      });
-    }
-  }, [eth.state.signer])
+  const topUp = useCallback(async (addr: string, amount: bigint) => {
+    await eth.state.signer?.sendTransaction({
+      to: addr,
+      value: amount,
+      data: '0x',
+    });
+    console.log("Top up finished, reloading...");
+    setPollLoaded(false)
+  }, [eth.state.signer, setPollLoaded])
 
   useEffect(
     ( ) => setPollLoaded(false),
@@ -587,13 +580,15 @@ export const usePollData = (eth: EthereumContext, pollId: string) => {
 
     canVote,
     gaslessPossible,
+    gvAddresses,
+    gvBalances,
+
     vote,
     isVoting,
     hasVoted,
     existingVote,
 
-    gvBalances,
-    doTopUp,
+    topUp,
 
     isMine,
     canClose,
