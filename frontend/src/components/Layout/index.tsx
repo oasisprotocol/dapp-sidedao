@@ -55,7 +55,6 @@ export const Layout: FC<PropsWithChildren & {variation: LayoutVariation}> = ({va
           <Link to={'/'}>
             <LogoIcon className={classes.logo} color={logoColor[variation]} />
           </Link>
-          <h1>Oasis</h1>
           {
             // !isInitialLoading && !isUpcomingVote &&
             <ConnectWallet mobileSticky={isMobileScreen && !inView} />

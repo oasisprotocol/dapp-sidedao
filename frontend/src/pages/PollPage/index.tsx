@@ -1,6 +1,5 @@
 import { Layout } from '../../components/Layout';
 import { FC } from 'react';
-import { useEthereum } from '../../hooks/useEthereum';
 import { usePollData } from './hook';
 import { useParams } from 'react-router-dom';
 import { Alert } from '../../components/Alert';
@@ -26,9 +25,8 @@ const WaitingForResults: FC = () => {
 }
 
 export const PollPage: FC = () => {
-  const eth = useEthereum()
   const { pollId} = useParams()
-  const pollData = usePollData(eth, pollId!)
+  const pollData = usePollData(pollId!)
   const {
     isLoading,
     error,

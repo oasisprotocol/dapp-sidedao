@@ -31,17 +31,24 @@ export const PollCard: FC<{
   // console.log("Poll:", poll, "gasLess:", gasLess)
 
   return (
-    <Link to={`/polls/${pollId}`}>
-      <div className={classes.poll}>
-        <div className={classes.pollTitle}>
-          <h4>
-            {name}
-          </h4>
-          <CaretRightIcon size={isDesktopScreen ? 'medium' : 'small'} />
+    <Link to={`/polls/${pollId}`} style={{ textDecoration: "none" }}>
+      <div className={classes.pollCard}>
+        <div className={classes.pollCardTop}>
+          <h4 className={active ? classes.activePollTitle : undefined}>{name}</h4>
+          <div className={active ? classes.activePollArrow : classes.passivePollArrow}>
+            <CaretRightIcon size={isDesktopScreen ? 'medium' : 'small'} />
+          </div>
+
+
         </div>
         <div dangerouslySetInnerHTML={{ __html: micromark(description) }} />
-        <PollStatusIndicator active={active} />
-        { gasLess ? <NoGasRequiredIcon /> : <GasRequiredIcon /> }
+        <div className={classes.pollCardBottom}>
+          <PollStatusIndicator active={active} />
+          {gasLess ? <NoGasRequiredIcon /> : <GasRequiredIcon />}
+        </div>
+
+
+
       </div>
     </Link>
   )

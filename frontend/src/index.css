@@ -107,6 +107,10 @@ h3 {
 .dashboard-layout {
   height: 100dvh;
   background: linear-gradient(180deg, #E6E5FF 0%, #D2D1FF 100%);
+
+  main {
+    max-width: 90%;
+  }
 }
 
 .dark-layout {

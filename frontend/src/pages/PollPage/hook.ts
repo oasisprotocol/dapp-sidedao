@@ -1,4 +1,3 @@
-import { EthereumContext } from '../../providers/EthereumContext';
 import { useContracts } from '../../hooks/useContracts';
 import { PollManager } from '@oasisprotocol/side-dao-contracts';
 import { useCallback, useEffect, useState } from 'react';
@@ -19,6 +18,7 @@ import {
 } from 'ethers';
 import { decryptJSON, DemoNetwork } from '../../utils/crypto.demo';
 import { Pinata } from '../../utils/Pinata';
+import { useEthereum } from '../../hooks/useEthereum';
 
 type LoadedPoll = PollManager.ProposalWithIdStructOutput & { ipfsParams: Poll; };
 
@@ -61,7 +61,8 @@ type LoadedData =
 
 const noVotes: ListOfVotes = { out_count: 0n, out_voters: [], out_choices: [] }
 
-export const usePollData = (eth: EthereumContext, pollId: string) => {
+export const usePollData = (pollId: string) => {
+  const eth = useEthereum()
   const { userAddress } = eth
   const {
     pollManager: dao,
