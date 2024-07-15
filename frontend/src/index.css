@@ -137,12 +137,16 @@ h3 {
   color: black;
 }
 
-.niceLine {
+.niceLine, .niceLineWide {
   display: flex;
   flex-direction: row;
   align-content: center;
   align-items: center;
   gap: 8px
+}
+
+.niceLineWide {
+  gap: 32px;
 }
 
 .socialOnDark {

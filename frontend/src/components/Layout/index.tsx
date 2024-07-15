@@ -1,4 +1,4 @@
-import { FC, PropsWithChildren } from 'react';
+import { FC, PropsWithChildren, ReactNode } from 'react';
 import classes from './index.module.css'
 import { LogoIcon } from '../icons/LogoIcon'
 import { ConnectWallet } from '../ConnectWallet'
@@ -26,7 +26,10 @@ const logoColor: Record<LayoutVariation, string> = {
   light: "var(--navy-blue)",
 }
 
-export const Layout: FC<PropsWithChildren & {variation: LayoutVariation}> = ({variation,children}) => {
+export const Layout: FC<PropsWithChildren & {
+  variation: LayoutVariation
+  extraWidget?: ReactNode | undefined
+}> = ({variation,children, extraWidget}) => {
   const {
     state: {
       // isInitialLoading,
@@ -42,6 +45,8 @@ export const Layout: FC<PropsWithChildren & {variation: LayoutVariation}> = ({va
     initialInView: true,
   })
 
+  const connectButton =  <ConnectWallet mobileSticky={isMobileScreen && !inView} />
+
   return (
     <>
       {isMobileScreen && <div className={classes.inViewPlaceholder} ref={ref} />}
@@ -55,9 +60,12 @@ export const Layout: FC<PropsWithChildren & {variation: LayoutVariation}> = ({va
           <Link to={'/'}>
             <LogoIcon className={classes.logo} color={logoColor[variation]} />
           </Link>
-          {
-            // !isInitialLoading && !isUpcomingVote &&
-            <ConnectWallet mobileSticky={isMobileScreen && !inView} />
+          { extraWidget ? (
+            <div className={"niceLineWide"}>
+              { extraWidget }
+              { connectButton }
+            </div>
+          ) : connectButton
           }
         </header>
         <section>

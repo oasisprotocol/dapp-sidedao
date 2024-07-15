@@ -10,6 +10,7 @@ import { PollPage } from './pages/PollPage';
 import { LandingPage } from './pages/LandingPage';
 import { useWeb3 } from './hooks/useWeb3';
 import { DashboardPage } from './pages/DashboardPage';
+import { CreatePollPage } from './pages/CreatePollPage';
 
 export const EnforceWallet: FC<{content: ReactNode}> = ({content}) => useWeb3().state.isConnected
   ? content
@@ -28,6 +29,10 @@ const router = createHashRouter([
       {
         path: 'polls/:pollId',
         element: <PollPage />,
+      },
+      {
+        path: "create",
+        element: <EnforceWallet content={<CreatePollPage />} />
       }
     ],
   },

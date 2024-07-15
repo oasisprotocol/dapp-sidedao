@@ -28,3 +28,9 @@
     font-size: 15px;
     line-height: 20px;
 }
+
+.createButton {
+    display: flex;
+    align-items: center;
+    height: 48px;
+}
