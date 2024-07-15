@@ -6,6 +6,7 @@ import { MyPollIcon } from '../../components/icons/MyPollIcon';
 import { Button } from '../../components/Button';
 import { RemainingTime } from '../../types';
 import { Card } from '../../components/Card';
+import { SocialShares } from '../../components/SocialShares';
 
 const VoteIcon: FC = () => {
   return (
@@ -37,7 +38,7 @@ const StatusInfo: FC<{
       return (
         <>
           <h4>{remainingTimeString}</h4>
-          <h4>Results will be available when the owner formally closes the poll.</h4>
+          <h4>Voting results will be available when the owner formally closes the poll.</h4>
         </>
       )
     } else {
@@ -52,13 +53,13 @@ const StatusInfo: FC<{
     if (isMine) {
       return (
         <>
-          <h4>Results will be available when you close the poll.</h4>
+          <h4>Voting results will be available when you close the poll.</h4>
           <Button disabled={!canClose} onClick={handleClose} pending={isClosing}>{isClosing ? "Closing poll" : "Close poll"}</Button>
         </>
       )
     } else {
       return (
-        <h4>Results will be available when the owner closes the poll.</h4>
+        <h4>Voting results will be available when the owner closes the poll.</h4>
       )
     }
   }
@@ -94,6 +95,7 @@ export const ThanksForVote: FC<PollData> = (
         <VoteIcon />
         {choices[Number(myVote)]}
       </div>
+      <SocialShares label={"Share vote on"}/>
       <StatusInfo remainingTime={remainingTime} remainingTimeString={remainingTimeString} isMine={isMine} canClose={canClose} closePoll={closePoll} isClosing={isClosing} />
     </Card>
   )

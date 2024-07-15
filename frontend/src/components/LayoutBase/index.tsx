@@ -1,5 +1,6 @@
 import { FC, PropsWithChildren } from 'react'
 import classes from './index.module.css'
+import { StringUtils } from '../../utils/string.utils';
 // import {
 //   GITHUB_REPOSITORY_URL,
 //   VITE_REACT_APP_BUILD_DATETIME,
@@ -13,7 +14,7 @@ export const LayoutBase: FC<PropsWithChildren & { extraClasses?: string }> = ({ 
   // const isDesktopScreen = useMediaQuery({ query: '(min-width: 1000px)' })
 
   return (
-    <div className={`classes.layout ${extraClasses}`}>
+    <div className={StringUtils.clsx(classes.layout, extraClasses)}>
       <main className={classes.main}>{children}</main>
       {/*<footer className={classes.footer}>*/}
       {/*  {VITE_REACT_APP_BUILD_VERSION && VITE_REACT_APP_BUILD_DATETIME && (*/}

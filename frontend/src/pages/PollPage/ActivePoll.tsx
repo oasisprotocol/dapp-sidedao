@@ -9,6 +9,7 @@ import { abbrAddr } from '../../utils/crypto.demo';
 import { formatEther, parseEther } from 'ethers';
 import { ConnectWallet } from '../../components/ConnectWallet';
 import { Card } from '../../components/Card';
+import { SocialShares } from '../../components/SocialShares';
 
 export const ActivePoll: FC<PollData> = (
   {
@@ -104,7 +105,7 @@ export const ActivePoll: FC<PollData> = (
           </div>
       )) }
       { remainingTimeString && <h4>{remainingTimeString}</h4>}
-      { isPastDue && <h4>Results will be available when {isMine ? "you close" : "the owner formally closes"} the poll.</h4>}
+      { isPastDue && <h4>Voting results will be available when {isMine ? "you close" : "the owner formally closes"} the poll.</h4>}
       <div className={classes.buttons}>
         { hasWallet && !isPastDue && (<div className={"niceLine"}>
             {gaslessPossible ? <NoGasRequiredIcon /> : <GasRequiredIcon /> }
@@ -140,6 +141,7 @@ export const ActivePoll: FC<PollData> = (
           </div>
         </div>
       )}
+      <SocialShares label={"Share vote on"} className="socialOnDark"/>
     </Card>
   )
 }

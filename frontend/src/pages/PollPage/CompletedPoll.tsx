@@ -4,6 +4,7 @@ import classes from "./index.module.css"
 import { MyPollIcon } from '../../components/icons/MyPollIcon';
 import { StringUtils } from '../../utils/string.utils';
 import { Card } from '../../components/Card';
+import { SocialShares } from '../../components/SocialShares';
 
 export const CompletedPoll: FC<PollData> = (
   {
@@ -47,8 +48,8 @@ export const CompletedPoll: FC<PollData> = (
             })}
           </>
         </div>
-
       )}
+      <SocialShares label={"Share results on"}/>
     </Card>
   )
 }
