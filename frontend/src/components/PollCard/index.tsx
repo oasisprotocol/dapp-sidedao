@@ -26,9 +26,9 @@ export const PollCard: FC<{
     proposal: { active }
   } = poll
 
-  const gasLess = randomchoice([false, true]) // TODO: how do I find this out from the data?
+  const gasLess = randomchoice([false, true]) // TODO: find this out by individually asking for this data
 
-  console.log("Poll:", poll, "gasLess:", gasLess)
+  // console.log("Poll:", poll, "gasLess:", gasLess)
 
   return (
     <Link to={`/polls/${pollId}`}>

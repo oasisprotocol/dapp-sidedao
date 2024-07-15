@@ -1,7 +1,7 @@
 import { Layout } from '../../components/Layout';
 import { FC } from 'react';
 import { useEthereum } from '../../hooks/useEthereum';
-import { usePollData } from '../../hooks/usePollData';
+import { usePollData } from './hook';
 import { useParams } from 'react-router-dom';
 import { Alert } from '../../components/Alert';
 import { CompletedPoll } from './CompletedPoll';
@@ -58,7 +58,7 @@ export const PollPage: FC = () => {
     if (existingVote !== undefined) {
       return (
         <Layout variation={"dark"}>
-          <ThanksForVote pollData={pollData} />
+          <ThanksForVote {...pollData} />
         </Layout>
       )
     } else {
@@ -71,7 +71,7 @@ export const PollPage: FC = () => {
   if (active) {
     return <EnforceWallet content={
       <Layout variation="light">
-        <ActivePoll pollData={pollData} />
+        <ActivePoll {...pollData} />
       </Layout>
     } />
   } else {
@@ -79,7 +79,7 @@ export const PollPage: FC = () => {
     if (!pollResults) return <PollLoading />
     return (
       <Layout variation="dark">
-        <CompletedPoll pollData={pollData} />
+        <CompletedPoll {...pollData} />
       </Layout>
     )
 

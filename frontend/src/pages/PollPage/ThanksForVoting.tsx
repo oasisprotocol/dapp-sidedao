@@ -1,9 +1,10 @@
 import { FC } from 'react';
 import classes from "./index.module.css"
-import { PollData, RemainingTime } from '../../hooks/usePollData';
+import { PollData } from './hook';
 import { BigCountdown } from './BigCountdown';
-import { MineIndicator } from './MineIndicator';
+import { MyPollIcon } from '../../components/icons/MyPollIcon';
 import { Button } from '../../components/Button';
+import { RemainingTime } from '../../types';
 
 const VoteIcon: FC = () => {
   return (
@@ -62,8 +63,8 @@ const StatusInfo: FC<{
   }
 }
 
-export const ThanksForVote: FC<{ pollData: PollData }> = ({ pollData }) => {
-  const {
+export const ThanksForVote: FC<PollData> = (
+  {
     poll,
     existingVote: myVote,
     remainingTime,
@@ -72,7 +73,8 @@ export const ThanksForVote: FC<{ pollData: PollData }> = ({ pollData }) => {
     canClose,
     closePoll,
     isClosing,
-  } = pollData
+  }
+) => {
   const {
     name,
     description,
@@ -84,7 +86,7 @@ export const ThanksForVote: FC<{ pollData: PollData }> = ({ pollData }) => {
       <h2>Thanks for voting!</h2>
       <h3>
         {name}
-        {isMine && <MineIndicator creator={creator}/>}
+        {isMine && <MyPollIcon creator={creator}/>}
       </h3>
       <h4>{description}</h4>
       <div className={`${classes.choice} ${classes.submitted}`}>

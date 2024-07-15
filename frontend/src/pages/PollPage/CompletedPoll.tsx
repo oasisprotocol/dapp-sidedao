@@ -1,14 +1,15 @@
 import { FC } from 'react';
-import { PollData } from '../../hooks/usePollData';
+import { PollData } from './hook';
 import classes from "./index.module.css"
-import { MineIndicator } from './MineIndicator';
+import { MyPollIcon } from '../../components/icons/MyPollIcon';
 
-export const CompletedPoll: FC<{ pollData: PollData }> = ({pollData}) => {
-  const {
+export const CompletedPoll: FC<PollData> = (
+  {
     poll,
     pollResults,
     isMine,
-  } = pollData
+  }
+) => {
   const { name, description, creator} = poll!.ipfsParams!
   const { choices, votes} = pollResults!
 
@@ -17,7 +18,7 @@ export const CompletedPoll: FC<{ pollData: PollData }> = ({pollData}) => {
       <h2>Results are in!</h2>
       <h3>
         {name}
-        {isMine && <MineIndicator creator={creator}/>}
+        {isMine && <MyPollIcon creator={creator}/>}
       </h3>
       <h4>{description}</h4>
       <>

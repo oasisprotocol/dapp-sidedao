@@ -1,6 +1,6 @@
 import { FC } from 'react';
 import { useEthereum } from '../../hooks/useEthereum';
-import { useDashboardData } from '../../hooks/useDashboardData';
+import { useDashboardData } from './hook';
 import { Alert } from '../../components/Alert';
 import { PollCard } from '../../components/PollCard';
 import { Layout } from '../../components/Layout';

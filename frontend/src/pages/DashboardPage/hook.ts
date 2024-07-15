@@ -1,11 +1,11 @@
 import { PollManager  } from '@oasisprotocol/side-dao-contracts';
-import { Pinata } from '../utils/Pinata';
-import { decryptJSON } from '../utils/crypto.demo';
+import { Pinata } from '../../utils/Pinata';
+import { decryptJSON } from '../../utils/crypto.demo';
 import { getBytes } from 'ethers';
-import { EthereumContext } from '../providers/EthereumContext';
-import { useContracts  } from './useContracts';
+import { EthereumContext } from '../../providers/EthereumContext';
+import { useContracts  } from '../../hooks/useContracts';
 import { useEffect, useState } from 'react';
-import { FullProposal } from '../types/poll';
+import { FullProposal } from '../../types/poll';
 
 const FETCH_BATCH_SIZE = 100;
 

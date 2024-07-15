@@ -1,8 +1,8 @@
-import { EthereumContext } from '../providers/EthereumContext';
-import { useContracts } from './useContracts';
+import { EthereumContext } from '../../providers/EthereumContext';
+import { useContracts } from '../../hooks/useContracts';
 import { PollManager } from '@oasisprotocol/side-dao-contracts';
 import { useCallback, useEffect, useState } from 'react';
-import { Poll } from '../types';
+import { ListOfVotes, Poll, PollResults, RemainingTime } from '../../types';
 import {
   TokenInfo, AclOptionsXchain, randomchoice,
   tokenDetailsFromProvider,
@@ -11,44 +11,16 @@ import {
 import {
   BytesLike,
   ethers,
-  // formatEther,
   getBytes,
   JsonRpcProvider,
   Transaction,
   TransactionReceipt,
   ZeroAddress,
 } from 'ethers';
-import { decryptJSON, DemoNetwork } from '../utils/crypto.demo';
-import { Pinata } from '../utils/Pinata';
+import { decryptJSON, DemoNetwork } from '../../utils/crypto.demo';
+import { Pinata } from '../../utils/Pinata';
 
 type LoadedPoll = PollManager.ProposalWithIdStructOutput & { ipfsParams: Poll; };
-
-export type ListOfVotes = {
-  out_count: bigint;
-  out_voters: string[];
-  out_choices: PollManager.ChoiceStructOutput[];
-};
-
-export type PollResults = {
-  totalVotes: bigint,
-  choices: Record<string, {
-    choice: string,
-    votes: bigint,
-    rate: number,
-    winner: boolean
-  }>
-  winner: string,
-  votes?: ListOfVotes | undefined
-}
-
-export type RemainingTime = {
-  isPastDue: boolean
-  totalSeconds: number
-  days: number
-  hours: number
-  minutes: number
-  seconds: number
-}
 
 const calculateRemainingTimeFrom = (deadline: number, now: number): RemainingTime => {
   const isPastDue = now > deadline

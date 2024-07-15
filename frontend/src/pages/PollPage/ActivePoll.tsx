@@ -1,15 +1,15 @@
 import { FC, useCallback } from 'react';
 import classes from "./index.module.css"
 import { Button } from '../../components/Button';
-import { PollData } from '../../hooks/usePollData';
-import { MineIndicator } from './MineIndicator';
+import { PollData } from './hook';
+import { MyPollIcon } from '../../components/icons/MyPollIcon';
 import { GasRequiredIcon } from '../../components/icons/GasRequiredIcon';
 import { NoGasRequiredIcon } from '../../components/icons/NoGasRequiredIcon';
 import { abbrAddr } from '../../utils/crypto.demo';
 import { formatEther, parseEther } from 'ethers';
 
-export const ActivePoll: FC<{ pollData: PollData }> = ({ pollData}) => {
-  const {
+export const ActivePoll: FC<PollData> = (
+  {
     poll,
     remainingTime,
     remainingTimeString,
@@ -27,8 +27,8 @@ export const ActivePoll: FC<{ pollData: PollData }> = ({ pollData}) => {
     isClosing,
     closePoll,
     topUp
-  } = pollData
-
+  }
+) => {
   // console.log("isMine?", isMine, "canClose?", canClose)
 
   const {name, description, choices, creator } = poll!.ipfsParams
@@ -66,7 +66,7 @@ export const ActivePoll: FC<{ pollData: PollData }> = ({ pollData}) => {
     <div className={`${classes.card} ${classes.darkCard}`}>
       <h2>
         {name}
-        { isMine && <MineIndicator creator={creator}/> }
+        { isMine && <MyPollIcon creator={creator}/> }
       </h2>
       <h4>{description}</h4>
       <>

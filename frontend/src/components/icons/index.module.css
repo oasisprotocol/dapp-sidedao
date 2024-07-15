@@ -8,4 +8,7 @@
     }
 }
 
-
+.myPollIndicator {
+    display: initial;
+    margin-left: 8px;
+}

@@ -1,6 +1,6 @@
 import { FC } from 'react';
-import { RemainingTime } from '../../hooks/usePollData';
 import classes from "./index.module.css"
+import { RemainingTime } from '../../types';
 
 type Cell = {
   number: number,
