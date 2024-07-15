@@ -45,7 +45,6 @@ body {
   color: var(--white);
   color: black;
   text-align: left;
-  min-height: 100dvh;
 }
 
 h1,
@@ -105,7 +104,6 @@ h3 {
 }
 
 .dashboard-layout {
-  height: 100dvh;
   background: linear-gradient(180deg, #E6E5FF 0%, #D2D1FF 100%);
 
   main {
@@ -114,19 +112,13 @@ h3 {
 }
 
 .dark-layout {
-  height: 100dvh;
   background: #130FFF;
   color: white;
 }
 
 .light-layout {
-  height: 100dvh;
   background: white;
   color: var(--navy-blue);
-}
-
-.light-layout .card {
-  background: yellow;
 }
 
 .landing {

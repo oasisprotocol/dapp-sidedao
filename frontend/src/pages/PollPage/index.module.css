@@ -1,50 +1,5 @@
-.card {
-    box-sizing: border-box;
-
-    position: absolute;
-    width: 640px;
-    min-height: 496px;
-    left: calc(50% - 640px/2);
-    top: calc(50% - 496px/2);
-
-    background: #FFFFFF;
-    border: 1px solid #01001F;
-    border-radius: 16px;
-    color: #01001F;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 32px;
-    gap: 32px;
-}
-
 .darkCard {
     background: #E6E5FF;
-}
-
-.card h2 {
-    font-family: 'Inter';
-    font-style: normal;
-    font-weight: 700;
-    font-size: 32px;
-    line-height: 140%;
-}
-
-.card h3 {
-    font-family: 'Inter';
-    font-style: normal;
-    font-weight: 600;
-    font-size: 32px;
-    line-height: 140%;
-}
-
-.card h4 {
-    font-family: 'Inter';
-    font-style: normal;
-    font-weight: 700;
-    font-size: 18px;
-    line-height: 24px;
 }
 
 .choice {
@@ -52,9 +7,8 @@
     display: flex;
     align-items: center;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: center;
 
-    /*width: 560px;*/
     width: 100%;
     height: 48px;
 
@@ -65,8 +19,12 @@
 
     font-family: 'Inter';
     font-style: normal;
-    font-weight: 400;
+    font-weight: 700;
     font-size: 15px;
+}
+
+.choiceWithResults {
+    justify-content: space-between;
 }
 
 .darkChoice {
@@ -170,11 +128,6 @@
 .needWallet {
     padding: 12px 24px;
 
-    /*width: 560px;*/
-    /*height: 144px;*/
-
     background: #D2D1FF;
     border-radius: 8px;
-
-
 }

@@ -5,6 +5,7 @@ import { BigCountdown } from './BigCountdown';
 import { MyPollIcon } from '../../components/icons/MyPollIcon';
 import { Button } from '../../components/Button';
 import { RemainingTime } from '../../types';
+import { Card } from '../../components/Card';
 
 const VoteIcon: FC = () => {
   return (
@@ -82,7 +83,7 @@ export const ThanksForVote: FC<PollData> = (
     creator
   } = poll!.ipfsParams
   return (
-    <div className={classes.card}>
+    <Card>
       <h2>Thanks for voting!</h2>
       <h3>
         {name}
@@ -94,6 +95,6 @@ export const ThanksForVote: FC<PollData> = (
         {choices[Number(myVote)]}
       </div>
       <StatusInfo remainingTime={remainingTime} remainingTimeString={remainingTimeString} isMine={isMine} canClose={canClose} closePoll={closePoll} isClosing={isClosing} />
-    </div>
+    </Card>
   )
 }

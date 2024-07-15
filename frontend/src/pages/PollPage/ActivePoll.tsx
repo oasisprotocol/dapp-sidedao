@@ -8,6 +8,7 @@ import { NoGasRequiredIcon } from '../../components/icons/NoGasRequiredIcon';
 import { abbrAddr } from '../../utils/crypto.demo';
 import { formatEther, parseEther } from 'ethers';
 import { ConnectWallet } from '../../components/ConnectWallet';
+import { Card } from '../../components/Card';
 
 export const ActivePoll: FC<PollData> = (
   {
@@ -67,7 +68,7 @@ export const ActivePoll: FC<PollData> = (
 
   // console.log("selected:", selectedChoice, "can select?", canSelect, "can Vote?", canVote, "voting?", isVoting)
   return (
-    <div className={`${classes.card} ${classes.darkCard}`}>
+    <Card className={classes.darkCard}>
       <h2>
         {name}
         { isMine && <MyPollIcon creator={creator}/> }
@@ -139,6 +140,6 @@ export const ActivePoll: FC<PollData> = (
           </div>
         </div>
       )}
-    </div>
+    </Card>
   )
 }
