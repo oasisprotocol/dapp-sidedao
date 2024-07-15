@@ -24,6 +24,7 @@ const web3ProviderInitialState: Web3ProviderState = {
 }
 
 export const Web3ContextProvider: FC<PropsWithChildren> = ({ children }) => {
+  const [initiated, setInitiated] = useState(false)
   const {
     isEIP1193ProviderAvailable,
     connectWallet: connectWalletEIP1193,
@@ -157,6 +158,11 @@ export const Web3ContextProvider: FC<PropsWithChildren> = ({ children }) => {
     isProviderAvailable,
     connectWallet,
     switchNetwork,
+  }
+
+  if (!initiated) {
+    void connectWallet()
+    setInitiated(true)
   }
 
   return <Web3Context.Provider value={providerState}>{children}</Web3Context.Provider>
