@@ -63,7 +63,7 @@ const noVotes: ListOfVotes = { out_count: 0n, out_voters: [], out_choices: [] }
 
 export const usePollData = (pollId: string) => {
   const eth = useEthereum()
-  const { userAddress } = eth
+  const { userAddress, isHomeChain } = eth
   const {
     pollManager: dao,
     pollManagerAddress: daoAddress,
@@ -110,6 +110,7 @@ export const usePollData = (pollId: string) => {
   const [remainingTimeString, setRemainingTimeString] = useState<string | undefined>()
   const [isMine, setIsMine] = useState(false)
   const [hasWallet, setHasWallet] = useState(false)
+  const [hasWalletOnWrongNetwork, setHasWalletOnWrongNetwork] = useState(false)
 
   useEffect(
     () => setCanVote(!!eth.state.address &&
@@ -534,12 +535,14 @@ export const usePollData = (pollId: string) => {
   }, [poll, userAddress])
 
   useEffect(() => {
-    setHasWallet(userAddress !== ZeroAddress)
-  }, [userAddress])
+    setHasWallet(isHomeChain && userAddress !== ZeroAddress)
+    setHasWalletOnWrongNetwork(!isHomeChain && userAddress !== ZeroAddress)
+  }, [userAddress, isHomeChain])
 
   return {
     userAddress,
     hasWallet,
+    hasWalletOnWrongNetwork,
     isLoading,
     error,
     poll,

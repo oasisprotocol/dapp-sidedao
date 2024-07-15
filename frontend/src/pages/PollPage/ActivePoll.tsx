@@ -12,6 +12,7 @@ import { ConnectWallet } from '../../components/ConnectWallet';
 export const ActivePoll: FC<PollData> = (
   {
     hasWallet,
+    hasWalletOnWrongNetwork,
     poll,
     remainingTime,
     remainingTimeString,
@@ -31,7 +32,7 @@ export const ActivePoll: FC<PollData> = (
     topUp,
   }
 ) => {
-  // console.log("hasWallet?", hasWallet, hasWallet ? userAddress : "")
+  // console.log("hasWallet?", hasWallet, "hasWalletOnWrongNetwork?",hasWalletOnWrongNetwork)
   // console.log("isMine?", isMine, "canClose?", canClose)
 
   const {name, description, choices, creator } = poll!.ipfsParams
@@ -83,15 +84,24 @@ export const ActivePoll: FC<PollData> = (
             <div className={classes.above}>{choice}</div>
           </div>
         ))}
-      { !hasWallet && (
-        <div className={classes.needWallet}>
-          To vote on this poll, please <b>connect your wallet</b> by
-          clicking the "Connect Wallet" button.
-          This will open your wallet, and let you confirm the connection,
-          and also point your wallet to the Oasis Sapphire network.
-          Ensure you have enough ROSE for any transaction fees.
-        </div>
-      ) }
+      { !hasWallet && (hasWalletOnWrongNetwork
+        ? (
+          <div className={classes.needWallet}>
+            To vote on this poll, please <b>point your wallet to the Oasis network</b> by
+            clicking the "Switch Network" button.
+            This will open your wallet, and let you confirm that
+            you want to connect to the Oasis Sapphire network.
+            Ensure you have enough ROSE for any transaction fees.
+          </div>
+        ) : (
+          <div className={classes.needWallet}>
+            To vote on this poll, please <b>connect your wallet</b> by
+            clicking the "Connect Wallet" button.
+            This will open your wallet, and let you confirm the connection,
+            and also point your wallet to the Oasis Sapphire network.
+            Ensure you have enough ROSE for any transaction fees.
+          </div>
+      )) }
       { remainingTimeString && <h4>{remainingTimeString}</h4>}
       { isPastDue && <h4>Results will be available when {isMine ? "you close" : "the owner formally closes"} the poll.</h4>}
       <div className={classes.buttons}>
