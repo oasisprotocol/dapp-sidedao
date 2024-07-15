@@ -6,6 +6,17 @@ function areBytewiseEqual(a: Uint8Array, b: Uint8Array) {
   return indexedDB.cmp(a, b) === 0;
 }
 
+export function encrypt(plaintext: string) {
+  const plainbytes = new TextEncoder().encode(plaintext);
+  const key = window.crypto.getRandomValues(new Uint8Array(KeySize));
+  const nonce = sha256.create().update(key).update(plainbytes).digest().slice(0, NonceSize);
+  const cipherbytes = new Uint8Array([
+    ...nonce,
+    ...new AEAD(new Uint8Array(key)).encrypt(nonce, plainbytes),
+  ]);
+  return { key, cipherbytes };
+}
+
 export function decrypt(key: Uint8Array, cipherbytes: Uint8Array) {
   if (cipherbytes.length <= NonceSize + TagSize) {
     throw new Error('decrypt: invalid cipherbytes length');
@@ -20,6 +31,10 @@ export function decrypt(key: Uint8Array, cipherbytes: Uint8Array) {
     throw new Error('decrypt: invalid nonce');
   }
   return new TextDecoder().decode(plainbytes);
+}
+
+export function encryptJSON(plain: any) {
+  return encrypt(JSON.stringify(plain));
 }
 
 export function decryptJSON(key: Uint8Array, cipherbytes: Uint8Array) {
