@@ -1,7 +1,7 @@
 import detectEthereumProvider from '@metamask/detect-provider';
 import { EthereumContext, EthereumState } from './EthereumContext';
 import { FC, PropsWithChildren, useEffect, useState } from 'react';
-import { BrowserProvider, ethers, JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner } from 'ethers';
+import { BrowserProvider, JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner, ZeroAddress } from 'ethers';
 import { wrap as sapphireWrap, NETWORKS as SAPPHIRE_NETWORKS } from '@oasisprotocol/sapphire-paratime';
 import { DemoConnectionStatus, DemoNetwork, demoNetworkFromChainId } from '../utils/crypto.demo';
 import { DemoEIP1193Provider } from '../utils/eip1193.demo';
@@ -19,7 +19,7 @@ const ethereumInitialState: EthereumState = {
 
 export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => {
   const [ethProvider, setEthProvider] = useState<DemoEIP1193Provider | null>(null)
-  const [userAddress, setUserAddress] = useState<string >(ethers.ZeroAddress);
+  const [userAddress, setUserAddress] = useState<string>(ZeroAddress);
 
   const [
     state,
@@ -64,6 +64,8 @@ export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => 
     ethProvider.on('accountsChanged', async (accounts) => {
       console.log('Accounts changed!', accounts);
       await _changeAccounts(accounts);
+      // console.log("Getting signer, so that we can have username")
+      await getSigner(false, false, undefined, accounts)
     });
 
     ethProvider.on('chainChanged', async (chainId) => {
@@ -97,7 +99,7 @@ export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => 
 
   }, [ethProvider]);
 
-  async function getSigner(in_doConnect?: boolean, in_doSwitch?: boolean, in_account?: string) {
+  async function getSigner(in_doConnect?: boolean, in_doSwitch?: boolean, in_account?: string, forAccounts?: string[]) {
     let l_signer: JsonRpcSigner | undefined;
     let l_provider: JsonRpcApiProvider | undefined;
     if (!state.signer || (in_account && (await state.signer.getAddress()) != in_account)) {
@@ -119,7 +121,7 @@ export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => 
       return;
     }
 
-    let l_accounts = await l_provider.send('eth_accounts', []);
+    let l_accounts = forAccounts ?? await l_provider.send('eth_accounts', []);
 
     // Check if we are already connecting before requesting accounts again
     if (in_doConnect) {
@@ -173,7 +175,7 @@ export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => 
     if (state.signer) {
       state.signer.getAddress().then(setUserAddress)
     } else {
-      setUserAddress(ethers.ZeroAddress)
+      setUserAddress(ZeroAddress)
     }
   }, [state.signer])
 

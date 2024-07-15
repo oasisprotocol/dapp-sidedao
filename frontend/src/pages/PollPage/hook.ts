@@ -109,6 +109,7 @@ export const usePollData = (pollId: string) => {
   const [remainingTime, setRemainingTime] = useState<RemainingTime>()
   const [remainingTimeString, setRemainingTimeString] = useState<string | undefined>()
   const [isMine, setIsMine] = useState(false)
+  const [hasWallet, setHasWallet] = useState(false)
 
   useEffect(
     () => setCanVote(!!eth.state.address &&
@@ -133,13 +134,13 @@ export const usePollData = (pollId: string) => {
 
   useEffect(
     () => {
-      if (pollACL && userAddress && daoAddress) {
+      if (pollACL && hasWallet && daoAddress) {
         pollACL.canManagePoll(daoAddress, proposalId, userAddress).then(setCanClose)
       } else {
         setCanClose(false)
       }
     },
-    [pollACL, daoAddress, proposalId, userAddress]
+    [pollACL, daoAddress, proposalId, userAddress, hasWallet]
   )
 
   const closePoll = useCallback(async (): Promise<void> => {
@@ -329,7 +330,7 @@ export const usePollData = (pollId: string) => {
 
 
   const loadProposal = useCallback(async () => {
-    if (!dao || !daoAddress || !pollACL || !gaslessVoting || !userAddress) {
+    if (!dao || !daoAddress || !pollACL || !gaslessVoting) {
       // console.log("not loading, because dependencies are not yet available")
       return
     }
@@ -529,10 +530,16 @@ export const usePollData = (pollId: string) => {
   );
 
   useEffect(() => {
-    setIsMine(poll?.ipfsParams.creator?.toLowerCase() === userAddress?.toLowerCase())
+    setIsMine(poll?.ipfsParams.creator?.toLowerCase() === userAddress.toLowerCase())
   }, [poll, userAddress])
 
+  useEffect(() => {
+    setHasWallet(userAddress !== ZeroAddress)
+  }, [userAddress])
+
   return {
+    userAddress,
+    hasWallet,
     isLoading,
     error,
     poll,

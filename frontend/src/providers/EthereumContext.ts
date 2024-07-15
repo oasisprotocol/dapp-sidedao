@@ -14,7 +14,7 @@ export interface EthereumState {
 export interface EthereumContext {
   readonly state: EthereumState
   readonly isHomeChain: boolean
-  readonly userAddress: string | undefined
+  readonly userAddress: string
   connect: () => Promise<void>
   addNetwork: (network: DemoNetwork | undefined) => Promise<void>
   switchNetwork: (network?: DemoNetwork | undefined) => Promise<void>

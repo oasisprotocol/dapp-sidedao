@@ -7,9 +7,11 @@ import { GasRequiredIcon } from '../../components/icons/GasRequiredIcon';
 import { NoGasRequiredIcon } from '../../components/icons/NoGasRequiredIcon';
 import { abbrAddr } from '../../utils/crypto.demo';
 import { formatEther, parseEther } from 'ethers';
+import { ConnectWallet } from '../../components/ConnectWallet';
 
 export const ActivePoll: FC<PollData> = (
   {
+    hasWallet,
     poll,
     remainingTime,
     remainingTimeString,
@@ -26,9 +28,10 @@ export const ActivePoll: FC<PollData> = (
     canClose,
     isClosing,
     closePoll,
-    topUp
+    topUp,
   }
 ) => {
+  // console.log("hasWallet?", hasWallet, hasWallet ? userAddress : "")
   // console.log("isMine?", isMine, "canClose?", canClose)
 
   const {name, description, choices, creator } = poll!.ipfsParams
@@ -69,22 +72,30 @@ export const ActivePoll: FC<PollData> = (
         { isMine && <MyPollIcon creator={creator}/> }
       </h2>
       <h4>{description}</h4>
-      <>
-        { choices
-          .map((choice, index)=> (
-            <div
-              key={`choice-${index}`}
-              className={`${classes.choice} ${classes.darkChoice} ${canSelect ? classes.activeChoice : ""} ${selectedChoice?.toString() === index.toString() ? classes.selectedChoice : ""}`}
-              onClick={()=>handleSelect(index)}
-            >
-              <div className={classes.above}>{choice}</div>
-            </div>
-          ))}
-      </>
+
+      { hasWallet && choices
+        .map((choice, index)=> (
+          <div
+            key={`choice-${index}`}
+            className={`${classes.choice} ${classes.darkChoice} ${canSelect ? classes.activeChoice : ""} ${selectedChoice?.toString() === index.toString() ? classes.selectedChoice : ""}`}
+            onClick={()=>handleSelect(index)}
+          >
+            <div className={classes.above}>{choice}</div>
+          </div>
+        ))}
+      { !hasWallet && (
+        <div className={classes.needWallet}>
+          To vote on this poll, please <b>connect your wallet</b> by
+          clicking the "Connect Wallet" button.
+          This will open your wallet, and let you confirm the connection,
+          and also point your wallet to the Oasis Sapphire network.
+          Ensure you have enough ROSE for any transaction fees.
+        </div>
+      ) }
       { remainingTimeString && <h4>{remainingTimeString}</h4>}
       { isPastDue && <h4>Results will be available when {isMine ? "you close" : "the owner formally closes"} the poll.</h4>}
       <div className={classes.buttons}>
-        { !isPastDue && (<div className={"niceLine"}>
+        { hasWallet && !isPastDue && (<div className={"niceLine"}>
             {gaslessPossible ? <NoGasRequiredIcon /> : <GasRequiredIcon /> }
             <Button
               disabled={!canVote}
@@ -103,6 +114,7 @@ export const ActivePoll: FC<PollData> = (
             {isClosing ? "Closing poll" : "Close poll"}
           </Button>
         )}
+        { !hasWallet && <ConnectWallet mobileSticky={false} />}
       </div>
       { isMine && gaslessPossible && (
         <div>

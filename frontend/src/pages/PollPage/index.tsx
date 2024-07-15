@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom';
 import { Alert } from '../../components/Alert';
 import { CompletedPoll } from './CompletedPoll';
 import { ActivePoll } from './ActivePoll';
-import { EnforceWallet } from '../../App';
+// import { EnforceWallet } from '../../App';
 import { ThanksForVote } from './ThanksForVoting';
 
 const PollLoading: FC = () => {
@@ -67,11 +67,13 @@ export const PollPage: FC = () => {
 
   // Active vote
   if (active) {
-    return <EnforceWallet content={
+    // return <EnforceWallet content={
+    return (
       <Layout variation="light">
         <ActivePoll {...pollData} />
       </Layout>
-    } />
+    )
+    // } />
   } else {
     // Completed vote
     if (!pollResults) return <PollLoading />
