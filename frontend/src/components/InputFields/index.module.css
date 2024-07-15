@@ -1,0 +1,86 @@
+.fieldContainer {
+    width: 100%;
+    /*border: 1px solid green;*/
+    label {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        gap: 4px;
+
+    }
+}
+
+.fieldLabel {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 700;
+    font-size: 13px;
+    line-height: 20px;
+}
+
+.fieldDescription {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 13px;
+    line-height: 20px;
+    color: #676D74;
+}
+
+.fieldError {
+    padding-top: 4px;
+    color: red;
+}
+
+.textValue {
+    width: 100%;
+
+    input {
+        padding: 12px 16px;
+        height: 48px;
+
+        background: #FFFFFF;
+        border: 1px solid #80848E;
+        border-radius: 8px;
+
+    }
+
+}
+
+.fieldWithError {
+    input {
+        border: 1px solid red;
+        background: #FFF0FD;
+    }
+
+}
+
+.textArrayValue {
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    input {
+        padding: 12px 16px;
+        height: 48px;
+
+        background: #FFFFFF;
+        border: 1px solid #80848E;
+        border-radius: 8px;
+
+    }
+
+}
+
+.removeIcon {
+    padding-right: 8px;
+    padding-left: 8px;
+    cursor: pointer;
+}
+
+.addIcon {
+    color: #130FFF;
+}
