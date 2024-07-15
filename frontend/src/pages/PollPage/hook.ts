@@ -1,12 +1,10 @@
 import { useContracts } from '../../hooks/useContracts';
-import { PollManager } from '@oasisprotocol/side-dao-contracts';
 import { useCallback, useEffect, useState } from 'react';
-import { ListOfVotes, Poll, PollResults, RemainingTime } from '../../types';
 import {
-  TokenInfo, AclOptionsXchain, randomchoice,
-  tokenDetailsFromProvider,
-  fetchStorageProof, xchainRPC
-} from '@oasisprotocol/side-dao-contracts';
+  ListOfVotes, Poll, PollManager, PollResults, RemainingTime,
+  TokenInfo, AclOptionsXchain,
+} from '../../types';
+import { randomchoice, tokenDetailsFromProvider, fetchStorageProof, xchainRPC } from '@oasisprotocol/side-dao-contracts';
 import {
   BytesLike,
   ethers,

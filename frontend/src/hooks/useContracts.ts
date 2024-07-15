@@ -9,7 +9,7 @@ import type {
   GaslessVoting,
   IPollACL,
   IPollManagerACL,
-} from '@oasisprotocol/side-dao-contracts';
+} from  "../types"
 import { EthereumContext } from '../providers/EthereumContext';
 import { useEffect, useState } from 'react';
 

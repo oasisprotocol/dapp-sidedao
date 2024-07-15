@@ -1,4 +1,4 @@
-import { FullProposal } from '../../types/poll';
+import { FullProposal } from '../../types';
 import { FC } from 'react';
 import { micromark } from 'micromark';
 import { CaretRightIcon } from '../icons/CaretRightIcon';
