@@ -16,15 +16,13 @@ export const ConnectWallet: FC<Props> = ({ mobileSticky }) => {
 
   const [isLoading, setIsLoading] = useState(false)
   const [providerAvailable, setProviderAvailable] = useState(true)
-  const [isUnknownNetwork, setIsUnknownNetwork] = useState(false)
 
   const {
-    state: { isConnected, account, chainName },
+    state: { isConnected, account, chainName, isUnknownNetwork },
     connectWallet,
     switchNetwork,
     isProviderAvailable,
   } = useWeb3()
-
   useEffect(() => {
     const init = async () => {
       setIsLoading(true)
@@ -44,7 +42,7 @@ export const ConnectWallet: FC<Props> = ({ mobileSticky }) => {
       await connectWallet()
     } catch (ex) {
       if (ex instanceof UnknownNetworkError) {
-        setIsUnknownNetwork(true)
+        // Already handled by provider layer
       } else {
         setAppError(ex as Error)
       }
@@ -57,7 +55,6 @@ export const ConnectWallet: FC<Props> = ({ mobileSticky }) => {
     setIsLoading(true)
     try {
       await switchNetwork()
-      setIsUnknownNetwork(false)
       await handleConnectWallet()
     } catch (ex) {
       setAppError(ex as Error)

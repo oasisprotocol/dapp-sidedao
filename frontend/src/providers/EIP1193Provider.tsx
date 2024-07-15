@@ -23,11 +23,13 @@ export const EIP1193ContextProvider: FC<PropsWithChildren> = ({ children }) => {
     return !!provider
   }
 
-  const connectWallet = async (): Promise<string> => {
-    const accounts: string[] = await (window.ethereum?.request?.({ method: 'eth_requestAccounts' }) ||
-      Promise.resolve([]))
+  const connectWallet = async (gentle?: boolean): Promise<string | undefined> => {
+    const accounts: string[] = gentle
+      ? await (window.ethereum?.request?.({ method: 'eth_accounts' }) || Promise.resolve([]))
+      : await (window.ethereum?.request?.({ method: 'eth_requestAccounts' }) || Promise.resolve([]))
 
     if (!accounts || accounts?.length <= 0) {
+      if (gentle) return
       throw new Error('[EIP1193Context] Request account failed!')
     }
 

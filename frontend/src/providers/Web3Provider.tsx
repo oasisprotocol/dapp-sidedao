@@ -21,6 +21,7 @@ const web3ProviderInitialState: Web3ProviderState = {
   account: null,
   explorerBaseUrl: null,
   chainName: null,
+  isUnknownNetwork: false,
 }
 
 export const Web3ContextProvider: FC<PropsWithChildren> = ({ children }) => {
@@ -77,8 +78,19 @@ export const Web3ContextProvider: FC<PropsWithChildren> = ({ children }) => {
     }))
   }
 
-  const _chainChanged = useCallback(() => {
+  const _chainChanged = useCallback((chainId: string) => {
     // TODO: Integrate seamlessly, so that page reload is not needed
+
+    if (parseInt(chainId) === Number(VITE_NETWORK)) {
+      console.log("Switched to home network")
+    } else {
+      console.log("Apparently, we have switched to a different network")
+      setState(prevState => ({
+        ...prevState,
+        isConnected: false,
+        isUnknownNetwork: true,
+      }))
+    }
 
     if (state.isConnected) {
       window.location.reload()
@@ -119,6 +131,7 @@ export const Web3ContextProvider: FC<PropsWithChildren> = ({ children }) => {
         ethProvider,
         sapphireEthProvider,
         account,
+        isUnknownNetwork: false,
       }))
     } catch (ex) {
       setState(prevState => ({
@@ -127,6 +140,10 @@ export const Web3ContextProvider: FC<PropsWithChildren> = ({ children }) => {
       }))
 
       if (ex instanceof UnknownNetworkError) {
+        setState(prevState => ({
+          ...prevState,
+          isUnknownNetwork: true,
+        }))
         throw ex
       } else {
         throw new Error('[Web3Context] Unable to initialize providers!')
@@ -138,10 +155,11 @@ export const Web3ContextProvider: FC<PropsWithChildren> = ({ children }) => {
     return isEIP1193ProviderAvailable()
   }
 
-  const connectWallet = async () => {
-    const account = await connectWalletEIP1193()
+  const connectWallet = async (gentle?: boolean) => {
+    const account = await connectWalletEIP1193(gentle)
 
     if (!account) {
+      if (gentle) return
       throw new Error('[Web3Context] Request account failed!')
     }
 
@@ -161,7 +179,7 @@ export const Web3ContextProvider: FC<PropsWithChildren> = ({ children }) => {
   }
 
   if (!initiated) {
-    void connectWallet()
+    void connectWallet(true)
     setInitiated(true)
   }
 

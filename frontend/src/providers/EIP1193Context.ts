@@ -2,7 +2,7 @@ import { createContext } from 'react'
 
 export interface EIP1193ProviderContext {
   isEIP1193ProviderAvailable: () => Promise<boolean>
-  connectWallet: () => Promise<string>
+  connectWallet: (gantle?: boolean) => Promise<string | undefined>
   switchNetwork: (toChainId: bigint) => void
 }
 

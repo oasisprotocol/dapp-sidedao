@@ -9,6 +9,7 @@ export interface Web3ProviderState {
   account: string | null
   explorerBaseUrl: string | null
   chainName: string | null
+  isUnknownNetwork: boolean
 }
 
 export interface Web3ProviderContext {
