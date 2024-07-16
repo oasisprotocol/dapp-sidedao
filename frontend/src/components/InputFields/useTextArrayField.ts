@@ -1,14 +1,17 @@
 import { InputFieldControls, InputFieldProps, useInputField } from './useInputField';
-import { getNumberMessage, NumberMessageTemplate, thereIsOnly } from './util';
+import { getAsArray, getNumberMessage, NumberMessageTemplate, thereIsOnly } from './util';
 
 /**
  * Parameters for defining an input field that accepts a list of strings
  */
 type TextArrayProps = Omit<InputFieldProps<string[]>, "initialValue"> & {
-  // Initial values for all fields
+  // Initial values for all items
   initialValue?: string[]
 
-  // Placeholders for all fields
+  // Initial number of items
+  initialItemCount?: number
+
+  // Placeholders for all items
   placeholders?: string[]
 
   /**
@@ -25,8 +28,8 @@ type TextArrayProps = Omit<InputFieldProps<string[]>, "initialValue"> & {
   // What error message to give on empty items?
   noEmptyMessage?: string
 
-  // Minimum count of entries
-  minCount?: number,
+  // Minimum number of items
+  minItemCount?: number,
 
   /**
    * Error message for when there are too few items
@@ -36,8 +39,8 @@ type TextArrayProps = Omit<InputFieldProps<string[]>, "initialValue"> & {
    */
   tooFewItemsMessage?: NumberMessageTemplate;
 
-  // Maximum count of entries
-  maxCount?: number,
+  // Maximum number of items
+  maxItemCount?: number,
 
   /**
    * Error message for when there are too many items
@@ -70,39 +73,38 @@ type TextArrayProps = Omit<InputFieldProps<string[]>, "initialValue"> & {
   tooLongItemMessage?: NumberMessageTemplate
 
   // Label for adding more items
-  addLabel?: string,
+  addItemLabel?: string,
 
   // Label for removing items
-  removeLabel?: string,
+  removeItemLabel?: string,
 
-  // Logic to determine if an item can be removed
-  canRemoveElement?: (index: number, me: TextArrayControls) => boolean
+  // Logic to determine whether an item can be removed
+  canRemoveItem?: (index: number, me: TextArrayControls) => boolean
 }
 
-export type TextArrayControls = InputFieldControls<string[]>
-  // & Pick<TextArrayProps, "addLabel" | "removeLabel">
-  & {
-  numberOfValues: number
+export type TextArrayControls = InputFieldControls<string[]> & {
+  numberOfItems: number
 
-  setSpecificValue: (index: number, value: string) => void
+  setItem: (index: number, value: string) => void
   placeholders: string[]
 
-  canAddValue: boolean;
-  addLabel: string;
-  addValue: () => void
+  canAddItem: boolean;
+  addItemLabel: string;
+  addItem: () => void
 
-  canRemoveValue: (index: number) => boolean
-  removeLabel: string
-  removeValue: (index: number) => void
+  canRemoveItem: (index: number) => boolean
+  removeItemLabel: string
+  removeItem: (index: number) => void
 }
 
 export function useTextArrayField(props: TextArrayProps): TextArrayControls {
   const {
-    addLabel= "Add",
-    removeLabel= "Remove",
-    minCount,
+    addItemLabel= "Add",
+    removeItemLabel= "Remove",
+    minItemCount = 3,
+    placeholderTemplate,
     tooFewItemsMessage = amount => `Please specify at least ${amount} items.`,
-    maxCount,
+    maxItemCount,
     tooManyItemsMessage = amount => `Please specify at most ${amount} items.`,
     allowEmpty,
     noEmptyMessage = "Please either fill this in, or remove this option.",
@@ -110,10 +112,14 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
     tooShortItemMessage = minLength => `Please specify at least ${minLength} characters.`,
     maxLength,
     tooLongItemMessage = maxLength => `Please don't use more than ${maxLength} characters.`,
+    validators = [],
   } = props;
-  const initialValue = props.initialValue ?? [...Array(props.minCount ?? 3).keys()].map(
-    (_ , _index) => ""
-  )
+  const {
+    initialValue =  [...Array(minItemCount).keys()].map(
+      (_ , _index) => ""
+    ),
+    placeholders,
+  } = props
 
   const controls = useInputField<string[]>({
     ...props,
@@ -128,21 +134,21 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
       }),
 
       // Do we have enough elements?
-      minCount
+      minItemCount
         ? (values => {
             const currentCount = values.filter(v => !!v).length
-            return (currentCount < minCount)
-              ? `${getNumberMessage(tooFewItemsMessage, minCount)} (Currently, ${thereIsOnly(currentCount)}.)`
+            return (currentCount < minItemCount)
+              ? `${getNumberMessage(tooFewItemsMessage, minItemCount)} (Currently, ${thereIsOnly(currentCount)}.)`
               : undefined
           }
         ) : undefined,
 
       // Do we have too many elements?
-      maxCount
+      maxItemCount
         ? (values => {
             const currentCount = values.filter(v => !!v).length
-            return (currentCount > maxCount)
-              ? `${getNumberMessage(tooManyItemsMessage, maxCount)} (Currently, there are ${currentCount}.)`
+            return (currentCount > maxItemCount)
+              ? `${getNumberMessage(tooManyItemsMessage, maxItemCount)} (Currently, there are ${currentCount}.)`
               : undefined
           }
         ) : undefined,
@@ -163,46 +169,44 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
           } : undefined)
         ) : undefined,
 
-      // TODO
+      ...getAsArray(validators),
     ],
   }, {
-    isEmpty: (value) => value.length < (props.minCount ?? 1),
+    isEmpty: (value) => !value.length,
     isEqual: (a, b) => a.join("-") === b.join("-"),
   })
 
-  const placeholders = props.placeholders ?? [...Array( controls.value.length).keys()].map(
-    (_ , index) => props.placeholderTemplate ? props.placeholderTemplate(index) : ""
-  )
-
   const newControls: TextArrayControls = {
     ...controls,
-    placeholders,
-    numberOfValues: controls.value.length,
-    setSpecificValue: (index, value) => {
+    placeholders: placeholders ?? [...Array( controls.value.length).keys()].map(
+      (_ , index) => placeholderTemplate ? placeholderTemplate(index) : ""
+    ),
+    numberOfItems: controls.value.length,
+    setItem: (index, value) => {
       controls.clearProblemsAt(`value-${index}`)
       controls.setValue(controls.value.map((oldValue, oldIndex) => (oldIndex === index ? value : oldValue)))
     },
-    canAddValue: !props.maxCount || controls.value.length < props.maxCount,
-    addLabel,
-    addValue: () => {
+    canAddItem: !maxItemCount || controls.value.length < maxItemCount,
+    addItemLabel: addItemLabel,
+    addItem: () => {
       controls.clearAllProblems()
       controls.setValue([...controls.value, ""])
     },
-    canRemoveValue: () => false, // This will be overwritten
-    removeLabel,
-    removeValue: (index) => {
+    canRemoveItem: () => false, // This will be overwritten
+    removeItemLabel: removeItemLabel,
+    removeItem: (index) => {
       controls.clearAllProblems()
       controls.setValue(controls.value.filter((_oldValue, oldIndex) => oldIndex !== index))
     },
 
   }
 
-  newControls.canRemoveValue = (index: number) => {
-    return ((props.minCount === undefined) ? controls.value.length > 0 : controls.value.length > props.minCount) &&
+  newControls.canRemoveItem = (index: number) => {
+    return ((minItemCount === undefined) ? controls.value.length > 0 : controls.value.length > minItemCount) &&
       (
-        (props.canRemoveElement === undefined)
+        (props.canRemoveItem === undefined)
           ? true
-          : props.canRemoveElement(index, newControls)
+          : props.canRemoveItem(index, newControls)
       )
   }
 

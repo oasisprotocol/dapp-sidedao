@@ -8,6 +8,7 @@ import { Pinata } from '../../utils/Pinata';
 import { useContracts } from '../../hooks/useContracts';
 import { useTextField } from '../../components/InputFields/useTextField';
 import { useTextArrayField } from '../../components/InputFields/useTextArrayField';
+import { findDuplicates } from '../../components/InputFields/util';
 
 type CreationStep = "basics" | "permission" | "results"
 
@@ -77,13 +78,15 @@ export const useCreatePollData = () => {
   const answers = useTextArrayField({
     name: "answers",
     label: "Answers",
-    addLabel: "Add answer",
-    removeLabel: "Remove this answer",
+    addItemLabel: "Add answer",
+    removeItemLabel: "Remove this answer",
 
-    minCount: 3,
+    initialItemCount: 3, // Let's start with 3 answers.
+
+    minItemCount: 2,
     tooFewItemsMessage: minCount => `You need at least ${minCount} answers in order to create this poll.`,
 
-    maxCount: 7,
+    maxItemCount: 7,
     tooManyItemsMessage: maxCount => `Please don't offer more than ${maxCount} answers.`,
 
     placeholderTemplate: (index) => `Answer ${index + 1}`,
@@ -98,6 +101,12 @@ export const useCreatePollData = () => {
 
     // Only the last item can be removed
     // canRemoveElement: (index, field) => index === field.numberOfValues - 1,
+
+    // We don't want identical answers
+    validators: values => findDuplicates(values).filter(index => !!values[index]).map(index => ({
+      message: "The same answer appears more than once!",
+      location: `value-${index}`,
+    })),
   })
 
   async function getACLOptions(): Promise<[string, AclOptions]> {

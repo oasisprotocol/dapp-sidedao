@@ -44,20 +44,20 @@ export const TextArrayInput: FC<TextArrayControls & {}> = (
     description,
     value,
     placeholders,
-    setSpecificValue,
-    canAddValue,
-    canRemoveValue,
-    addLabel,
-    addValue,
-    removeLabel,
-    removeValue,
+    setItem,
+    canAddItem,
+    canRemoveItem,
+    addItemLabel,
+    addItem,
+    removeItemLabel,
+    removeItem,
     allProblems,
     clearProblem
   }
 ) => {
 
   const handleChange = (index: number, event: React.ChangeEvent<HTMLInputElement>) =>
-    setSpecificValue(index, event.target.value)
+    setItem(index, event.target.value)
 
   const rootProblems = allProblems["root"] ?? []
 
@@ -82,13 +82,13 @@ export const TextArrayInput: FC<TextArrayControls & {}> = (
                 onChange={(event) => handleChange(index, event)}
                 className={classes.textValue}
               />
-              {canRemoveValue(index) && <TrashIcon label={removeLabel} remove={() => removeValue(index)} />}
+              {canRemoveItem(index) && <TrashIcon label={removeItemLabel} remove={() => removeItem(index)} />}
             </div>
             {itemProblems.map(p => <ProblemDisplay key={p.id} problem={p} onRemove={clearProblem} />)}
           </div>
         )
       })}
-      {canAddValue && <AddIcon label={addLabel} add={addValue} />}
+      {canAddItem && <AddIcon label={addItemLabel} add={addItem} />}
     </div>
   )
 

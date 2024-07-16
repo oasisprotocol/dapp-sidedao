@@ -22,6 +22,7 @@ export function useTextField(props: TextFieldProps): TextFieldControls {
     maxLength,
     tooShortMessage = minLength => `Please specify at least ${minLength} characters!`,
     tooLongMessage = maxLength => `Please specify at most ${maxLength} characters!`,
+    validators,
   } = props
   const controls = useInputField<string>({
       ...props,
@@ -40,7 +41,7 @@ export function useTextField(props: TextFieldProps): TextFieldControls {
         ) : undefined,
 
         // Any custom validators
-        ...getAsArray(props.validators),
+        ...getAsArray(validators),
       ].filter(v => !!v),
     }, {
       isEmpty: text => !text,

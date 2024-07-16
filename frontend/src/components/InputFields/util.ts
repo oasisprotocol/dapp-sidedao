@@ -62,3 +62,21 @@ export type NumberMessageTemplate = string | NumberStringFunction
 
 export const getNumberMessage = (template: NumberMessageTemplate, amount: number): string =>
   ((typeof template) === "string") ? (template as string) : ((template as NumberStringFunction)(amount))
+
+/**
+ * Get the indices of duplicate elements in an array
+ */
+export const findDuplicates = (values: string[], normalize?: (value: string) => string): number[] => {
+  const matches: Record<string, number> = {}
+  const duplicates = new Set<number>()
+  values.forEach((value, index) => {
+    const key = normalize ? normalize(value) : value
+    if (matches[key] !== undefined) {
+      duplicates.add(matches[value])
+      duplicates.add(index)
+    } else {
+      matches[key] = index
+    }
+  })
+  return Array.from(duplicates.values())
+}
