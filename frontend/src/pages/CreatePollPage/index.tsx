@@ -21,8 +21,8 @@ export const CreatePollPage = () => {
   } = useCreatePollData()
   // console.log("Current step is", step, ",", stepIndex, "of", numberOfSteps)
 
-  console.log("Q is", question)
-  // console.log("Answers:", answers)
+  // console.log("Q is", question)
+  console.log("Answers:", answers)
 
   const getCurrentField = (): ReactNode => {
 

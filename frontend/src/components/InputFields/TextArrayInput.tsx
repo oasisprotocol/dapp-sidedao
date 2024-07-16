@@ -1,7 +1,8 @@
 import React, { FC } from 'react';
-import { TextArrayControls } from './hooks';
+import { TextArrayControls } from './useTextArrayField';
 import classes from "./index.module.css";
 import { StringUtils } from '../../utils/string.utils';
+import { ProblemDisplay } from './ProblemDisplay';
 
 const TrashIcon: FC<{label: string, remove: () => void}> = ({label, remove}) => {
   return (
@@ -46,31 +47,47 @@ export const TextArrayInput: FC<TextArrayControls & {}> = (
     setSpecificValue,
     canAddValue,
     canRemoveValue,
-    addLabel = 'Add',
+    addLabel,
     addValue,
-    removeLabel = 'Remove',
+    removeLabel,
     removeValue,
+    allProblems,
+    clearProblem
   }
 ) => {
 
   const handleChange = (index: number, event: React.ChangeEvent<HTMLInputElement>) =>
     setSpecificValue(index, event.target.value)
 
+  const rootProblems = allProblems["root"] ?? []
+
   const wrappedField = (
     <div className={classes.textArrayValue}>
-      {value.map((value, index) => (
-        <div key={`edit-${index}`} className={"niceLine"}>
-          <input
-            name={name}
-            key={`edit-${index}`}
-            placeholder={placeholders[index]}
-            value={value}
-            onChange={(event) => handleChange(index, event)}
-            className={classes.textValue}
-          />
-          {canRemoveValue(index) && <TrashIcon label={removeLabel} remove={() => removeValue(index)} />}
-        </div>
-      ))}
+      { rootProblems.map(p => <ProblemDisplay key={p.id} problem={p} onRemove={clearProblem} />) }
+      { value.map((value, index) => {
+        const itemProblems = allProblems[`value-${index}`] || []
+        const hasWarning = itemProblems.some((problem) => problem.level === "warning")
+        const hasError = itemProblems.some((problem) => problem.level === "error")
+        return (
+          <div key={`edit-${index}`} className={StringUtils.clsx(
+            classes.textValue,
+            hasError ? classes.fieldWithError : hasWarning ? classes.fieldWithWarning : '',
+          )}>
+            <div className={'niceLine'}>
+              <input
+                name={name}
+                key={`edit-${index}`}
+                placeholder={placeholders[index]}
+                value={value}
+                onChange={(event) => handleChange(index, event)}
+                className={classes.textValue}
+              />
+              {canRemoveValue(index) && <TrashIcon label={removeLabel} remove={() => removeValue(index)} />}
+            </div>
+            {itemProblems.map(p => <ProblemDisplay key={p.id} problem={p} onRemove={clearProblem} />)}
+          </div>
+        )
+      })}
       {canAddValue && <AddIcon label={addLabel} add={addValue} />}
     </div>
   )

@@ -1,16 +1,15 @@
 import { useEffect, useState } from 'react';
 // import { AbiCoder } from "ethers";
 import { AclOptions, Poll, PollManager } from "../../types"
-import { InputFieldControls, useTextArrayField, useTextField } from '../../components/InputFields/hooks';
+import { InputFieldControls  } from '../../components/InputFields/useInputField';
 import { useEthereum } from '../../hooks/useEthereum';
 import { encryptJSON } from '../../utils/crypto.demo';
 import { Pinata } from '../../utils/Pinata';
 import { useContracts } from '../../hooks/useContracts';
+import { useTextField } from '../../components/InputFields/useTextField';
+import { useTextArrayField } from '../../components/InputFields/useTextArrayField';
 
 type CreationStep = "basics" | "permission" | "results"
-
-
-
 
 const acl_allowAll = import.meta.env.VITE_CONTRACT_ACL_ALLOWALL;
 
@@ -60,9 +59,13 @@ export const useCreatePollData = () => {
     label: "Question",
     placeholder: "Your question",
     required: true,
+    requiredMessage: "Please specify the question for your poll!",
+
     minLength: 10,
-    // maxLength: 20,
-    requiredMessage: "Please specify the question for your poll!"
+    tooShortMessage: minLength => `Please describe the question using at least ${minLength} characters!`,
+
+    maxLength: 20,
+    tooLongMessage: maxLength => `Please state the question in more more than ${maxLength} characters!`,
   })
 
   const description = useTextField({
@@ -74,14 +77,28 @@ export const useCreatePollData = () => {
   const answers = useTextArrayField({
     name: "answers",
     label: "Answers",
-    description: "You need at least 2 answers in order to create this poll.",
     addLabel: "Add answer",
     removeLabel: "Remove this answer",
-    minCount: 2,
-    placeholderTemplate: (index) => `Answer ${index + 1}`,
-    canRemoveElement: (index, field) => index === field.numberOfValues - 1,
-  })
 
+    minCount: 3,
+    tooFewItemsMessage: minCount => `You need at least ${minCount} answers in order to create this poll.`,
+
+    maxCount: 7,
+    tooManyItemsMessage: maxCount => `Please don't offer more than ${maxCount} answers.`,
+
+    placeholderTemplate: (index) => `Answer ${index + 1}`,
+    allowEmpty: false,
+    noEmptyMessage: "Please either fill this in, or remove this answer.",
+
+    minLength: 3,
+    tooShortItemMessage: minLength => `Please use at least ${minLength} characters for this answer.`,
+
+    maxLength: 10,
+    tooLongItemMessage: maxLength => `Please don't use more than ${maxLength} characters for this answer.`,
+
+    // Only the last item can be removed
+    // canRemoveElement: (index, field) => index === field.numberOfValues - 1,
+  })
 
   async function getACLOptions(): Promise<[string, AclOptions]> {
     const acl = acl_allowAll;
@@ -96,7 +113,7 @@ export const useCreatePollData = () => {
   }
 
   const stepFields: Record<CreationStep, InputFieldControls<any>[]> = {
-    basics: [question, answers],
+    basics: [question, description, answers],
     permission: [],
     results: [],
   }

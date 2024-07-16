@@ -33,6 +33,11 @@
     color: red;
 }
 
+.fieldWarning {
+    padding-top: 4px;
+    color: chocolate;
+}
+
 .textValue {
     width: 100%;
 
@@ -50,11 +55,18 @@
 
 .fieldWithError {
     input {
-        border: 1px solid red;
-        background: #FFF0FD;
+        border: 1px solid red !important;
+        background: #FFF0FD !important;
     }
-
 }
+
+.fieldWithWarning {
+    input {
+        border: 1px solid chocolate !important;
+        background: #FFE8C0 !important;
+    }
+}
+
 
 .textArrayValue {
     width: 100%;
