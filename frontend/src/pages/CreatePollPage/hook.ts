@@ -10,6 +10,7 @@ import { useTextField } from '../../components/InputFields/useTextField';
 import { useTextArrayField } from '../../components/InputFields/useTextArrayField';
 import { findDuplicates } from '../../components/InputFields/util';
 import { useBooleanField } from '../../components/InputFields/useBoolField';
+import { useOneOfField } from '../../components/InputFields/useOneOfField';
 
 type CreationStep = "basics" | "permission" | "results"
 
@@ -24,6 +25,8 @@ const StepTitle: Record<CreationStep, string> = {
 const numberOfSteps = process.length
 
 const acl_allowAll = import.meta.env.VITE_CONTRACT_ACL_ALLOWALL;
+
+type AccessControlMethod = "acl_allowAll" | "acl_tokenHolders" | "acl_allowList" | "acl_xchain"
 
 export const useCreatePollData = () => {
   const eth = useEthereum()
@@ -62,8 +65,8 @@ export const useCreatePollData = () => {
     minLength: 10,
     tooShortMessage: minLength => `Please describe the question using at least ${minLength} characters!`,
 
-    maxLength: 20,
-    tooLongMessage: maxLength => `Please state the question in more more than ${maxLength} characters!`,
+    // maxLength: 20,
+    // tooLongMessage: maxLength => `Please state the question in more more than ${maxLength} characters!`,
   })
 
   const description = useTextField({
@@ -111,6 +114,29 @@ export const useCreatePollData = () => {
     label: "I want to create a customized theme for the poll",
   })
 
+  const accessControlMethod = useOneOfField<AccessControlMethod>({
+    name: "accessControlMethod",
+    label: "Who can vote",
+    choices: [
+      { value: "acl_allowAll", label: "Everybody" },
+      { value: "acl_tokenHolders", label: "Holds Token on Sapphire" },
+      { value: "acl_allowList", label: "Address Whitelist", description: 'You can specify a list of addresses that are allowed to vote.'},
+      { value: "acl_xchain", label: "Cross-Chain DAO", description: "You can set a condition that is evaluated on another chain." },
+    ],
+    initialValue: "acl_allowAll",
+  })
+
+  const tokenAddress = useTextField({
+    name: "tokenAddress",
+    label: "Token Address",
+    visible: accessControlMethod.value === "acl_tokenHolders",
+  })
+
+  const gasFree = useBooleanField({
+    name: "gasless",
+    label: "Make this vote gas-free",
+  })
+
   async function getACLOptions(): Promise<[string, AclOptions]> {
     const acl = acl_allowAll;
     // const abi = AbiCoder.defaultAbiCoder();
@@ -125,7 +151,7 @@ export const useCreatePollData = () => {
 
   const stepFields: Record<CreationStep, InputFieldControls<any>[]> = {
     basics: [question, description, answers, customCSS],
-    permission: [],
+    permission: [accessControlMethod, tokenAddress, gasFree],
     results: [],
   }
 

@@ -53,12 +53,15 @@ export const TextArrayInput: FC<TextArrayControls & {}> = (
     removeItemLabel,
     removeItem,
     allProblems,
-    clearProblem
+    clearProblem,
+    visible
   }
 ) => {
 
   const handleChange = (index: number, event: React.ChangeEvent<HTMLInputElement>) =>
     setItem(index, event.target.value)
+
+  if (!visible) return
 
   const rootProblems = allProblems["root"] ?? []
 

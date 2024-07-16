@@ -48,7 +48,6 @@
         background: #FFFFFF;
         border: 1px solid #80848E;
         border-radius: 8px;
-
     }
 
 }
@@ -65,8 +64,36 @@
     }
 }
 
+.selectValue {
+    width: 100%;
+
+    select {
+        background: white;
+        width: 100%;
+        height: 48px;
+        border-radius: 8px;
+        padding: 0px 16px;
+
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 400;
+        font-size: 15px;
+    }
+
+    choice {
+        height: 32px;
+    }
+
+}
+
 .fieldWithError {
+
     input {
+        border: 1px solid red !important;
+        background: #FFF0FD !important;
+    }
+
+    select {
         border: 1px solid red !important;
         background: #FFF0FD !important;
     }
@@ -74,6 +101,11 @@
 
 .fieldWithWarning {
     input {
+        border: 1px solid chocolate !important;
+        background: #FFE8C0 !important;
+    }
+
+    select {
         border: 1px solid chocolate !important;
         background: #FFE8C0 !important;
     }

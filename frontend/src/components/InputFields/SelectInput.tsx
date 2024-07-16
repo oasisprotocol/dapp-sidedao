@@ -1,37 +1,38 @@
 import React, { FC, useCallback } from 'react';
+import { OneOfFieldControls } from './useOneOfField';
+import { checkProblems } from './util';
 import classes from "./index.module.css";
 import { StringUtils } from '../../utils/string.utils';
-import { TextFieldControls } from './useTextField';
 import { ProblemList } from './ProblemDisplay';
-import { checkProblems } from './util';
 
-export const TextInput: FC<TextFieldControls & {}> = (
-  {
-    name,
-    label,
-    description,
-    value,
-    placeholder,
-    setValue,
-    allProblems,
-    clearProblem,
+export const SelectInput: FC<OneOfFieldControls<any>> = (props) => {
+  const {
+    label, description,
+    choices,
+    allProblems, clearProblem,
+    value, setValue,
     visible,
-  }
-) => {
+  } = props
+
   const handleChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => setValue(event.target.value),
+    (e: React.ChangeEvent<HTMLSelectElement>) => setValue(e.target.value),
     [setValue]
   )
 
   if (!visible) return
 
-  const field = <input
-    name={name}
-    placeholder={placeholder}
-    value={value}
-    onChange={handleChange}
-    className={classes.textValue}
-  />
+  const field = (
+    <select
+      value={value}
+      onChange={handleChange}
+    >
+      { choices.map(choice => (
+        <option key={choice.value} value={choice.value} disabled={choice.enabled === false} title={choice.description}>
+          { choice.label } { !!choice.description ? "🛈" : "" }
+        </option>
+      ))}
+    </select>
+  )
 
   const rootProblems = allProblems.root || []
 
@@ -39,7 +40,7 @@ export const TextInput: FC<TextFieldControls & {}> = (
 
   const wrappedField = (
     <div className={StringUtils.clsx(
-      classes.textValue,
+      classes.selectValue,
       hasError ? classes.fieldWithError : hasWarning ? classes.fieldWithWarning : '',
     )}>
       {field}

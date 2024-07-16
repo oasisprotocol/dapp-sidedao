@@ -14,16 +14,19 @@ export const BooleanInput: FC<BooleanFieldControls> = (props) => {
     setValue,
     allProblems,
     clearProblem,
+    visible,
   } = props
-
-  const rootProblems = allProblems.root || []
-
-  const { hasWarning, hasError} = checkProblems(rootProblems)
 
   const handleChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => setValue(event.target.checked),
     [setValue]
   )
+
+  if (!visible) return
+
+  const rootProblems = allProblems.root || []
+
+  const { hasWarning, hasError} = checkProblems(rootProblems)
 
   const field = (
     <input

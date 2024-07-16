@@ -11,10 +11,12 @@ export type InputFieldProps<DataType> = {
   required?: boolean
   requiredMessage?: string
   validators?: SingleOrArray<undefined | ((value: DataType) => SingleOrArray<ProblemReport | string | undefined>)>
+  visible?: boolean,
 }
 
 export type InputFieldControls<DataType> = Pick<InputFieldProps<DataType>, "label" | "description" | "placeholder" | "name"> & {
   type: string,
+  visible: boolean,
   value: DataType,
   setValue: (value: DataType) => void
   allProblems: AllProblems
@@ -39,7 +41,8 @@ export function useInputField<DataType>(
     cleanUp,
     required,
     requiredMessage = "This field is required",
-    validators = []
+    validators = [],
+    visible = true,
   } = props
 
   const [value, setValue] = useState<DataType>(initialValue)
@@ -113,6 +116,7 @@ export function useInputField<DataType>(
     clearAllProblems,
 
     validate,
+    visible,
   }
 }
 
