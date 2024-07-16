@@ -41,6 +41,11 @@ export const wrapProblem = (
 
 export type AllProblems = Record<string, Problem[]>
 
+export const checkProblems = (problems: Problem[] = []) => ({
+  hasWarning: problems.some((problem) => problem.level === "warning"),
+  hasError: problems.some((problem) => problem.level === "error"),
+})
+
 export type SingleOrArray<Data> = Data | Data[]
 
 export function getAsArray<Data>(data: SingleOrArray<Data>): Data[] {

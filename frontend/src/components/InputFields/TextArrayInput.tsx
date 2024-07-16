@@ -2,7 +2,8 @@ import React, { FC } from 'react';
 import { TextArrayControls } from './useTextArrayField';
 import classes from "./index.module.css";
 import { StringUtils } from '../../utils/string.utils';
-import { ProblemDisplay } from './ProblemDisplay';
+import { ProblemList } from './ProblemDisplay';
+import { checkProblems } from './util';
 
 const TrashIcon: FC<{label: string, remove: () => void}> = ({label, remove}) => {
   return (
@@ -63,11 +64,10 @@ export const TextArrayInput: FC<TextArrayControls & {}> = (
 
   const wrappedField = (
     <div className={classes.textArrayValue}>
-      { rootProblems.map(p => <ProblemDisplay key={p.id} problem={p} onRemove={clearProblem} />) }
+      <ProblemList problems={rootProblems} onRemove={clearProblem} />
       { value.map((value, index) => {
         const itemProblems = allProblems[`value-${index}`] || []
-        const hasWarning = itemProblems.some((problem) => problem.level === "warning")
-        const hasError = itemProblems.some((problem) => problem.level === "error")
+        const {hasError, hasWarning } = checkProblems(itemProblems)
         return (
           <div key={`edit-${index}`} className={StringUtils.clsx(
             classes.textValue,
@@ -84,7 +84,7 @@ export const TextArrayInput: FC<TextArrayControls & {}> = (
               />
               {canRemoveItem(index) && <TrashIcon label={removeItemLabel} remove={() => removeItem(index)} />}
             </div>
-            {itemProblems.map(p => <ProblemDisplay key={p.id} problem={p} onRemove={clearProblem} />)}
+            <ProblemList problems={itemProblems} onRemove={clearProblem} />
           </div>
         )
       })}

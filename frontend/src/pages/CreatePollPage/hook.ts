@@ -9,6 +9,7 @@ import { useContracts } from '../../hooks/useContracts';
 import { useTextField } from '../../components/InputFields/useTextField';
 import { useTextArrayField } from '../../components/InputFields/useTextArrayField';
 import { findDuplicates } from '../../components/InputFields/util';
+import { useBooleanField } from '../../components/InputFields/useBoolField';
 
 type CreationStep = "basics" | "permission" | "results"
 
@@ -92,7 +93,7 @@ export const useCreatePollData = () => {
     minLength: 3,
     tooShortItemMessage: minLength => `Please use at least ${minLength} characters for this answer.`,
 
-    maxLength: 10,
+    // maxLength: 10,
     tooLongItemMessage: maxLength => `Please don't use more than ${maxLength} characters for this answer.`,
 
     // Only the last item can be removed
@@ -103,6 +104,11 @@ export const useCreatePollData = () => {
       message: "The same answer appears more than once!",
       location: `value-${index}`,
     })),
+  })
+
+  const customCSS = useBooleanField({
+    name: "customCSS",
+    label: "I want to create a customized theme for the poll",
   })
 
   async function getACLOptions(): Promise<[string, AclOptions]> {
@@ -118,7 +124,7 @@ export const useCreatePollData = () => {
   }
 
   const stepFields: Record<CreationStep, InputFieldControls<any>[]> = {
-    basics: [question, description, answers],
+    basics: [question, description, answers, customCSS],
     permission: [],
     results: [],
   }

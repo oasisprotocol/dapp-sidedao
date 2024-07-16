@@ -1,57 +1,57 @@
-import React, { FC, useCallback } from 'react';
+import { ChangeEvent, FC, useCallback } from 'react';
+import { BooleanFieldControls } from './useBoolField';
 import classes from "./index.module.css";
-import { StringUtils } from '../../utils/string.utils';
-import { TextFieldControls } from './useTextField';
-import { ProblemList } from './ProblemDisplay';
 import { checkProblems } from './util';
+import { StringUtils } from '../../utils/string.utils';
+import { ProblemList } from './ProblemDisplay';
 
-export const TextInput: FC<TextFieldControls & {}> = (
-  {
+export const BooleanInput: FC<BooleanFieldControls> = (props) => {
+  const {
     name,
     label,
     description,
     value,
-    placeholder,
     setValue,
     allProblems,
     clearProblem,
-  }
-) => {
-  const handleChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => setValue(event.target.value),
-    [setValue]
-  )
-
-  const field = <input
-    name={name}
-    placeholder={placeholder}
-    value={value}
-    onChange={handleChange}
-    className={classes.textValue}
-  />
+  } = props
 
   const rootProblems = allProblems.root || []
 
   const { hasWarning, hasError} = checkProblems(rootProblems)
 
+  const handleChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => setValue(event.target.checked),
+    [setValue]
+  )
+
+  const field = (
+    <input
+      type={"checkbox"}
+      name={name}
+      checked={value}
+      onChange={handleChange}
+      size={32}
+    />
+  )
+
   const wrappedField = (
     <div className={StringUtils.clsx(
-      classes.textValue,
+      classes.boolValue,
       hasError ? classes.fieldWithError : hasWarning ? classes.fieldWithWarning : '',
     )}>
-      {field}
+      <div className={"niceLine"}>
+        {field} {label}
+      </div>
       <ProblemList problems={rootProblems} onRemove={clearProblem} />
     </div>
   )
 
   return (
     <div className={classes.fieldContainer}>
-      {(!!label || !!description)
+      {description
         ? (
           <label>
-            <div className={classes.fieldLabel}>
-              {label}
-            </div>
             <div className={classes.fieldDescription}>
               {description}
             </div>

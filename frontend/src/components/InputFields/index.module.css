@@ -53,6 +53,18 @@
 
 }
 
+.boolValue {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 13px;
+
+    input {
+        width: 24px;
+        height: 24px;
+    }
+}
+
 .fieldWithError {
     input {
         border: 1px solid red !important;
