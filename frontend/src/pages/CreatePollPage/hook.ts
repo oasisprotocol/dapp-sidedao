@@ -12,39 +12,35 @@ import { findDuplicates } from '../../components/InputFields/util';
 
 type CreationStep = "basics" | "permission" | "results"
 
+const process: CreationStep[] = ["basics", "permission", "results"]
+
+const StepTitle: Record<CreationStep, string> = {
+  basics : "Poll creation",
+  permission: "Pre-vote settings",
+  results : "Results settings",
+}
+
+const numberOfSteps = process.length
+
 const acl_allowAll = import.meta.env.VITE_CONTRACT_ACL_ALLOWALL;
 
 export const useCreatePollData = () => {
   const eth = useEthereum()
   const { pollManagerWithSigner: daoSigner} = useContracts(eth)
-
   const [isCreating, setIsCreating] = useState<boolean>(false);
-
   const [step, setStep] = useState<CreationStep>("basics");
-
   const [stepIndex, setStepIndex] = useState(0);
-
-  const process: CreationStep[] = ["basics", "permission", "results"]
-
-  const numberOfSteps = process.length
-
-  const StepTitle: Record<CreationStep, string> = {
-    basics : "Poll creation",
-    permission: "Pre-vote settings",
-    results : "Results settings",
-  }
-
 
   useEffect(() => {
     setStepIndex(process.indexOf(step))
   }, [step]);
 
-  const previousStep = () => {
+  const goToPreviousStep = () => {
     if (stepIndex === 0) return
     setStep(process[stepIndex - 1])
   }
 
-  const nextStep = () => {
+  const goToNextStep = () => {
     if (stepIndex === numberOfSteps - 1) return
     const correct = stepFields[step].map(field => field.validate())
     if (!correct.every(e => e)) return
@@ -191,16 +187,17 @@ export const useCreatePollData = () => {
   }
 
   return {
-    step,
+    // step,
     stepTitle: StepTitle[step],
     stepIndex,
     numberOfSteps,
-    previousStep,
-    nextStep,
+    fields: stepFields[step],
+    previousStep: goToPreviousStep,
+    nextStep: goToNextStep,
     init,
-    question,
-    description,
-    answers,
+    // question,
+    // description,
+    // answers,
     isCreating,
     createPoll
   }

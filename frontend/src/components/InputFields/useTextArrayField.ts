@@ -102,6 +102,7 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
     addItemLabel= "Add",
     removeItemLabel= "Remove",
     minItemCount = 3,
+    initialItemCount,
     placeholderTemplate,
     tooFewItemsMessage = amount => `Please specify at least ${amount} items.`,
     maxItemCount,
@@ -115,13 +116,15 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
     validators = [],
   } = props;
   const {
-    initialValue =  [...Array(minItemCount).keys()].map(
+    initialValue =  [...Array(initialItemCount ?? minItemCount).keys()].map(
       (_ , _index) => ""
     ),
     placeholders,
   } = props
 
-  const controls = useInputField<string[]>({
+  const controls = useInputField<string[]>(
+    "text-array",
+    {
     ...props,
     initialValue,
     cleanUp: (values) => values.map(s => s.trim()),

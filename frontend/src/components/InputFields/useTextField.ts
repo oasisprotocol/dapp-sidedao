@@ -24,7 +24,9 @@ export function useTextField(props: TextFieldProps): TextFieldControls {
     tooLongMessage = maxLength => `Please specify at most ${maxLength} characters!`,
     validators,
   } = props
-  const controls = useInputField<string>({
+  const controls = useInputField<string>(
+    "text",
+    {
       ...props,
       initialValue,
       validators: [

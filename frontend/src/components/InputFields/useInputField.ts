@@ -14,6 +14,7 @@ export type InputFieldProps<DataType> = {
 }
 
 export type InputFieldControls<DataType> = Pick<InputFieldProps<DataType>, "label" | "description" | "placeholder" | "name"> & {
+  type: string,
   value: DataType,
   setValue: (value: DataType) => void
   allProblems: AllProblems
@@ -23,18 +24,28 @@ export type InputFieldControls<DataType> = Pick<InputFieldProps<DataType>, "labe
   clearAllProblems: () => void
 }
 
-type TypeTools<DataType> = {
+type DataTypeTools<DataType> = {
   isEmpty: (data: DataType) => boolean
   isEqual: (data1: DataType, data2: DataType) => boolean
 }
 
-export function useInputField<DataType>(props: InputFieldProps<DataType>, typeControl: TypeTools<DataType>): InputFieldControls<DataType> {
-  const { name, label, placeholder, description, initialValue, cleanUp, required, requiredMessage, validators = []} = props
+export function useInputField<DataType>(
+  type: string,
+  props: InputFieldProps<DataType>,
+  dataTypeControl: DataTypeTools<DataType>
+): InputFieldControls<DataType> {
+  const {
+    name, label, placeholder, description, initialValue,
+    cleanUp,
+    required,
+    requiredMessage = "This field is required",
+    validators = []
+  } = props
 
   const [value, setValue] = useState<DataType>(initialValue)
   const [problems, setProblems] = useState<ProblemAtLocation[]>([])
   const [allProblems, setAllProblems] = useState<AllProblems>({})
-  const { isEmpty, isEqual } = typeControl
+  const { isEmpty, isEqual } = dataTypeControl
 
   const validate = () : boolean => {
     const cleanValue = cleanUp ? cleanUp(value) : value
@@ -44,7 +55,7 @@ export function useInputField<DataType>(props: InputFieldProps<DataType>, typeCo
     }
     const currentProblems: (ProblemAtLocation | undefined)[] = []
     if (required && isEmpty(cleanValue)) {
-      currentProblems.push(wrapProblem(requiredMessage ?? "This field is required", "root", "error"))
+      currentProblems.push(wrapProblem(requiredMessage, "root", "error"))
     }
     getAsArray(validators).filter(v => !!v).forEach(validator => {
       const validatorReport = (validator!)(cleanValue)
@@ -86,6 +97,7 @@ export function useInputField<DataType>(props: InputFieldProps<DataType>, typeCo
     }, [problems]);
 
   return {
+    type,
     name,
     description,
     label,
