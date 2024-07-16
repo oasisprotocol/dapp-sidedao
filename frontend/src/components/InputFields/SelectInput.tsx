@@ -1,6 +1,6 @@
 import React, { FC, useCallback } from 'react';
 import { OneOfFieldControls } from './useOneOfField';
-import { checkProblems } from './util';
+import { checkProblems, getReasonForDenial, getVerdict } from './util';
 import classes from "./index.module.css";
 import { StringUtils } from '../../utils/string.utils';
 import { ProblemList } from './ProblemDisplay';
@@ -27,7 +27,12 @@ export const SelectInput: FC<OneOfFieldControls<any>> = (props) => {
       onChange={handleChange}
     >
       { choices.map(choice => (
-        <option key={choice.value} value={choice.value} disabled={choice.enabled === false} title={choice.description}>
+        <option
+          key={choice.value}
+          value={choice.value}
+          disabled={!getVerdict(choice.enabled, true)}
+          title={getReasonForDenial(choice.enabled) ?? choice.description}
+        >
           { choice.label } { !!choice.description ? "🛈" : "" }
         </option>
       ))}

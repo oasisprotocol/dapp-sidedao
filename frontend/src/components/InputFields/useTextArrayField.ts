@@ -1,5 +1,5 @@
 import { InputFieldControls, InputFieldProps, useInputField } from './useInputField';
-import { getAsArray, getNumberMessage, NumberMessageTemplate, thereIsOnly } from './util';
+import { atLeastXItems, getAsArray, getNumberMessage, NumberMessageTemplate, thereIsOnly } from './util';
 
 /**
  * Parameters for defining an input field that accepts a list of strings
@@ -23,10 +23,10 @@ type TextArrayProps = Omit<InputFieldProps<string[]>, "initialValue"> & {
   placeholderTemplate?: (index: number) => string,
 
   // Do we accept empty items?
-  allowEmpty?: boolean
+  allowEmptyItems?: boolean
 
   // What error message to give on empty items?
-  noEmptyMessage?: string
+  noEmptyItemMessage?: string
 
   // Minimum number of items
   minItemCount?: number,
@@ -104,11 +104,11 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
     minItemCount = 3,
     initialItemCount,
     placeholderTemplate,
-    tooFewItemsMessage = amount => `Please specify at least ${amount} items.`,
+    tooFewItemsMessage = amount => `Please specify ${atLeastXItems(amount)}!`,
     maxItemCount,
     tooManyItemsMessage = amount => `Please specify at most ${amount} items.`,
-    allowEmpty,
-    noEmptyMessage = "Please either fill this in, or remove this option.",
+    allowEmptyItems,
+    noEmptyItemMessage = "Please either fill this in, or remove this option.",
     minLength,
     tooShortItemMessage = minLength => `Please specify at least ${minLength} characters.`,
     maxLength,
@@ -131,8 +131,8 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
     validators: [
 
       // No empty elements, please
-      allowEmpty ? undefined : (values) => values.map((value, index) => value ? undefined : {
-        message: noEmptyMessage,
+      allowEmptyItems ? undefined : (values) => values.map((value, index) => value ? undefined : {
+        message: noEmptyItemMessage,
         location: `value-${index}`,
       }),
 

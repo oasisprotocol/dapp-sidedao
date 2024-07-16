@@ -1,10 +1,11 @@
 import { InputFieldControls, InputFieldProps, useInputField } from './useInputField';
+import { Decision } from './util';
 
 type Choice<DataType = string> = {
   value: DataType,
   label: string,
   description?: string,
-  enabled?: boolean,
+  enabled?: Decision,
 }
 
 type OneOfFieldProps<DataType = string> = Omit<InputFieldProps<DataType>, "initialValue"> & {

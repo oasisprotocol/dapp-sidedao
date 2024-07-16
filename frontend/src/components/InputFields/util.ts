@@ -62,6 +62,16 @@ export const thereIsOnly = (amount: number) => {
   }
 }
 
+export const atLeastXItems = (amount: number): string => {
+  if (amount > 1) {
+    return `at least ${amount} items`
+  } else if (amount = 1) {
+    return `at least one item`
+  } else {
+    throw new Error(`What do you mean by 'at least ${amount} items??'`)
+  }
+}
+
 type NumberStringFunction = (amount: number) => string
 export type NumberMessageTemplate = string | NumberStringFunction
 
@@ -85,3 +95,35 @@ export const findDuplicates = (values: string[], normalize?: (value: string) => 
   })
   return Array.from(duplicates.values())
 }
+
+type SimpleDecision = boolean
+type FullDecision = { verdict: boolean, reason?: string }
+export type Decision = SimpleDecision | FullDecision
+
+export const allow = (reason?: string ): Decision => ({ verdict: true, reason })
+
+export const deny = (reason?: string ): Decision => ({ verdict: false, reason })
+
+export const getVerdict = (decision: Decision | undefined, defaultVerdict = false): boolean =>
+  (decision === undefined)
+    ? defaultVerdict
+    : (typeof decision === "boolean" ? decision : decision.verdict)
+
+export const getReason = (decision: Decision | undefined ): string | undefined =>
+  (decision === undefined)
+    ? undefined
+    : (typeof decision === "boolean") ? undefined : decision.reason
+
+export const getReasonForDenial = (decision: Decision | undefined ): string | undefined =>
+  (decision === undefined)
+    ? undefined
+    : ((typeof decision === "boolean") || decision.verdict)
+      ? undefined
+      : decision.reason
+
+export const getReasonForAllowing = (decision: Decision | undefined ): string | undefined =>
+  (decision === undefined)
+    ? undefined
+    : ((typeof decision === "boolean") || !decision.verdict)
+      ? undefined
+      : decision.reason

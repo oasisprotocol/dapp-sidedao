@@ -28,6 +28,8 @@ const acl_allowAll = import.meta.env.VITE_CONTRACT_ACL_ALLOWALL;
 
 type AccessControlMethod = "acl_allowAll" | "acl_tokenHolders" | "acl_allowList" | "acl_xchain"
 
+// type VoteWeightingMethod = "weight_perWallet" | "weight_perToken"
+
 export const useCreatePollData = () => {
   const eth = useEthereum()
   const { pollManagerWithSigner: daoSigner} = useContracts(eth)
@@ -90,8 +92,8 @@ export const useCreatePollData = () => {
     tooManyItemsMessage: maxCount => `Please don't offer more than ${maxCount} answers.`,
 
     placeholderTemplate: (index) => `Answer ${index + 1}`,
-    allowEmpty: false,
-    noEmptyMessage: "Please either fill this in, or remove this answer.",
+    allowEmptyItems: false,
+    noEmptyItemMessage: "Please either fill this in, or remove this answer.",
 
     minLength: 3,
     tooShortItemMessage: minLength => `Please use at least ${minLength} characters for this answer.`,
@@ -120,7 +122,7 @@ export const useCreatePollData = () => {
     choices: [
       { value: "acl_allowAll", label: "Everybody" },
       { value: "acl_tokenHolders", label: "Holds Token on Sapphire" },
-      { value: "acl_allowList", label: "Address Whitelist", description: 'You can specify a list of addresses that are allowed to vote.'},
+      { value: "acl_allowList", label: "Address Whitelist", description: 'You can specify a list of addresses that are allowed to vote.' },
       { value: "acl_xchain", label: "Cross-Chain DAO", description: "You can set a condition that is evaluated on another chain." },
     ],
     initialValue: "acl_allowAll",
@@ -130,6 +132,23 @@ export const useCreatePollData = () => {
     name: "tokenAddress",
     label: "Token Address",
     visible: accessControlMethod.value === "acl_tokenHolders",
+  })
+
+  const isValidAddress = (_address: string) => false; // TODO
+
+  const addressWhitelist = useTextArrayField({
+    name: "addressWhitelist",
+    label: "Acceptable Addresses",
+    addItemLabel: "Add address",
+    removeItemLabel: "Remove address",
+    visible: accessControlMethod.value === "acl_allowList",
+    allowEmptyItems: false,
+    minItemCount: 1,
+    noEmptyItemMessage: "Please specify address, or remove this field!",
+    validators: values => values.map(((value, index) => (!value || isValidAddress(value)) ? undefined : {
+      message: "This doesn't seem to be a valid address.",
+      location: `value-${index}`,
+    })),
   })
 
   const gasFree = useBooleanField({
@@ -151,7 +170,7 @@ export const useCreatePollData = () => {
 
   const stepFields: Record<CreationStep, InputFieldControls<any>[]> = {
     basics: [question, description, answers, customCSS],
-    permission: [accessControlMethod, tokenAddress, gasFree],
+    permission: [accessControlMethod, tokenAddress, addressWhitelist, gasFree],
     results: [],
   }
 
