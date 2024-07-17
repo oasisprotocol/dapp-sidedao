@@ -5,11 +5,12 @@ import { useEthereum } from '../../hooks/useEthereum';
 import { chainChoices, encryptJSON, isValidAddress } from '../../utils/crypto.demo';
 import { Pinata } from '../../utils/Pinata';
 import { useContracts } from '../../hooks/useContracts';
+import classes from "./index.module.css"
 
 import {
-  deny,
+  deny, FieldConfiguration,
   findErrorsInFields,
-  InputFieldControls, useBooleanField,
+  useBooleanField, useLabel,
   useOneOfField,
   useTextArrayField,
   useTextField,
@@ -30,7 +31,7 @@ const acl_allowAll = import.meta.env.VITE_CONTRACT_ACL_ALLOWALL;
 
 type AccessControlMethod = "acl_allowAll" | "acl_tokenHolders" | "acl_allowList" | "acl_xchain"
 type VoteWeightingMethod = "weight_perWallet" | "weight_perToken"
-type ExpectedVoterNumber = "1-100" | "100-1000" | "1000-"
+type ExpectedVoterNumber = "1-100" | "100-1000" | '1000-10000' | "10000-"
 
 // Split a list of addresses by newLine, comma or space
 const splitAddresses = (addressSoup: string): string[] => addressSoup
@@ -198,17 +199,31 @@ export const useCreatePollData = () => {
     label: "Make this vote gas-free",
   })
 
+  const gasFreeExplanation = useLabel({
+    name: "gasFreeExplanation",
+    initialValue: "We calculate and suggest the amount of ROSE needed for gas based on the amount of users that are expected to vote. Any remaining ROSE from the gas sponsoring wallet will be refunded to you once the poll is closed.",
+    visible: gasFree.value,
+    classnames: classes.explanation,
+  })
+
   const numberOfExpectedVoters = useOneOfField<ExpectedVoterNumber>({
     name: "numberOfExpectedVoters",
     visible: gasFree.value,
     label: "Number of voters",
-    placeholder: "How many voters do we have to subsidize?",
+    placeholder: "How many do we expect?",
     choices: [
       { value: "1-100", label: "Less than 100" },
       { value: "100-1000", label: "Between 100 and 1000"},
-      { value: "1000-", label: "More than 1000"}
+      { value: "1000-10000", label: "Between 1000 and 10,000"},
+      { value: "10000-", label: "Above 10,000"}
     ],
     required: [true, "Please estimate the number of the expected votes!"],
+  })
+
+  const suggestedAmountOfRose = useTextField({
+    name: "suggestedAmountOfRose",
+    visible: gasFree.value,
+    label: "Suggested amount of ROSE",
   })
 
   async function getACLOptions(): Promise<[string, AclOptions]> {
@@ -223,9 +238,23 @@ export const useCreatePollData = () => {
     ];
   }
 
-  const stepFields: Record<CreationStep, InputFieldControls<any>[]> = {
-    basics: [question, description, answers, customCSS],
-    permission: [accessControlMethod, tokenAddress, addressWhitelist, chain, xchainAddress, voteWeighting, gasFree, numberOfExpectedVoters],
+  const stepFields: Record<CreationStep, FieldConfiguration> = {
+    basics: [
+      question,
+      description,
+      answers,
+      customCSS,
+    ],
+    permission: [
+      accessControlMethod,
+      tokenAddress,
+      addressWhitelist,
+      chain, xchainAddress,
+      voteWeighting,
+      gasFree,
+      gasFreeExplanation,
+      [numberOfExpectedVoters, suggestedAmountOfRose],
+    ],
     results: [],
   }
 

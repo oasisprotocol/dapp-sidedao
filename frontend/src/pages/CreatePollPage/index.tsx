@@ -4,7 +4,7 @@ import { useCreatePollData } from './hook';
 import classes from "./index.module.css"
 import { Button } from '../../components/Button';
 import { DottedProgressIndicator } from '../../components/DottedProgressIndicator';
-import { InputField } from '../../components/InputFields/InputField';
+import { InputFieldGroup } from '../../components/InputFields';
 
 export const CreatePollPage = () => {
   const {
@@ -26,12 +26,11 @@ export const CreatePollPage = () => {
         <p>
           Once created, your poll will be live immediately and responses will start being recorded.
         </p>
-        {fields.map( field => <InputField key={field.name} controls={field} />)}
+        <InputFieldGroup fields={fields} />
         <div className={classes.buttons}>
           { stepIndex > 0 && <Button onClick={previousStep} color={"secondary"} variant={"outline"} >Back</Button> }
           { stepIndex < numberOfSteps - 1 && <Button onClick={nextStep}>Next</Button> }
           { stepIndex === numberOfSteps - 1 && <Button onClick={createPoll}>Create poll</Button> }
-
         </div>
       </Card>
       <DottedProgressIndicator steps={ numberOfSteps} currentStepIndex={stepIndex} />
