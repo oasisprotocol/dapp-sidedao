@@ -48,7 +48,7 @@ const aclChoices: Choice<AccessControlMethod>[] = [
 
 type VoteWeightingMethod = "weight_perWallet" | "weight_perToken"
 
-const weigtingChoices: Choice<VoteWeightingMethod>[] = [
+const weigthingChoices: Choice<VoteWeightingMethod>[] = [
   {
     value: "weight_perWallet",
     label: "1 vote per wallet",
@@ -211,7 +211,7 @@ export const useCreatePollData = () => {
   const voteWeighting = useOneOfField<VoteWeightingMethod>({
     name: "voteWeighting",
     label: "Vote weigth",
-    choices: weigtingChoices,
+    choices: weigthingChoices,
     initialValue: "weight_perWallet",
   })
 
