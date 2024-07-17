@@ -9,9 +9,10 @@ import { useContracts } from '../../hooks/useContracts';
 import { useTextField } from '../../components/InputFields/useTextField';
 import { useTextArrayField } from '../../components/InputFields/useTextArrayField';
 import { useBooleanField } from '../../components/InputFields/useBoolField';
-import { useOneOfField } from '../../components/InputFields/useOneOfField';
+import { Choice, useOneOfField } from '../../components/InputFields/useOneOfField';
 import { findErrorsInFields } from '../../components/InputFields/validation';
 import { getAddress } from 'ethers';
+import { xchain_ChainNamesToChainId } from '@oasisprotocol/side-dao-contracts';
 
 type CreationStep = "basics" | "permission" | "results"
 
@@ -31,6 +32,14 @@ type AccessControlMethod = "acl_allowAll" | "acl_tokenHolders" | "acl_allowList"
 
 // type VoteWeightingMethod = "weight_perWallet" | "weight_perToken"
 
+const chainChoices: Choice[] = Object.entries(xchain_ChainNamesToChainId).map(([name, id]) => ({
+  value: id,
+  label: `${name} (${id})`
+}));
+
+
+// console.log(xchain_ChainNamesToChainId)
+
 const isValidAddress = (address: string) => {
   try {
     getAddress(address)
@@ -47,7 +56,7 @@ const isValidAddress = (address: string) => {
 
 export const useCreatePollData = () => {
   const eth = useEthereum()
-  const { pollManagerWithSigner: daoSigner} = useContracts(eth)
+  const { pollManagerWithSigner: daoSigner } = useContracts(eth)
   const [isCreating, setIsCreating] = useState<boolean>(false);
   const [step, setStep] = useState<CreationStep>("basics");
   const [stepIndex, setStepIndex] = useState(0);
@@ -78,7 +87,7 @@ export const useCreatePollData = () => {
     required: true,
     requiredMessage: "Please specify the question for your poll!",
     minLength: [10, minLength => `Please describe the question using at least ${minLength} characters!`],
-    maxLength: [20, maxLength => `Please state the question in more more than ${maxLength} characters!`],
+    maxLength: [80, maxLength => `Please state the question in more more than ${maxLength} characters!`],
   })
 
   const description = useTextField({
@@ -117,8 +126,16 @@ export const useCreatePollData = () => {
     choices: [
       { value: "acl_allowAll", label: "Everybody" },
       { value: "acl_tokenHolders", label: "Holds Token on Sapphire" },
-      { value: "acl_allowList", label: "Address Whitelist", description: 'You can specify a list of addresses that are allowed to vote.' },
-      { value: "acl_xchain", label: "Cross-Chain DAO", description: "You can set a condition that is evaluated on another chain." },
+      {
+        value: "acl_allowList",
+        label: "Address Whitelist",
+        description: 'You can specify a list of addresses that are allowed to vote.'
+      },
+      {
+        value: "acl_xchain",
+        label: "Cross-Chain DAO",
+        description: "You can set a condition that is evaluated on another chain."
+      },
     ],
     initialValue: "acl_allowAll",
   })
@@ -127,7 +144,7 @@ export const useCreatePollData = () => {
     name: "tokenAddress",
     label: "Token Address",
     visible: accessControlMethod.value === "acl_tokenHolders",
-    required: [true, "Please specify the address of the token that is the key to this poll"],
+    required: [true, "Please specify the address of the token that is the key to this poll!"],
     validators: value => (value && !isValidAddress(value)) ? "This doesn't seem to be a valid address." : undefined,
   })
 
@@ -141,6 +158,22 @@ export const useCreatePollData = () => {
     minItems: 1,
     allowDuplicates: [false, "The same address appears more than once!"],
     itemValidator: value => (value && !isValidAddress(value)) ? "This doesn't seem to be a valid address." : undefined,
+  })
+
+  const chain= useOneOfField({
+    name: "chain",
+    label: "Chain",
+    visible:  accessControlMethod.value === "acl_xchain",
+    choices: chainChoices,
+    required: [true, "Please specify a chain!"],
+  })
+
+  const xchainAddress = useTextField({
+    name: "xchainAddress",
+    label: "Address",
+    visible: accessControlMethod.value === "acl_xchain",
+    required: [true, "Please specify the address on the other chain that is the key to this poll!"],
+    validators: value => (value && !isValidAddress(value)) ? "This doesn't seem to be a valid address." : undefined,
   })
 
   const gasFree = useBooleanField({
@@ -162,7 +195,7 @@ export const useCreatePollData = () => {
 
   const stepFields: Record<CreationStep, InputFieldControls<any>[]> = {
     basics: [question, description, answers, customCSS],
-    permission: [accessControlMethod, tokenAddress, addressWhitelist, gasFree],
+    permission: [accessControlMethod, tokenAddress, addressWhitelist, chain, xchainAddress, gasFree],
     results: [],
   }
 

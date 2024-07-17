@@ -1,7 +1,7 @@
 import { InputFieldControls, InputFieldProps, useInputField } from './useInputField';
 import { Decision } from './util';
 
-type Choice<DataType = string> = {
+export type Choice<DataType = string> = {
   value: DataType,
   label: string,
   description?: string,
@@ -22,7 +22,7 @@ const NO_CHOICE = "_no_choice_"
 
 export function useOneOfField<DataType>(props: OneOfFieldProps<DataType>): OneOfFieldControls<DataType> {
   const {
-    placeholder = "Please elect",
+    placeholder = "Please select",
     choices,
     requiredMessage = "Please select an option!",
     initialValue = NO_CHOICE as DataType,
@@ -31,6 +31,7 @@ export function useOneOfField<DataType>(props: OneOfFieldProps<DataType>): OneOf
   const emptyChoice: Choice<DataType> = {
     value: NO_CHOICE as DataType,
     label: placeholder,
+    enabled: false,
   }
 
   const allChoices: Choice<DataType>[] = [
