@@ -11,6 +11,7 @@ import { useTextArrayField } from '../../components/InputFields/useTextArrayFiel
 import { useBooleanField } from '../../components/InputFields/useBoolField';
 import { useOneOfField } from '../../components/InputFields/useOneOfField';
 import { findErrorsInFields } from '../../components/InputFields/validation';
+import { getAddress } from 'ethers';
 
 type CreationStep = "basics" | "permission" | "results"
 
@@ -29,6 +30,20 @@ const acl_allowAll = import.meta.env.VITE_CONTRACT_ACL_ALLOWALL;
 type AccessControlMethod = "acl_allowAll" | "acl_tokenHolders" | "acl_allowList" | "acl_xchain"
 
 // type VoteWeightingMethod = "weight_perWallet" | "weight_perToken"
+
+const isValidAddress = (address: string) => {
+  try {
+    getAddress(address)
+  } catch (e: any) {
+    if (e.code == 'INVALID_ARGUMENT') {
+      return false
+    } else {
+      console.log("Unknown problem:", e)
+      return true
+    }
+  }
+  return true
+}
 
 export const useCreatePollData = () => {
   const eth = useEthereum()
@@ -112,9 +127,9 @@ export const useCreatePollData = () => {
     name: "tokenAddress",
     label: "Token Address",
     visible: accessControlMethod.value === "acl_tokenHolders",
+    required: [true, "Please specify the address of the token that is the key to this poll"],
+    validators: value => (value && !isValidAddress(value)) ? "This doesn't seem to be a valid address." : undefined,
   })
-
-  const isValidAddress = (address: string) => address.startsWith("0"); // TODO
 
   const addressWhitelist = useTextArrayField({
     name: "addressWhitelist",
