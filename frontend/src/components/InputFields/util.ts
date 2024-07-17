@@ -90,19 +90,20 @@ export const getNumberMessage = (template: NumberMessageTemplate, amount: number
 /**
  * Get the indices of duplicate elements in an array
  */
-export const findDuplicates = (values: string[], normalize?: (value: string) => string): number[] => {
+export const findDuplicates = (values: string[], normalize?: (value: string) => string): [number[], number[]] => {
   const matches: Record<string, number> = {}
+  const hasDuplicates = new Set<number>()
   const duplicates = new Set<number>()
   values.forEach((value, index) => {
     const key = normalize ? normalize(value) : value
     if (matches[key] !== undefined) {
-      duplicates.add(matches[value])
+      hasDuplicates.add(matches[value])
       duplicates.add(index)
     } else {
       matches[key] = index
     }
   })
-  return Array.from(duplicates.values())
+  return [Array.from(hasDuplicates.values()), Array.from(duplicates.values())]
 }
 
 type SimpleDecision = boolean

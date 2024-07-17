@@ -113,7 +113,7 @@ export const useCreatePollData = () => {
     placeholderTemplate: (index) => `Answer ${index + 1}`,
     minItems: [2, minCount => `You need at least ${minCount} answers in order to create this poll.`],
     maxItem: [10, maxCount => `Please don't offer more than ${maxCount} answers.`],
-    allowDuplicates: [false, "The same answer appears more than once!"],
+    allowDuplicates: [false, ["This answer is repeated below.", "The same answer was already listed above!"]],
     allowEmptyItems: [false, "Please either fill this in, or remove this answer."],
     minItemLength: [3, minLength => `Please use at least ${minLength} characters for this answer.`],
     // maxItemLength: [10, maxLength => `Please don't use more than ${maxLength} characters for this answer.`],
@@ -164,7 +164,7 @@ export const useCreatePollData = () => {
     visible: accessControlMethod.value === "acl_allowList",
     allowEmptyItems: [false, "Please specify address, or remove this field!"],
     minItems: 1,
-    allowDuplicates: [false, "The same address appears more than once!"],
+    allowDuplicates: [false, ["This address is repeated below.", "The same address was already listed above!"]],
     itemValidator: value => (value && !isValidAddress(value)) ? "This doesn't seem to be a valid address." : undefined,
     onItemEdited: (index, value, me) => {
       if ((value.indexOf(",") !== -1)|| (value.indexOf(" ") !== -1) || (value.indexOf("\n") !== -1)) {

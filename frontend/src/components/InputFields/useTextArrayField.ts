@@ -117,7 +117,7 @@ type TextArrayProps = Omit<InputFieldProps<string[]>, "initialValue"> & {
   /**
    * Is it allowed to specify the same item more than once?
    */
-  allowDuplicates?: CoupledData<boolean, string>,
+  allowDuplicates?: CoupledData<boolean, [string, string]>,
 
   itemValidator?: SingleOrArray<undefined | ValidatorFunction<string>>
 
@@ -185,9 +185,9 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
     [1000, maxLength => `Please don't use more than ${maxLength} characters.`],
   )
 
-  const [allowDuplicates, duplicatesErrorMessage] = expandCoupledData(
+  const [allowDuplicates, duplicatesErrorMessages] = expandCoupledData(
     props.allowDuplicates,
-    [false, "The same data is given multiple times."]
+    [false, ["This item is repeated below.", "This item is already listed above!"]]
   )
 
   const {
@@ -250,10 +250,14 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
       // Check for duplicates
       allowDuplicates
         ? undefined
-        : (values => findDuplicates(values).filter(index => !!values[index]).map(index => ({
-          message: duplicatesErrorMessage,
-          location: `value-${index}`,
-        }))),
+        : (values => findDuplicates(values).flatMap((list, listIndex) => {
+          const realList = list.filter((index) => !!values[index])
+          return realList.map(index => ({
+            message: duplicatesErrorMessages[listIndex],
+            location: `value-${index}`,
+            level: ["warning", "error"][listIndex],
+          }))
+        })),
 
       // Specified custom per-item validators
       ...((getAsArray(itemValidator).filter(v => !!v) as ValidatorFunction<string>[])
