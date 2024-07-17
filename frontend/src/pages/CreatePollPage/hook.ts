@@ -8,7 +8,6 @@ import { Pinata } from '../../utils/Pinata';
 import { useContracts } from '../../hooks/useContracts';
 import { useTextField } from '../../components/InputFields/useTextField';
 import { useTextArrayField } from '../../components/InputFields/useTextArrayField';
-import { findDuplicates } from '../../components/InputFields/util';
 import { useBooleanField } from '../../components/InputFields/useBoolField';
 import { useOneOfField } from '../../components/InputFields/useOneOfField';
 
@@ -64,11 +63,9 @@ export const useCreatePollData = () => {
     required: true,
     requiredMessage: "Please specify the question for your poll!",
 
-    minLength: 10,
-    tooShortMessage: minLength => `Please describe the question using at least ${minLength} characters!`,
+    minLength: [10, minLength => `Please describe the question using at least ${minLength} characters!`],
 
-    // maxLength: 20,
-    // tooLongMessage: maxLength => `Please state the question in more more than ${maxLength} characters!`,
+    maxLength: [20, maxLength => `Please state the question in more more than ${maxLength} characters!`],
   })
 
   const description = useTextField({
@@ -84,31 +81,16 @@ export const useCreatePollData = () => {
     removeItemLabel: "Remove this answer",
 
     initialItemCount: 3, // Let's start with 3 answers.
-
-    minItemCount: 2,
-    tooFewItemsMessage: minCount => `You need at least ${minCount} answers in order to create this poll.`,
-
-    maxItemCount: 7,
-    tooManyItemsMessage: maxCount => `Please don't offer more than ${maxCount} answers.`,
-
     placeholderTemplate: (index) => `Answer ${index + 1}`,
-    allowEmptyItems: false,
-    noEmptyItemMessage: "Please either fill this in, or remove this answer.",
-
-    minLength: 3,
-    tooShortItemMessage: minLength => `Please use at least ${minLength} characters for this answer.`,
-
-    // maxLength: 10,
-    tooLongItemMessage: maxLength => `Please don't use more than ${maxLength} characters for this answer.`,
+    minItems: [2, minCount => `You need at least ${minCount} answers in order to create this poll.`],
+    maxItem: [10, maxCount => `Please don't offer more than ${maxCount} answers.`],
+    allowDuplicates: [false, "The same answer appears more than once!"],
+    allowEmptyItems: [false, "Please either fill this in, or remove this answer."],
+    minItemLength: [3, minLength => `Please use at least ${minLength} characters for this answer.`],
+    // maxItemLength: [10, maxLength => `Please don't use more than ${maxLength} characters for this answer.`],
 
     // Only the last item can be removed
     // canRemoveElement: (index, field) => index === field.numberOfValues - 1,
-
-    // We don't want identical answers
-    validators: values => findDuplicates(values).filter(index => !!values[index]).map(index => ({
-      message: "The same answer appears more than once!",
-      location: `value-${index}`,
-    })),
   })
 
   const customCSS = useBooleanField({
@@ -134,7 +116,7 @@ export const useCreatePollData = () => {
     visible: accessControlMethod.value === "acl_tokenHolders",
   })
 
-  const isValidAddress = (_address: string) => false; // TODO
+  const isValidAddress = (address: string) => address.startsWith("0"); // TODO
 
   const addressWhitelist = useTextArrayField({
     name: "addressWhitelist",
@@ -142,13 +124,10 @@ export const useCreatePollData = () => {
     addItemLabel: "Add address",
     removeItemLabel: "Remove address",
     visible: accessControlMethod.value === "acl_allowList",
-    allowEmptyItems: false,
-    minItemCount: 1,
-    noEmptyItemMessage: "Please specify address, or remove this field!",
-    validators: values => values.map(((value, index) => (!value || isValidAddress(value)) ? undefined : {
-      message: "This doesn't seem to be a valid address.",
-      location: `value-${index}`,
-    })),
+    allowEmptyItems: [false, "Please specify address, or remove this field!"],
+    minItems: 1,
+    allowDuplicates: [false, "The same address appears more than once!"],
+    itemValidator: value => (value && !isValidAddress(value)) ? "This doesn't seem to be a valid address." : undefined,
   })
 
   const gasFree = useBooleanField({

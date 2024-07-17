@@ -1,13 +1,21 @@
-import React, { FC } from 'react';
+import React, { FC, useCallback } from 'react';
 import { TextArrayControls } from './useTextArrayField';
 import classes from "./index.module.css";
 import { StringUtils } from '../../utils/string.utils';
 import { ProblemList } from './ProblemDisplay';
 import { checkProblems } from './util';
 
-const TrashIcon: FC<{label: string, remove: () => void}> = ({label, remove}) => {
+const TrashIcon: FC<{
+  label: string,
+  remove: () => void
+  enabled?: boolean,
+}> = ({label, remove, enabled}) => {
+  const handleClick = useCallback(
+    () => { if (enabled) remove() },
+    [remove],
+  )
   return (
-    <div title={label} className={classes.removeIcon} onClick={remove}>
+    <div title={label} className={classes.removeIcon} onClick={handleClick}>
       <svg width="14" height="19" viewBox="0 0 14 19" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path
           d="M1 16.5C1 17.6 1.9 18.5 3 18.5H11C12.1 18.5 13 17.6 13 16.5V4.5H1V16.5ZM14 1.5H10.5L9.5 0.5H4.5L3.5 1.5H0V3.5H14V1.5Z"
@@ -17,9 +25,18 @@ const TrashIcon: FC<{label: string, remove: () => void}> = ({label, remove}) => 
   )
 }
 
-const AddIcon: FC<{ label: string, add: () => void }> = ({ label, add }) => {
+const AddIcon: FC<{
+  label: string,
+  add: () => void,
+  enabled?: boolean,
+  title?: string
+}> = ({ label, add, enabled, title }) => {
+  const handleClick = useCallback(
+    () => { if (enabled) add() },
+    [add],
+  )
   return (
-    <div className={StringUtils.clsx("niceLine", classes.addIcon)} onClick={add}>
+    <div className={StringUtils.clsx("niceLine", classes.addIcon)} title={title} onClick={handleClick}>
       <svg width="28" height="25" viewBox="0 0 28 25" fill="none" xmlns="http://www.w3.org/2000/svg">
         <g clipPath="url(#clip0_2028_18630)">
           <path
@@ -54,7 +71,10 @@ export const TextArrayInput: FC<TextArrayControls & {}> = (
     removeItem,
     allProblems,
     clearProblem,
-    visible
+    visible,
+    enabled,
+    whyDisabled,
+
   }
 ) => {
 
@@ -84,14 +104,16 @@ export const TextArrayInput: FC<TextArrayControls & {}> = (
                 value={value}
                 onChange={(event) => handleChange(index, event)}
                 className={classes.textValue}
+                disabled={!enabled}
+                title={whyDisabled}
               />
-              {canRemoveItem(index) && <TrashIcon label={removeItemLabel} remove={() => removeItem(index)} />}
+              {canRemoveItem(index) && <TrashIcon enabled={enabled} label={whyDisabled ?? removeItemLabel} remove={() => removeItem(index)} />}
             </div>
             <ProblemList problems={itemProblems} onRemove={clearProblem} />
           </div>
         )
       })}
-      {canAddItem && <AddIcon label={addItemLabel} add={addItem} />}
+      {canAddItem && <AddIcon label={addItemLabel} add={addItem} enabled={enabled} title={whyDisabled}/>}
     </div>
   )
 

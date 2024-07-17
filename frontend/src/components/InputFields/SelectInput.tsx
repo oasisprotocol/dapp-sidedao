@@ -12,6 +12,8 @@ export const SelectInput: FC<OneOfFieldControls<any>> = (props) => {
     allProblems, clearProblem,
     value, setValue,
     visible,
+    enabled,
+    whyDisabled,
   } = props
 
   const handleChange = useCallback(
@@ -25,8 +27,9 @@ export const SelectInput: FC<OneOfFieldControls<any>> = (props) => {
     <select
       value={value}
       onChange={handleChange}
+      disabled={!enabled}
     >
-      { choices.map(choice => (
+      { choices.filter(c => !c.hidden).map(choice => (
         <option
           key={choice.value}
           value={choice.value}
@@ -54,7 +57,7 @@ export const SelectInput: FC<OneOfFieldControls<any>> = (props) => {
   )
 
   return (
-    <div className={classes.fieldContainer}>
+    <div className={classes.fieldContainer} title={whyDisabled}>
       {(!!label || !!description)
         ? (
           <label>

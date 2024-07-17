@@ -18,8 +18,10 @@ export type Problem = {
 
 export type ProblemAtLocation = Problem & { location: string }
 
+type ValidatorProduct = ProblemReport | string | undefined
+
 export const wrapProblem = (
-  problem: string | ProblemReport | undefined,
+  problem: ValidatorProduct,
   defaultLocation: string,
   defaultLevel: ProblemLevel,
 ): ProblemAtLocation | undefined =>
@@ -38,8 +40,15 @@ export const wrapProblem = (
         location: (problem as ProblemReport).location ?? defaultLocation,
       }
 
+export function flatten<Data>(array: Data[][]): Data[] {
+  const result: Data[] = []
+  array.forEach(a => a.forEach(i => result.push(i)))
+  return result;
+}
 
 export type AllProblems = Record<string, Problem[]>
+
+export type ValidatorFunction<DataType> = (value: DataType) => SingleOrArray<ValidatorProduct>
 
 export const checkProblems = (problems: Problem[] = []) => ({
   hasWarning: problems.some((problem) => problem.level === "warning"),
@@ -65,7 +74,7 @@ export const thereIsOnly = (amount: number) => {
 export const atLeastXItems = (amount: number): string => {
   if (amount > 1) {
     return `at least ${amount} items`
-  } else if (amount = 1) {
+  } else if (amount === 1) {
     return `at least one item`
   } else {
     throw new Error(`What do you mean by 'at least ${amount} items??'`)
@@ -104,6 +113,17 @@ export const allow = (reason?: string ): Decision => ({ verdict: true, reason })
 
 export const deny = (reason?: string ): Decision => ({ verdict: false, reason })
 
+export const expandDecision = (decision: Decision): FullDecision =>
+  (typeof decision === "boolean") ? { verdict: decision } : decision
+
+export const invertDecision = (decision: Decision): Decision => {
+  const {verdict, reason} = expandDecision(decision)
+  return {
+    verdict: !verdict,
+    reason
+  }
+}
+
 export const getVerdict = (decision: Decision | undefined, defaultVerdict = false): boolean =>
   (decision === undefined)
     ? defaultVerdict
@@ -127,3 +147,19 @@ export const getReasonForAllowing = (decision: Decision | undefined ): string | 
     : ((typeof decision === "boolean") || !decision.verdict)
       ? undefined
       : decision.reason
+
+
+export type CoupledData<FirstType = boolean, SecondType = string> = [FirstType, SecondType] | FirstType
+
+export function expandCoupledData<FirstType, SecondType>(
+  value: CoupledData<FirstType, SecondType> | undefined,
+  fallback: [FirstType, SecondType]
+): [FirstType,  SecondType] {
+  if (value === undefined) {
+    return fallback;
+  } else if (Array.isArray(value)) {
+    return value;
+  } else {
+    return [value, fallback[1]];
+  }
+}

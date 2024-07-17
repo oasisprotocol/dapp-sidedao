@@ -1,5 +1,23 @@
 import { InputFieldControls, InputFieldProps, useInputField } from './useInputField';
-import { atLeastXItems, getAsArray, getNumberMessage, NumberMessageTemplate, thereIsOnly } from './util';
+import {
+  atLeastXItems, expandCoupledData,
+  getAsArray,
+  getNumberMessage,
+  NumberMessageTemplate,
+  CoupledData,
+  thereIsOnly, findDuplicates, SingleOrArray, ValidatorFunction, wrapProblem, flatten,
+} from './util';
+
+const wrapItemValidatorFunction = (validator: ValidatorFunction<string>): ValidatorFunction<string[]> =>
+  (values) =>
+    flatten(values
+      .map(value=> validator(value))
+      .map((reports, index) =>
+        getAsArray(reports)
+          .map(rep => wrapProblem(rep, `value-${index}`, "error"))
+          .filter(p => !!p)
+      )
+    )
 
 /**
  * Parameters for defining an input field that accepts a list of strings
@@ -22,55 +40,86 @@ type TextArrayProps = Omit<InputFieldProps<string[]>, "initialValue"> & {
    */
   placeholderTemplate?: (index: number) => string,
 
-  // Do we accept empty items?
-  allowEmptyItems?: boolean
-
-  // What error message to give on empty items?
-  noEmptyItemMessage?: string
-
-  // Minimum number of items
-  minItemCount?: number,
+  /**
+   *  Do we accept empty items?
+   *
+   *  You can specify this as a boolean, or as an array,
+   *  the boolean first and then the error message.
+   *
+   *  Examples:
+   *     tru
+   *     false
+   *     [false, 'Please specify phone number']
+   */
+  allowEmptyItems?: CoupledData<boolean, string>,
 
   /**
-   * Error message for when there are too few items
+   * Minimum number of items
    *
-   * You can provide a string, or a function that can
-   * return a string, including the specified minimum amount.
+   * You can specify this as a number, or as an array,
+   * the number first and then the error message,
+   * which you can provide a string, or a function that
+   * returns a string, including the specified minimum amount.
+   *
+   * Examples:
+   *    2
+   *    [3, "We want at least 3"]
+   *    [3, amount => `We want at least ${amount}`]
+   *
    */
-  tooFewItemsMessage?: NumberMessageTemplate;
-
-  // Maximum number of items
-  maxItemCount?: number,
+  minItems?: CoupledData<number, NumberMessageTemplate>
 
   /**
-   * Error message for when there are too many items
+   * Maximum number of items
    *
-   * You can provide a string, or a function that can
-   * return a string, including the specified maximum amount.
+   * You can specify this as a number, or as an array,
+   * the number first and then the error message,
+   * which You can provide a string, or a function that
+   * returns a string, including the specified maximum amount.
+   *
+   * Examples:
+   *    10
+   *    [10, "No more than ten, please!"]
+   *    [12, amount => `Please use at most ${amount} values!`]
    */
-  tooManyItemsMessage?: NumberMessageTemplate
-
-  // Minimum length of each item
-  minLength?: number
+  maxItem?: CoupledData<number, NumberMessageTemplate>
 
   /**
-   * Error message for when an item is too short
+   * Minimum length of each item
    *
-   * You can provide a string, or a function that can
-   * return a string, including the specified minimum length.
+   * You can specify this as a number, or as an array,
+   * the number first and then the error message,
+   * which you can provide a string, or a function that
+   * returns a string, including the specified minimum length.
+   *
+   * Examples:
+   *      5
+   *      [5, "This is too short"]
+   *      [10, l => `Please use at least %{l} characters!`]
    */
-  tooShortItemMessage?: NumberMessageTemplate
-
-  // Maximum length of each item
-  maxLength?: number
+  minItemLength?: CoupledData<number, NumberMessageTemplate>
 
   /**
-   * Error message for when an item is too long
+   * Maximum length of each item
    *
-   * You can provide a string, or a function that can
-   * return a string, including the specified maximum length.
+   * You can specify this as a number, or as an array,
+   * the number first and then the error message,
+   * which you can provide a string, or a function that
+   * returns a string, including the specified maximum length.
+   *
+   * Examples:
+   *      100
+   *      [40, "This is too long"]
+   *      [50, l => `Please use at most %{l} characters!`]*
    */
-  tooLongItemMessage?: NumberMessageTemplate
+  maxItemLength?: CoupledData<number, NumberMessageTemplate>
+
+  /**
+   * Is it allowed to specify the same item more than once?
+   */
+  allowDuplicates?: CoupledData<boolean, string>,
+
+  itemValidator?: SingleOrArray<undefined | ValidatorFunction<string>>
 
   // Label for adding more items
   addItemLabel?: string,
@@ -101,20 +150,42 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
   const {
     addItemLabel= "Add",
     removeItemLabel= "Remove",
-    minItemCount = 3,
     initialItemCount,
     placeholderTemplate,
-    tooFewItemsMessage = amount => `Please specify ${atLeastXItems(amount)}!`,
-    maxItemCount,
-    tooManyItemsMessage = amount => `Please specify at most ${amount} items.`,
-    allowEmptyItems,
-    noEmptyItemMessage = "Please either fill this in, or remove this option.",
-    minLength,
-    tooShortItemMessage = minLength => `Please specify at least ${minLength} characters.`,
-    maxLength,
-    tooLongItemMessage = maxLength => `Please don't use more than ${maxLength} characters.`,
     validators = [],
+    itemValidator = [],
   } = props;
+
+  const [allowEmptyItems, emptyItemMessage] = expandCoupledData(
+    props.allowEmptyItems,
+    [false, "Please either fill this in, or remove this option."]
+  )
+
+  const [minItemCount, tooFewItemsMessage] = expandCoupledData(
+    props.minItems,
+    [3, amount => `Please specify ${atLeastXItems(amount)}!`],
+  )
+
+  const [maxItemCount, tooManyItemsMessage] = expandCoupledData(
+    props.maxItem,
+    [1000, amount => `Please specify at most ${amount} items.`],
+  )
+
+  const [minLength, tooShortItemMessage] = expandCoupledData(
+    props.minItemLength,
+    [1, minLength => `Please specify at least ${minLength} characters.`],
+  )
+
+  const [maxLength, tooLongItemMessage] = expandCoupledData(
+    props.maxItemLength,
+    [1000, maxLength => `Please don't use more than ${maxLength} characters.`],
+  )
+
+  const [allowDuplicates, duplicatesErrorMessage] = expandCoupledData(
+    props.allowDuplicates,
+    [false, "The same data is given multiple times."]
+  )
+
   const {
     initialValue =  [...Array(initialItemCount ?? minItemCount).keys()].map(
       (_ , _index) => ""
@@ -132,7 +203,7 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
 
       // No empty elements, please
       allowEmptyItems ? undefined : (values) => values.map((value, index) => value ? undefined : {
-        message: noEmptyItemMessage,
+        message: emptyItemMessage,
         location: `value-${index}`,
       }),
 
@@ -172,6 +243,19 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
           } : undefined)
         ) : undefined,
 
+      // Check for duplicates
+      allowDuplicates
+        ? undefined
+        : (values => findDuplicates(values).filter(index => !!values[index]).map(index => ({
+          message: duplicatesErrorMessage,
+          location: `value-${index}`,
+        }))),
+
+      // Specified custom per-item validators
+      ...((getAsArray(itemValidator).filter(v => !!v) as ValidatorFunction<string>[])
+        .map((validator) => wrapItemValidatorFunction(validator))),
+
+      // Specified custom global validators
       ...getAsArray(validators),
     ],
   }, {
@@ -205,7 +289,7 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
   }
 
   newControls.canRemoveItem = (index: number) => {
-    return ((minItemCount === undefined) ? controls.value.length > 0 : controls.value.length > minItemCount) &&
+    return (controls.value.length > minItemCount) &&
       (
         (props.canRemoveItem === undefined)
           ? true

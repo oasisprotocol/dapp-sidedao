@@ -6,6 +6,7 @@ type Choice<DataType = string> = {
   label: string,
   description?: string,
   enabled?: Decision,
+  hidden?: boolean,
 }
 
 type OneOfFieldProps<DataType = string> = Omit<InputFieldProps<DataType>, "initialValue"> & {

@@ -15,6 +15,8 @@ export const BooleanInput: FC<BooleanFieldControls> = (props) => {
     allProblems,
     clearProblem,
     visible,
+    enabled,
+    whyDisabled,
   } = props
 
   const handleChange = useCallback(
@@ -35,6 +37,7 @@ export const BooleanInput: FC<BooleanFieldControls> = (props) => {
       checked={value}
       onChange={handleChange}
       size={32}
+      disabled={!enabled}
     />
   )
 
@@ -51,7 +54,7 @@ export const BooleanInput: FC<BooleanFieldControls> = (props) => {
   )
 
   return (
-    <div className={classes.fieldContainer}>
+    <div className={classes.fieldContainer} title={whyDisabled}>
       {description
         ? (
           <label>

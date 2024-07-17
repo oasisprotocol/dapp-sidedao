@@ -16,6 +16,8 @@ export const TextInput: FC<TextFieldControls & {}> = (
     allProblems,
     clearProblem,
     visible,
+    enabled,
+    whyDisabled,
   }
 ) => {
   const handleChange = useCallback(
@@ -25,13 +27,17 @@ export const TextInput: FC<TextFieldControls & {}> = (
 
   if (!visible) return
 
-  const field = <input
-    name={name}
-    placeholder={placeholder}
-    value={value}
-    onChange={handleChange}
-    className={classes.textValue}
-  />
+  const field = (
+    <input
+      name={name}
+      placeholder={placeholder}
+      value={value}
+      onChange={handleChange}
+      className={classes.textValue}
+      disabled={!enabled}
+      title={whyDisabled}
+    />
+  )
 
   const rootProblems = allProblems.root || []
 

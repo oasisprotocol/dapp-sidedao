@@ -1,5 +1,13 @@
 import { useEffect, useState } from 'react';
-import { AllProblems, getAsArray, ProblemAtLocation, ProblemReport, SingleOrArray, wrapProblem } from './util';
+import {
+  AllProblems,
+  Decision,
+  getAsArray, getReason, getVerdict, invertDecision,
+  ProblemAtLocation,
+  SingleOrArray,
+  ValidatorFunction,
+  wrapProblem,
+} from './util';
 
 export type InputFieldProps<DataType> = {
   name: string;
@@ -10,13 +18,18 @@ export type InputFieldProps<DataType> = {
   cleanUp?: (value: DataType) => DataType
   required?: boolean
   requiredMessage?: string
-  validators?: SingleOrArray<undefined | ((value: DataType) => SingleOrArray<ProblemReport | string | undefined>)>
+  validators?: SingleOrArray<undefined | ValidatorFunction<DataType>>,
   visible?: boolean,
+  hidden?: boolean,
+  enabled?: Decision,
+  disabled?: Decision,
 }
 
 export type InputFieldControls<DataType> = Pick<InputFieldProps<DataType>, "label" | "description" | "placeholder" | "name"> & {
   type: string,
   visible: boolean,
+  enabled: boolean,
+  whyDisabled?: string,
   value: DataType,
   setValue: (value: DataType) => void
   allProblems: AllProblems
@@ -31,6 +44,51 @@ type DataTypeTools<DataType> = {
   isEqual: (data1: DataType, data2: DataType) => boolean
 }
 
+const calculateVisible = (controls: Pick<InputFieldProps<any>, 'name' | 'hidden' | 'visible'>): boolean => {
+  const {name, hidden,visible} = controls
+  if (visible === undefined) {
+    if (hidden === undefined) {
+      return true
+    } else {
+      return !hidden
+    }
+  } else {
+    if (hidden === undefined) {
+      return visible
+    } else {
+      if (visible !== hidden) {
+        return visible
+      } else {
+        throw new Error(`On field ${name}, props "hidden" and "visible" have been set to contradictory values!`)
+      }
+    }
+  }
+}
+
+const calculateEnabled = (controls: Pick<InputFieldProps<any>, 'name' | 'enabled' | 'disabled'>): Decision => {
+  const {name, enabled,disabled} = controls
+  if (enabled === undefined) {
+    if (disabled === undefined) {
+      return true
+    } else {
+      return invertDecision(disabled)
+    }
+  } else {
+    if (disabled === undefined) {
+      return enabled
+    } else {
+      if (getVerdict(enabled) !== getVerdict(disabled)) {
+        return {
+          verdict: getVerdict(enabled),
+          reason: getReason(disabled) ?? getReason(enabled),
+        }
+      } else {
+        throw new Error(`On field ${name}, props "enabled" and "disabled" have been set to contradictory values!`)
+      }
+    }
+  }
+}
+
 export function useInputField<DataType>(
   type: string,
   props: InputFieldProps<DataType>,
@@ -42,13 +100,17 @@ export function useInputField<DataType>(
     required,
     requiredMessage = "This field is required",
     validators = [],
-    visible = true,
   } = props
 
   const [value, setValue] = useState<DataType>(initialValue)
   const [problems, setProblems] = useState<ProblemAtLocation[]>([])
   const [allProblems, setAllProblems] = useState<AllProblems>({})
   const { isEmpty, isEqual } = dataTypeControl
+
+  const visible = calculateVisible(props);
+  const enabled = calculateEnabled(props);
+
+  const isEnabled = getVerdict(enabled);
 
   const validate = () : boolean => {
     const cleanValue = cleanUp ? cleanUp(value) : value
@@ -99,6 +161,7 @@ export function useInputField<DataType>(
       setAllProblems(problemTree)
     }, [problems]);
 
+
   return {
     type,
     name,
@@ -117,6 +180,8 @@ export function useInputField<DataType>(
 
     validate,
     visible,
+    enabled: isEnabled,
+    whyDisabled: isEnabled ? undefined : getReason(enabled),
   }
 }
 

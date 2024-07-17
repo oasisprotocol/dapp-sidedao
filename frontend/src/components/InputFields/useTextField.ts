@@ -1,14 +1,38 @@
 import { InputFieldControls, InputFieldProps, useInputField } from './useInputField';
-import { getAsArray, getNumberMessage, NumberMessageTemplate } from './util';
+import { CoupledData, expandCoupledData, getAsArray, getNumberMessage, NumberMessageTemplate } from './util';
 
 type TextFieldProps = Omit<InputFieldProps<string>, "initialValue"> & {
   initialValue?: string
 
-  minLength?: number
-  tooShortMessage?: NumberMessageTemplate
+  /**
+   * Minimum length of text
+   *
+   * You can specify this as a number, or as an array,
+   * the number first and then the error message,
+   * which you can provide a string, or a function that
+   * returns a string, including the specified minimum length.
+   *
+   * Examples:
+   *      5
+   *      [5, "This is too short"]
+   *      [10, l => `Please use at least %{l} characters!`]
+   */
+  minLength?: CoupledData<number, NumberMessageTemplate>
 
-  maxLength?: number
-  tooLongMessage?: NumberMessageTemplate
+  /**
+   * Maximum length of each item
+   *
+   * You can specify this as a number, or as an array,
+   * the number first and then the error message,
+   * which you can provide a string, or a function that
+   * returns a string, including the specified maximum length.
+   *
+   * Examples:
+   *      100
+   *      [40, "This is too long"]
+   *      [50, l => `Please use at most %{l} characters!`]*
+   */
+  maxLength?: CoupledData<number, NumberMessageTemplate>
 }
 
 export type TextFieldControls = InputFieldControls<string> & {
@@ -18,12 +42,20 @@ export type TextFieldControls = InputFieldControls<string> & {
 export function useTextField(props: TextFieldProps): TextFieldControls {
   const {
     initialValue = "",
-    minLength,
-    maxLength,
-    tooShortMessage = minLength => `Please specify at least ${minLength} characters!`,
-    tooLongMessage = maxLength => `Please specify at most ${maxLength} characters!`,
     validators,
   } = props
+
+  const [minLength, tooShortMessage] = expandCoupledData(
+    props.minLength,
+    [1, minLength => `Please specify at least ${minLength} characters!`]
+  )
+
+  const [maxLength, tooLongMessage] = expandCoupledData(
+    props.maxLength,
+    [1000, maxLength => `Please specify at most ${maxLength} characters!`]
+  )
+
+
   const controls = useInputField<string>(
     "text",
     {
