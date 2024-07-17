@@ -16,18 +16,24 @@ export function useBooleanField(props: BoolFieldProps): BooleanFieldControls {
     initialValue = false,
   } = props
 
+  const controls = useInputField<boolean>(
+    "boolean",
+    {
+      ...props,
+      initialValue,
+    },
+    {
+      isEmpty: () => false,
+      isEqual: (a, b) => a === b,
+    },
+  )
+
   return {
-    ...useInputField<boolean>(
-      "boolean",
-      {
-        ...props,
-        initialValue,
-      },
-      {
-        isEmpty: () => false,
-        isEqual: (a, b) => a === b,
-      },
-    ),
+    ...controls,
     label,
+    setValue: value => {
+      controls.clearAllProblems()
+      controls.setValue(value)
+    }
   }
 }

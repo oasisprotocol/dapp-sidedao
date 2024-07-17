@@ -35,23 +35,30 @@ export function useOneOfField<DataType>(props: OneOfFieldProps<DataType>): OneOf
   }
 
   const allChoices: Choice<DataType>[] = [
-    ...(initialValue === NO_CHOICE ? [emptyChoice] : []),
+    emptyChoice,
+    // ...(initialValue === NO_CHOICE ? [emptyChoice] : []),
     ...choices,
   ]
 
+  const controls = useInputField<DataType>(
+    "oneOf",
+    {
+      ...props,
+      initialValue,
+      requiredMessage,
+    },
+    {
+      isEmpty: (value) => value === NO_CHOICE,
+      isEqual: (a, b) => a === b,
+    },
+  )
+
   return {
-    ...useInputField<DataType>(
-      "oneOf",
-      {
-        ...props,
-        initialValue,
-        requiredMessage,
-      },
-      {
-        isEmpty: (value) => value === NO_CHOICE,
-        isEqual: (a, b) => a === b,
-      },
-    ),
+    ...controls,
+    setValue: value => {
+      controls.setValue(value);
+      controls.clearAllProblems()
+    },
     choices: allChoices,
   }
 }
