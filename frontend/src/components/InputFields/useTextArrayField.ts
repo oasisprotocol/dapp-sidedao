@@ -129,6 +129,9 @@ type TextArrayProps = Omit<InputFieldProps<string[]>, "initialValue"> & {
 
   // Logic to determine whether an item can be removed
   canRemoveItem?: (index: number, me: TextArrayControls) => boolean
+
+  // Effects to run after an item has been edited
+  onItemEdited?: (index: number, value: string, me: TextArrayControls) => void
 }
 
 export type TextArrayControls = InputFieldControls<string[]> & {
@@ -154,6 +157,7 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
     placeholderTemplate,
     validators = [],
     itemValidator = [],
+    onItemEdited,
   } = props;
 
   const [allowEmptyItems, emptyItemMessage] = expandCoupledData(
@@ -269,11 +273,9 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
       (_ , index) => placeholderTemplate ? placeholderTemplate(index) : ""
     ),
     numberOfItems: controls.value.length,
-    setItem: (index, value) => {
-      controls.clearProblemsAt(`value-${index}`)
-      controls.setValue(controls.value.map((oldValue, oldIndex) => (oldIndex === index ? value : oldValue)))
-    },
     canAddItem: !maxItemCount || controls.value.length < maxItemCount,
+    setItem: () => {}, // This will be overwritten in the next step
+
     addItemLabel: addItemLabel,
     addItem: () => {
       controls.clearAllProblems()
@@ -295,6 +297,14 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
           ? true
           : props.canRemoveItem(index, newControls)
       )
+  }
+
+  newControls.setItem = (index, value) => {
+    controls.clearProblemsAt(`value-${index}`)
+    controls.setValue(controls.value.map((oldValue, oldIndex) => (oldIndex === index ? value : oldValue)))
+    if (onItemEdited) {
+      onItemEdited(index, value, newControls)
+    }
   }
 
   return newControls

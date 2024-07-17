@@ -32,13 +32,11 @@ type AccessControlMethod = "acl_allowAll" | "acl_tokenHolders" | "acl_allowList"
 
 // type VoteWeightingMethod = "weight_perWallet" | "weight_perToken"
 
-const chainChoices: Choice[] = Object.entries(xchain_ChainNamesToChainId).map(([name, id]) => ({
-  value: id,
-  label: `${name} (${id})`
-}));
-
-
-// console.log(xchain_ChainNamesToChainId)
+const chainChoices: Choice[] = Object.entries(xchain_ChainNamesToChainId)
+  .map(([name, id]) => ({
+    value: id,
+    label: `${name} (${id})`
+  }));
 
 const isValidAddress = (address: string) => {
   try {
@@ -53,6 +51,15 @@ const isValidAddress = (address: string) => {
   }
   return true
 }
+
+// Split a list of addresses by newLine, comma or space
+const splitAddresses = (addressSoup: string): string[] => addressSoup
+  .split('\n')
+  .flatMap((x) => x.split(','))
+  .flatMap((x) => x.split(' '))
+  .map((x) => x.trim())
+  .filter((x) => x.length > 0)
+
 
 export const useCreatePollData = () => {
   const eth = useEthereum()
@@ -151,6 +158,7 @@ export const useCreatePollData = () => {
   const addressWhitelist = useTextArrayField({
     name: "addressWhitelist",
     label: "Acceptable Addresses",
+    description: "You can just copy-paste your list here",
     addItemLabel: "Add address",
     removeItemLabel: "Remove address",
     visible: accessControlMethod.value === "acl_allowList",
@@ -158,6 +166,15 @@ export const useCreatePollData = () => {
     minItems: 1,
     allowDuplicates: [false, "The same address appears more than once!"],
     itemValidator: value => (value && !isValidAddress(value)) ? "This doesn't seem to be a valid address." : undefined,
+    onItemEdited: (index, value, me) => {
+      if ((value.indexOf(",") !== -1)|| (value.indexOf(" ") !== -1) || (value.indexOf("\n") !== -1)) {
+        const addresses = splitAddresses(value)
+        for (let i = 0; i < addresses.length; i++) {
+          me.value[index + i] = addresses[i]
+        }
+        me.setValue(me.value)
+      }
+    },
   })
 
   const chain= useOneOfField({
