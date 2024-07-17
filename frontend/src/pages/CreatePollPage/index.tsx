@@ -33,8 +33,8 @@ export const CreatePollPage = () => {
           { stepIndex === numberOfSteps - 1 && <Button onClick={createPoll}>Create poll</Button> }
 
         </div>
-        <DottedProgressIndicator steps={ numberOfSteps} currentStepIndex={stepIndex} />
       </Card>
+      <DottedProgressIndicator steps={ numberOfSteps} currentStepIndex={stepIndex} />
     </Layout>
   )
 }
