@@ -47,7 +47,9 @@ export const useCreatePollData = () => {
 
   const goToNextStep = () => {
     if (stepIndex === numberOfSteps - 1) return
-    const correct = stepFields[step].map(field => field.validate())
+    const correct = stepFields[step]
+      .filter(field => field.visible)
+      .map(field => field.validate())
     if (!correct.every(e => e)) return
     setStep(process[stepIndex + 1])
   }
@@ -72,6 +74,8 @@ export const useCreatePollData = () => {
     name: "description",
     label: "Description",
     placeholder: "Please elaborate the question, if you want to.",
+    required: true,
+    hidden: true,
   })
 
   const answers = useTextArrayField({
