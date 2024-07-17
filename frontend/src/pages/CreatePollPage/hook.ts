@@ -10,6 +10,7 @@ import { useTextField } from '../../components/InputFields/useTextField';
 import { useTextArrayField } from '../../components/InputFields/useTextArrayField';
 import { useBooleanField } from '../../components/InputFields/useBoolField';
 import { useOneOfField } from '../../components/InputFields/useOneOfField';
+import { findErrorsInFields } from '../../components/InputFields/validation';
 
 type CreationStep = "basics" | "permission" | "results"
 
@@ -47,10 +48,7 @@ export const useCreatePollData = () => {
 
   const goToNextStep = () => {
     if (stepIndex === numberOfSteps - 1) return
-    const correct = stepFields[step]
-      .filter(field => field.visible)
-      .map(field => field.validate())
-    if (!correct.every(e => e)) return
+    if (findErrorsInFields(stepFields[step])) return
     setStep(process[stepIndex + 1])
   }
 
@@ -64,9 +62,7 @@ export const useCreatePollData = () => {
     placeholder: "Your question",
     required: true,
     requiredMessage: "Please specify the question for your poll!",
-
     minLength: [10, minLength => `Please describe the question using at least ${minLength} characters!`],
-
     maxLength: [20, maxLength => `Please state the question in more more than ${maxLength} characters!`],
   })
 
@@ -74,8 +70,6 @@ export const useCreatePollData = () => {
     name: "description",
     label: "Description",
     placeholder: "Please elaborate the question, if you want to.",
-    required: true,
-    hidden: true,
   })
 
   const answers = useTextArrayField({
