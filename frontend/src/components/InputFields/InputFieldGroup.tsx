@@ -15,7 +15,7 @@ export const InputFieldGroup: FC<InputFieldGroupProps> = ({ fields }) => {
         ? (
           <div className={classes.fieldRow}>
             { row.map(field =>
-              <InputField key={field.name} controls={field} />
+              <InputField key={field.name} controls={field as any} />
             ) }
           </div>
         ) : <InputField key={row.name} controls={row as InputFieldControls<any>} />)}

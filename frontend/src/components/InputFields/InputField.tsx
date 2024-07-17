@@ -8,6 +8,8 @@ import { BooleanInput } from './BooleanInput';
 import { BooleanFieldControls } from './useBoolField';
 import { SelectInput } from './SelectInput';
 import { OneOfFieldControls } from './useOneOfField';
+import { LabelControls } from './useLabel';
+import { Label } from './Label';
 
 export const InputField: FC<{controls: InputFieldControls<any>}> = ({controls}) => {
   switch (controls.type) {
@@ -19,6 +21,8 @@ export const InputField: FC<{controls: InputFieldControls<any>}> = ({controls}) 
       return <BooleanInput { ...(controls as BooleanFieldControls)} />
     case "oneOf":
       return <SelectInput { ...(controls as OneOfFieldControls<any>)} />
+    case "label":
+      return <Label { ...(controls as unknown as LabelControls)} />
     default:
       console.log("Don't know how to edit field type", controls.type)
       return <div>Missing {controls.type} field for {controls.name}</div>

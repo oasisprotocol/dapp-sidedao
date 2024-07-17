@@ -1,7 +1,9 @@
 import { InputFieldControls } from './useInputField';
 import { getAsArray, SingleOrArray } from './util';
 
-export type FieldConfiguration = SingleOrArray<InputFieldControls<any>>[]
+type FieldLike = Pick<InputFieldControls<any>, 'name' | 'type' | 'visible' | 'validate'>
+
+export type FieldConfiguration = SingleOrArray<FieldLike>[]
 
 export const findErrorsInFields = (fields: FieldConfiguration): boolean =>
   !fields
