@@ -1,84 +1,36 @@
 import { useEffect, useState } from 'react';
 // import { AbiCoder } from "ethers";
 import { AclOptions, Poll, PollManager } from "../../types"
-import { InputFieldControls  } from '../../components/InputFields/useInputField';
 import { useEthereum } from '../../hooks/useEthereum';
-import { encryptJSON } from '../../utils/crypto.demo';
+import { chainChoices, encryptJSON, isValidAddress } from '../../utils/crypto.demo';
 import { Pinata } from '../../utils/Pinata';
 import { useContracts } from '../../hooks/useContracts';
-import { useTextField } from '../../components/InputFields/useTextField';
-import { useTextArrayField } from '../../components/InputFields/useTextArrayField';
-import { useBooleanField } from '../../components/InputFields/useBoolField';
-import { Choice, useOneOfField } from '../../components/InputFields/useOneOfField';
-import { findErrorsInFields } from '../../components/InputFields/validation';
-import { getAddress } from 'ethers';
-import { xchain_ChainNamesToChainId } from '@oasisprotocol/side-dao-contracts';
-import { deny } from '../../components/InputFields/util';
 
-type CreationStep = "basics" | "permission" | "results"
+import {
+  deny,
+  findErrorsInFields,
+  InputFieldControls, useBooleanField,
+  useOneOfField,
+  useTextArrayField,
+  useTextField,
+} from '../../components/InputFields';
 
-const process: CreationStep[] = ["basics", "permission", "results"]
-
-const StepTitle: Record<CreationStep, string> = {
+// The steps / pages of the wizard
+const StepTitles= {
   basics : "Poll creation",
   permission: "Pre-vote settings",
   results : "Results settings",
-}
+} as const
 
+type CreationStep = keyof typeof StepTitles
+const process: CreationStep[] = Object.keys(StepTitles) as CreationStep[]
 const numberOfSteps = process.length
 
 const acl_allowAll = import.meta.env.VITE_CONTRACT_ACL_ALLOWALL;
 
 type AccessControlMethod = "acl_allowAll" | "acl_tokenHolders" | "acl_allowList" | "acl_xchain"
-
-const aclChoices: Choice<AccessControlMethod>[] = [
-    { value: "acl_allowAll", label: "Everybody" },
-    { value: "acl_tokenHolders", label: "Holds Token on Sapphire" },
-    {
-      value: "acl_allowList",
-      label: "Address Whitelist",
-      description: 'You can specify a list of addresses that are allowed to vote.'
-    },
-    {
-      value: "acl_xchain",
-      label: "Cross-Chain DAO",
-      description: "You can set a condition that is evaluated on another chain."
-    },
-]
-
 type VoteWeightingMethod = "weight_perWallet" | "weight_perToken"
-
-const weigthingChoices: Choice<VoteWeightingMethod>[] = [
-  {
-    value: "weight_perWallet",
-    label: "1 vote per wallet",
-  },
-  {
-    value: "weight_perToken",
-    label: "According to token distribution",
-    enabled: deny("Coming soon"),
-  }
-]
-
-const chainChoices: Choice[] = Object.entries(xchain_ChainNamesToChainId)
-  .map(([name, id]) => ({
-    value: id,
-    label: `${name} (${id})`
-  }));
-
-const isValidAddress = (address: string) => {
-  try {
-    getAddress(address)
-  } catch (e: any) {
-    if (e.code == 'INVALID_ARGUMENT') {
-      return false
-    } else {
-      console.log("Unknown problem:", e)
-      return true
-    }
-  }
-  return true
-}
+type ExpectedVoterNumber = "1-100" | "100-1000" | "1000-"
 
 // Split a list of addresses by newLine, comma or space
 const splitAddresses = (addressSoup: string): string[] => addressSoup
@@ -158,7 +110,21 @@ export const useCreatePollData = () => {
   const accessControlMethod = useOneOfField<AccessControlMethod>({
     name: "accessControlMethod",
     label: "Who can vote",
-    choices: aclChoices,
+    placeholder: "Please select your access policy!",
+    choices: [
+      { value: "acl_allowAll", label: "Everybody" },
+      { value: "acl_tokenHolders", label: "Holds Token on Sapphire" },
+      {
+        value: "acl_allowList",
+        label: "Address Whitelist",
+        description: 'You can specify a list of addresses that are allowed to vote.'
+      },
+      {
+        value: "acl_xchain",
+        label: "Cross-Chain DAO",
+        description: "You can set a condition that is evaluated on another chain."
+      },
+    ],
     initialValue: "acl_allowAll",
   })
 
@@ -195,6 +161,7 @@ export const useCreatePollData = () => {
   const chain= useOneOfField({
     name: "chain",
     label: "Chain",
+    placeholder: "Please select the other chain!",
     visible:  accessControlMethod.value === "acl_xchain",
     choices: chainChoices,
     required: [true, "Please specify a chain!"],
@@ -210,14 +177,38 @@ export const useCreatePollData = () => {
 
   const voteWeighting = useOneOfField<VoteWeightingMethod>({
     name: "voteWeighting",
-    label: "Vote weigth",
-    choices: weigthingChoices,
+    label: "Vote weight",
+    placeholder: "Please select how the results should be calculated!",
+    choices: [
+    {
+      value: "weight_perWallet",
+      label: "1 vote per wallet",
+    },
+    {
+      value: "weight_perToken",
+      label: "According to token distribution",
+      enabled: deny("Coming soon"),
+    }
+    ],
     initialValue: "weight_perWallet",
   })
 
   const gasFree = useBooleanField({
     name: "gasless",
     label: "Make this vote gas-free",
+  })
+
+  const numberOfExpectedVoters = useOneOfField<ExpectedVoterNumber>({
+    name: "numberOfExpectedVoters",
+    visible: gasFree.value,
+    label: "Number of voters",
+    placeholder: "How many voters do we have to subsidize?",
+    choices: [
+      { value: "1-100", label: "Less than 100" },
+      { value: "100-1000", label: "Between 100 and 1000"},
+      { value: "1000-", label: "More than 1000"}
+    ],
+    required: [true, "Please estimate the number of the expected votes!"],
   })
 
   async function getACLOptions(): Promise<[string, AclOptions]> {
@@ -234,7 +225,7 @@ export const useCreatePollData = () => {
 
   const stepFields: Record<CreationStep, InputFieldControls<any>[]> = {
     basics: [question, description, answers, customCSS],
-    permission: [accessControlMethod, tokenAddress, addressWhitelist, chain, xchainAddress, voteWeighting, gasFree],
+    permission: [accessControlMethod, tokenAddress, addressWhitelist, chain, xchainAddress, voteWeighting, gasFree, numberOfExpectedVoters],
     results: [],
   }
 
@@ -303,7 +294,7 @@ export const useCreatePollData = () => {
 
   return {
     // step,
-    stepTitle: StepTitle[step],
+    stepTitle: StepTitles[step],
     stepIndex,
     numberOfSteps,
     fields: stepFields[step],

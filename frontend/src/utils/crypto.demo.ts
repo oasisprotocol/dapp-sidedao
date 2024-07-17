@@ -1,5 +1,8 @@
 import { AEAD, NonceSize, KeySize, TagSize } from '@oasisprotocol/deoxysii'
 import { sha256 } from '@noble/hashes/sha256';
+import { Choice } from '../components/InputFields/useOneOfField';
+import { xchain_ChainNamesToChainId } from '@oasisprotocol/side-dao-contracts';
+import { getAddress } from 'ethers';
 
 /// XXX: Seriously JavaScript... can't compare Uint8Arrays???
 function areBytewiseEqual(a: Uint8Array, b: Uint8Array) {
@@ -98,3 +101,23 @@ export const abbrAddr = (address: string): string => {
   const addr = address.replace('0x', '');
   return `${addr.slice(0, 5)}…${addr.slice(-5)}`;
 };
+
+export const chainChoices: Choice[] = Object.entries(xchain_ChainNamesToChainId)
+  .map(([name, id]) => ({
+    value: id,
+    label: `${name} (${id})`
+  }));
+
+export const isValidAddress = (address: string) => {
+  try {
+    getAddress(address)
+  } catch (e: any) {
+    if (e.code == 'INVALID_ARGUMENT') {
+      return false
+    } else {
+      console.log("Unknown problem:", e)
+      return true
+    }
+  }
+  return true
+}

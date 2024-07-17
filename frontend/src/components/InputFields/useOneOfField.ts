@@ -36,7 +36,6 @@ export function useOneOfField<DataType>(props: OneOfFieldProps<DataType>): OneOf
 
   const allChoices: Choice<DataType>[] = [
     emptyChoice,
-    // ...(initialValue === NO_CHOICE ? [emptyChoice] : []),
     ...choices,
   ]
 
