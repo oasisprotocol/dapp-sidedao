@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
-  AllProblems,
-  Decision,
+  AllProblems, CoupledData,
+  Decision, expandCoupledData,
   getAsArray, getReason, getVerdict, invertDecision,
   ProblemAtLocation,
   SingleOrArray,
@@ -16,7 +16,7 @@ export type InputFieldProps<DataType> = {
   placeholder?: string;
   initialValue: DataType
   cleanUp?: (value: DataType) => DataType
-  required?: boolean
+  required?: CoupledData<boolean, string>;
   requiredMessage?: string
   validators?: SingleOrArray<undefined | ValidatorFunction<DataType>>,
   visible?: boolean,
@@ -97,10 +97,14 @@ export function useInputField<DataType>(
   const {
     name, label, placeholder, description, initialValue,
     cleanUp,
-    required,
-    requiredMessage = "This field is required",
     validators = [],
   } = props
+
+  const [required, requiredMessage] = expandCoupledData(
+    props.required,
+    [false, "This field is required"],
+  )
+
 
   const [value, setValue] = useState<DataType>(initialValue)
   const [problems, setProblems] = useState<ProblemAtLocation[]>([])
