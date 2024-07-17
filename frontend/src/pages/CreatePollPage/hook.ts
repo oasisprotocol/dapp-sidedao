@@ -29,9 +29,6 @@ const numberOfSteps = process.length
 
 const acl_allowAll = import.meta.env.VITE_CONTRACT_ACL_ALLOWALL;
 
-type AccessControlMethod = "acl_allowAll" | "acl_tokenHolders" | "acl_allowList" | "acl_xchain"
-type VoteWeightingMethod = "weight_perWallet" | "weight_perToken"
-
 const expectedRanges = {
   "1-100": 100,
   "100-1000": 1000,
@@ -39,17 +36,13 @@ const expectedRanges = {
   "10000-": 100000,
 } as const
 
-const aclCostEstimates: Record<AccessControlMethod, number> = {
+const aclCostEstimates = {
   acl_allowAll: 0.1,
   acl_allowList: 0.1,
   acl_tokenHolders: 0.2,
   acl_xchain: 0.2,
-}
+} as const
 
-type ExpectedVoterNumberRange = keyof typeof expectedRanges
-
-const getEstimatedCost = (acl: AccessControlMethod, range: ExpectedVoterNumberRange): number =>
-  aclCostEstimates[acl] * expectedRanges[range]
 
 // Split a list of addresses by newLine, comma or space
 const splitAddresses = (addressSoup: string): string[] => addressSoup
@@ -123,7 +116,7 @@ export const useCreatePollData = () => {
     enabled: deny("Coming soon!"),
   })
 
-  const accessControlMethod = useOneOfField<AccessControlMethod>({
+  const accessControlMethod = useOneOfField({
     name: "accessControlMethod",
     label: "Who can vote",
     choices: [
@@ -140,7 +133,7 @@ export const useCreatePollData = () => {
         description: "You can set a condition that is evaluated on another chain."
       },
     ],
-  })
+  } as const)
 
   const tokenAddress = useTextField({
     name: "tokenAddress",
@@ -188,7 +181,7 @@ export const useCreatePollData = () => {
     validators: value => (value && !isValidAddress(value)) ? "This doesn't seem to be a valid address." : undefined,
   })
 
-  const voteWeighting = useOneOfField<VoteWeightingMethod>({
+  const voteWeighting = useOneOfField({
     name: "voteWeighting",
     label: "Vote weight",
     choices: [
@@ -202,7 +195,7 @@ export const useCreatePollData = () => {
       enabled: deny("Coming soon"),
     }
     ],
-  })
+  } as const)
 
   const gasFree = useBooleanField({
     name: "gasless",
@@ -216,7 +209,7 @@ export const useCreatePollData = () => {
     classnames: classes.explanation,
   })
 
-  const numberOfExpectedVoters = useOneOfField<ExpectedVoterNumberRange>({
+  const numberOfExpectedVoters = useOneOfField({
     name: "numberOfExpectedVoters",
     visible: gasFree.value,
     label: "Number of voters",
@@ -226,7 +219,7 @@ export const useCreatePollData = () => {
       { value: "1000-10000", label: "Between 1000 and 10,000"},
       { value: "10000-", label: "Above 10,000"}
     ],
-  })
+  } as const)
 
   const suggestedAmountOfRose = useTextField({
     name: "suggestedAmountOfRose",
@@ -237,7 +230,7 @@ export const useCreatePollData = () => {
   useEffect(
     () => {
       if (!gasFree.value) return
-      const cost = getEstimatedCost(accessControlMethod.value, numberOfExpectedVoters.value)
+      const cost = aclCostEstimates[accessControlMethod.value] * expectedRanges[numberOfExpectedVoters.value]
       if (isNaN(cost)) return
       suggestedAmountOfRose.setValue(cost.toString())
     },
