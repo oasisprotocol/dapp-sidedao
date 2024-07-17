@@ -13,6 +13,7 @@ import { Choice, useOneOfField } from '../../components/InputFields/useOneOfFiel
 import { findErrorsInFields } from '../../components/InputFields/validation';
 import { getAddress } from 'ethers';
 import { xchain_ChainNamesToChainId } from '@oasisprotocol/side-dao-contracts';
+import { deny } from '../../components/InputFields/util';
 
 type CreationStep = "basics" | "permission" | "results"
 
@@ -30,7 +31,34 @@ const acl_allowAll = import.meta.env.VITE_CONTRACT_ACL_ALLOWALL;
 
 type AccessControlMethod = "acl_allowAll" | "acl_tokenHolders" | "acl_allowList" | "acl_xchain"
 
-// type VoteWeightingMethod = "weight_perWallet" | "weight_perToken"
+const aclChoices: Choice<AccessControlMethod>[] = [
+    { value: "acl_allowAll", label: "Everybody" },
+    { value: "acl_tokenHolders", label: "Holds Token on Sapphire" },
+    {
+      value: "acl_allowList",
+      label: "Address Whitelist",
+      description: 'You can specify a list of addresses that are allowed to vote.'
+    },
+    {
+      value: "acl_xchain",
+      label: "Cross-Chain DAO",
+      description: "You can set a condition that is evaluated on another chain."
+    },
+]
+
+type VoteWeightingMethod = "weight_perWallet" | "weight_perToken"
+
+const weigtingChoices: Choice<VoteWeightingMethod>[] = [
+  {
+    value: "weight_perWallet",
+    label: "1 vote per wallet",
+  },
+  {
+    value: "weight_perToken",
+    label: "According to token distribution",
+    enabled: deny("Coming soon"),
+  }
+]
 
 const chainChoices: Choice[] = Object.entries(xchain_ChainNamesToChainId)
   .map(([name, id]) => ({
@@ -130,20 +158,7 @@ export const useCreatePollData = () => {
   const accessControlMethod = useOneOfField<AccessControlMethod>({
     name: "accessControlMethod",
     label: "Who can vote",
-    choices: [
-      { value: "acl_allowAll", label: "Everybody" },
-      { value: "acl_tokenHolders", label: "Holds Token on Sapphire" },
-      {
-        value: "acl_allowList",
-        label: "Address Whitelist",
-        description: 'You can specify a list of addresses that are allowed to vote.'
-      },
-      {
-        value: "acl_xchain",
-        label: "Cross-Chain DAO",
-        description: "You can set a condition that is evaluated on another chain."
-      },
-    ],
+    choices: aclChoices,
     initialValue: "acl_allowAll",
   })
 
@@ -193,6 +208,13 @@ export const useCreatePollData = () => {
     validators: value => (value && !isValidAddress(value)) ? "This doesn't seem to be a valid address." : undefined,
   })
 
+  const voteWeighting = useOneOfField<VoteWeightingMethod>({
+    name: "voteWeighting",
+    label: "Vote weigth",
+    choices: weigtingChoices,
+    initialValue: "weight_perWallet",
+  })
+
   const gasFree = useBooleanField({
     name: "gasless",
     label: "Make this vote gas-free",
@@ -212,7 +234,7 @@ export const useCreatePollData = () => {
 
   const stepFields: Record<CreationStep, InputFieldControls<any>[]> = {
     basics: [question, description, answers, customCSS],
-    permission: [accessControlMethod, tokenAddress, addressWhitelist, chain, xchainAddress, gasFree],
+    permission: [accessControlMethod, tokenAddress, addressWhitelist, chain, xchainAddress, voteWeighting, gasFree],
     results: [],
   }
 
