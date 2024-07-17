@@ -63,7 +63,7 @@
 
   &.buttonSecondary {
     background-color: var(--white);
-    color: var(--palatinate-blue);
+    color: var(--navy-blue);
   }
 
   &.buttonSuccess {
@@ -82,8 +82,8 @@
 
   &.buttonSecondary {
     background-color: var(--white);
-    color: var(--palatinate-blue);
-    border: 1px var(--palatinate-blue) solid;
+    color: var(--navy-blue);
+    border: 1px var(--navy-blue) solid;
   }
 
   &.buttonSuccess {
