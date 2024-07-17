@@ -31,7 +31,25 @@ const acl_allowAll = import.meta.env.VITE_CONTRACT_ACL_ALLOWALL;
 
 type AccessControlMethod = "acl_allowAll" | "acl_tokenHolders" | "acl_allowList" | "acl_xchain"
 type VoteWeightingMethod = "weight_perWallet" | "weight_perToken"
-type ExpectedVoterNumber = "1-100" | "100-1000" | '1000-10000' | "10000-"
+
+const expectedRanges = {
+  "1-100": 100,
+  "100-1000": 1000,
+  "1000-10000" : 10000,
+  "10000-": 100000,
+} as const
+
+const aclCostEstimates: Record<AccessControlMethod, number> = {
+  acl_allowAll: 0.1,
+  acl_allowList: 0.1,
+  acl_tokenHolders: 0.2,
+  acl_xchain: 0.2,
+}
+
+type ExpectedVoterNumberRange = keyof typeof expectedRanges
+
+const getEstimatedCost = (acl: AccessControlMethod, range: ExpectedVoterNumberRange): number =>
+  aclCostEstimates[acl] * expectedRanges[range]
 
 // Split a list of addresses by newLine, comma or space
 const splitAddresses = (addressSoup: string): string[] => addressSoup
@@ -198,7 +216,7 @@ export const useCreatePollData = () => {
     classnames: classes.explanation,
   })
 
-  const numberOfExpectedVoters = useOneOfField<ExpectedVoterNumber>({
+  const numberOfExpectedVoters = useOneOfField<ExpectedVoterNumberRange>({
     name: "numberOfExpectedVoters",
     visible: gasFree.value,
     label: "Number of voters",
@@ -215,6 +233,16 @@ export const useCreatePollData = () => {
     visible: gasFree.value,
     label: "Suggested amount of ROSE",
   })
+
+  useEffect(
+    () => {
+      if (!gasFree.value) return
+      const cost = getEstimatedCost(accessControlMethod.value, numberOfExpectedVoters.value)
+      if (isNaN(cost)) return
+      suggestedAmountOfRose.setValue(cost.toString())
+    },
+    [accessControlMethod.value, numberOfExpectedVoters.value]
+  );
 
   async function getACLOptions(): Promise<[string, AclOptions]> {
     const acl = acl_allowAll;
