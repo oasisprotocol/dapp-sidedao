@@ -1,8 +1,11 @@
 import { InputFieldControls } from './useInputField';
+import { getAsArray, SingleOrArray } from './util';
 
-export const findErrorsInFields = (fields: InputFieldControls<any>[]): boolean => {
-  const isCorrect = fields
+export type FieldConfiguration = SingleOrArray<InputFieldControls<any>>[]
+
+export const findErrorsInFields = (fields: FieldConfiguration): boolean =>
+  !fields
+    .flatMap(config => getAsArray(config))
     .filter(field => field.visible)
     .map(field => field.validate())
-  return !isCorrect.every(e => e)
-}
+    .every(e => e)
