@@ -1,0 +1,26 @@
+.landing {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0px;
+    gap: 24px;
+
+    position: absolute;
+    width: 416px;
+    height: 242px;
+    left: calc(50% - 416px/2);
+    top: calc(50% - 242px/2);
+    color: black;
+
+    text-align: center;
+
+    h2 {
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 700;
+        font-size: 32px;
+        line-height: 140%;
+        color: #01001F;
+    }
+}
+

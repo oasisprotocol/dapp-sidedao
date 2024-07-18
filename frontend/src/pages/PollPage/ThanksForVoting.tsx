@@ -79,18 +79,18 @@ export const ThanksForVote: FC<PollData> = (
 ) => {
   const {
     name,
-    description,
+    // description,
     choices,
     creator
   } = poll!.ipfsParams
   return (
     <Card>
       <h2>Thanks for voting!</h2>
-      <h3>
+      <h4 className={"niceLine"}>
         {name}
         {isMine && <MyPollIcon creator={creator}/>}
-      </h3>
-      <h4>{description}</h4>
+      </h4>
+      {/*<p>{description}</p>*/}
       <div className={`${classes.choice} ${classes.submitted}`}>
         <VoteIcon />
         {choices[Number(myVote)]}

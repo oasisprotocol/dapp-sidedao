@@ -99,10 +99,10 @@ export const useCreatePollData = () => {
     // canRemoveElement: (index, field) => index === field.numberOfValues - 1,
   })
 
-  const customCSS = useBooleanField({
-    name: "customCSS",
-    label: "I want to create a customized theme for the poll",
-  })
+  // const customCSS = useBooleanField({
+  //   name: "customCSS",
+  //   label: "I want to create a customized theme for the poll",
+  // })
 
   const accessControlMethod = useOneOfField<AccessControlMethod>({
     name: "accessControlMethod",
@@ -231,7 +231,7 @@ export const useCreatePollData = () => {
       question,
       description,
       answers,
-      customCSS,
+      // customCSS,
     ],
     permission: [
       accessControlMethod,
