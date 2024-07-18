@@ -24,6 +24,10 @@ export const BooleanInput: FC<BooleanFieldControls> = (props) => {
     [setValue]
   )
 
+  const handleLabelClick = () => {
+    if (enabled) setValue(!value)
+  }
+
   if (!visible) return
 
   const rootProblems = allProblems.root || []
@@ -46,15 +50,15 @@ export const BooleanInput: FC<BooleanFieldControls> = (props) => {
       classes.boolValue,
       hasError ? classes.fieldWithError : hasWarning ? classes.fieldWithWarning : '',
     )}>
-      <div className={"niceLine"}>
-        {field} {label}
+      <div className={"niceLine"} title={whyDisabled}>
+        {field} <span className={enabled ? classes.pointer : classes.disabled} onClick={handleLabelClick}>{label}</span>
       </div>
       <ProblemList problems={rootProblems} onRemove={clearProblem} />
     </div>
   )
 
   return (
-    <div className={classes.fieldContainer} title={whyDisabled}>
+    <div className={classes.fieldContainer}>
       {description
         ? (
           <label>

@@ -145,3 +145,11 @@
 .addIcon {
     color: #130FFF;
 }
+
+.disabled {
+    color: gray;
+}
+
+.pointer {
+    cursor: pointer;
+}
