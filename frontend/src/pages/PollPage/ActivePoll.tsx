@@ -38,7 +38,7 @@ export const ActivePoll: FC<PollData> = (
   // console.log("hasWallet?", hasWallet, "hasWalletOnWrongNetwork?",hasWalletOnWrongNetwork)
   // console.log("isMine?", isMine, "canClose?", canClose)
 
-  const {name, description, choices, creator } = poll!.ipfsParams
+  const {name, description, choices, creator , options: { publishVotes}} = poll!.ipfsParams
 
   const handleSelect = useCallback((index: number) => {
     if (canSelect) {
@@ -106,6 +106,7 @@ export const ActivePoll: FC<PollData> = (
           </div>
       )) }
       { remainingTimeString && <h4>{remainingTimeString}</h4>}
+      { publishVotes && <div>Votes will be made public when the poll is closed.</div> }
       { isPastDue && <h4>Voting results will be available when {isMine ? "you close" : "the owner formally closes"} the poll.</h4>}
       <div className={classes.buttons}>
         { hasWallet && !isPastDue && (<div className={"niceLine"}>
