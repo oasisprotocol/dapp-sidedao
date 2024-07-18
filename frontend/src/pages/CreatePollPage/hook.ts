@@ -64,10 +64,6 @@ export const useCreatePollData = () => {
     setStep(process[stepIndex + 1])
   }
 
-  const init = () => {
-    setStep("basics")
-  }
-
   const question = useTextField({
     name: "question",
     label: "Question",
@@ -111,7 +107,6 @@ export const useCreatePollData = () => {
   const accessControlMethod = useOneOfField<AccessControlMethod>({
     name: "accessControlMethod",
     label: "Who can vote",
-    placeholder: "Please select your access policy!",
     choices: [
       { value: "acl_allowAll", label: "Everybody" },
       { value: "acl_tokenHolders", label: "Holds Token on Sapphire" },
@@ -126,7 +121,6 @@ export const useCreatePollData = () => {
         description: "You can set a condition that is evaluated on another chain."
       },
     ],
-    initialValue: "acl_allowAll",
   })
 
   const tokenAddress = useTextField({
@@ -162,10 +156,8 @@ export const useCreatePollData = () => {
   const chain= useOneOfField({
     name: "chain",
     label: "Chain",
-    placeholder: "Please select the other chain!",
     visible:  accessControlMethod.value === "acl_xchain",
     choices: chainChoices,
-    required: [true, "Please specify a chain!"],
   })
 
   const xchainAddress = useTextField({
@@ -179,7 +171,6 @@ export const useCreatePollData = () => {
   const voteWeighting = useOneOfField<VoteWeightingMethod>({
     name: "voteWeighting",
     label: "Vote weight",
-    placeholder: "Please select how the results should be calculated!",
     choices: [
     {
       value: "weight_perWallet",
@@ -191,7 +182,6 @@ export const useCreatePollData = () => {
       enabled: deny("Coming soon"),
     }
     ],
-    initialValue: "weight_perWallet",
   })
 
   const gasFree = useBooleanField({
@@ -210,14 +200,12 @@ export const useCreatePollData = () => {
     name: "numberOfExpectedVoters",
     visible: gasFree.value,
     label: "Number of voters",
-    placeholder: "How many do we expect?",
     choices: [
       { value: "1-100", label: "Less than 100" },
       { value: "100-1000", label: "Between 100 and 1000"},
       { value: "1000-10000", label: "Between 1000 and 10,000"},
       { value: "10000-", label: "Above 10,000"}
     ],
-    required: [true, "Please estimate the number of the expected votes!"],
   })
 
   const suggestedAmountOfRose = useTextField({
@@ -322,17 +310,12 @@ export const useCreatePollData = () => {
   }
 
   return {
-    // step,
     stepTitle: StepTitles[step],
     stepIndex,
     numberOfSteps,
     fields: stepFields[step],
     previousStep: goToPreviousStep,
     nextStep: goToNextStep,
-    init,
-    // question,
-    // description,
-    // answers,
     isCreating,
     createPoll
   }

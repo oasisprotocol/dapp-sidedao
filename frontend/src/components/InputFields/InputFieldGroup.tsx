@@ -8,16 +8,18 @@ type InputFieldGroupProps = {
   fields: FieldConfiguration
 }
 
-export const InputFieldGroup: FC<InputFieldGroupProps> = ({ fields }) => {
-  return (<>
+export const InputFieldGroup: FC<InputFieldGroupProps> = ({ fields }) => (
+  <>
     {fields.map(
-      row => Array.isArray(row)
+      (row, index) => Array.isArray(row)
         ? (
-          <div className={classes.fieldRow}>
+          <div className={classes.fieldRow} key={`row-${index}`}>
             { row.map(field =>
               <InputField key={field.name} controls={field as any} />
             ) }
           </div>
-        ) : <InputField key={row.name} controls={row as InputFieldControls<any>} />)}
-  </>)
-}
+        ) : <InputField key={row.name} controls={row as InputFieldControls<any>} />
+      )
+    }
+  </>
+)

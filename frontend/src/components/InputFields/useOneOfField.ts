@@ -9,7 +9,7 @@ export type Choice<DataType = string> = {
   hidden?: boolean,
 }
 
-type OneOfFieldProps<DataType = string> = Omit<InputFieldProps<DataType>, "initialValue"> & {
+type OneOfFieldProps<DataType = string> = Omit<InputFieldProps<DataType>, "initialValue" |  "required" | "placeholder"> & {
   initialValue?: DataType;
   choices: Choice<DataType>[],
 }
@@ -18,26 +18,12 @@ export type OneOfFieldControls<DataType> = InputFieldControls<DataType> & {
   choices: Choice<DataType>[],
 }
 
-const NO_CHOICE = "_no_choice_"
-
 export function useOneOfField<DataType>(props: OneOfFieldProps<DataType>): OneOfFieldControls<DataType> {
   const {
-    placeholder = "Please select",
     choices,
     requiredMessage = "Please select an option!",
-    initialValue = NO_CHOICE as DataType,
+    initialValue = choices[0].value,
   } = props
-
-  const emptyChoice: Choice<DataType> = {
-    value: NO_CHOICE as DataType,
-    label: placeholder,
-    enabled: false,
-  }
-
-  const allChoices: Choice<DataType>[] = [
-    emptyChoice,
-    ...choices,
-  ]
 
   const controls = useInputField<DataType>(
     "oneOf",
@@ -45,9 +31,10 @@ export function useOneOfField<DataType>(props: OneOfFieldProps<DataType>): OneOf
       ...props,
       initialValue,
       requiredMessage,
+      cleanUp: v => v,
     },
     {
-      isEmpty: (value) => value === NO_CHOICE,
+      isEmpty: () => false,
       isEqual: (a, b) => a === b,
     },
   )
@@ -55,9 +42,9 @@ export function useOneOfField<DataType>(props: OneOfFieldProps<DataType>): OneOf
   return {
     ...controls,
     setValue: value => {
-      controls.setValue(value);
+      controls.setValue(value)
       controls.clearAllProblems()
     },
-    choices: allChoices,
+    choices,
   }
 }
