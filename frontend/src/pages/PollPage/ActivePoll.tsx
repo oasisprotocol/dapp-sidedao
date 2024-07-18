@@ -22,6 +22,7 @@ export const ActivePoll: FC<PollData> = (
     canSelect,
     setSelectedChoice,
     canVote,
+    gaslessEnabled,
     gaslessPossible,
     gvAddresses,
     gvBalances,
@@ -76,7 +77,7 @@ export const ActivePoll: FC<PollData> = (
       </h2>
       <h4>{description}</h4>
 
-      { hasWallet && choices
+      { (hasWallet || isPastDue) && choices
         .map((choice, index)=> (
           <div
             key={`choice-${index}`}
@@ -86,7 +87,7 @@ export const ActivePoll: FC<PollData> = (
             <div className={classes.above}>{choice}</div>
           </div>
         ))}
-      { !hasWallet && (hasWalletOnWrongNetwork
+      { (!isPastDue && !hasWallet) && (hasWalletOnWrongNetwork
         ? (
           <div className={classes.needWallet}>
             To vote on this poll, please <b>point your wallet to the Oasis network</b> by
@@ -126,9 +127,9 @@ export const ActivePoll: FC<PollData> = (
             {isClosing ? "Closing poll" : "Close poll"}
           </Button>
         )}
-        { !hasWallet && <ConnectWallet mobileSticky={false} />}
+        { !hasWallet && !isPastDue && <ConnectWallet mobileSticky={false} />}
       </div>
-      { isMine && gaslessPossible && (
+      { isMine && gaslessEnabled && (
         <div>
           <h4>Gasless voting enabled:</h4>
           <div>

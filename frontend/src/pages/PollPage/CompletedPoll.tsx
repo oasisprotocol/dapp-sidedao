@@ -5,25 +5,34 @@ import { MyPollIcon } from '../../components/icons/MyPollIcon';
 import { StringUtils } from '../../utils/string.utils';
 import { Card } from '../../components/Card';
 import { SocialShares } from '../../components/SocialShares';
+import { formatEther } from 'ethers';
+import { abbrAddr } from '../../utils/crypto.demo';
 
 export const CompletedPoll: FC<PollData> = (
   {
     poll,
     pollResults,
     isMine,
+    gaslessPossible,
+    gvBalances,
+    gvAddresses
   }
 ) => {
-  const { name, description, creator} = poll!.ipfsParams!
+  const {
+    name,
+    // description,
+    creator
+  } = poll!.ipfsParams!
   const { choices, votes} = pollResults!
 
   return (
     <Card>
       <h2>Results are in!</h2>
-      <h3>
+      <h4 className={"niceLine"}>
         {name}
         {isMine && <MyPollIcon creator={creator}/>}
-      </h3>
-      <h4>{description}</h4>
+      </h4>
+      {/*<h4>{description}</h4>*/}
       <>
         {Object.entries(choices)
           .map(([index, entry]) => (
@@ -47,6 +56,18 @@ export const CompletedPoll: FC<PollData> = (
               )
             })}
           </>
+        </div>
+      )}
+      { isMine && gaslessPossible && (
+        <div>
+          <h4>Gasless voting enabled:</h4>
+          <div>
+            { gvAddresses.map((address,index)=> (
+              <div key={`gvAddress-${index}`} className={"niceLine"}>
+                { `${ abbrAddr(address) } (${ formatEther(gvBalances[index]) } ROSE)`}
+              </div>
+            ))}
+          </div>
         </div>
       )}
       <SocialShares label={"Share results on"}/>

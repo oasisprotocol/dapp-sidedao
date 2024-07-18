@@ -102,6 +102,7 @@ export const usePollData = (pollId: string) => {
   const [gvAddresses, setGvAddresses] = useState<string[]>([]);
   const [gvBalances, setGvBalances] = useState<bigint[]>([]);
   const [gvTotalBalance, setGvTotalBalance] = useState<bigint>(0n);
+  const [gaslessEnabled, setGaslessEnabled] = useState(false)
   const [gaslessPossible, setGaslessPossible] = useState(false)
   const [isTokenHolderACL, setIsTokenHolderACL] = useState(false);
   const [aclTokenInfo, setAclTokenInfo] = useState<TokenInfo>();
@@ -466,6 +467,7 @@ export const usePollData = (pollId: string) => {
     // Retrieve gasless voting addresses & balances
     const addressBalances = await gaslessVoting.listAddresses(daoAddress, proposalId);
     setGvAddresses(addressBalances.out_addrs);
+    setGaslessEnabled(!!addressBalances.out_addrs.length)
     setGvBalances(addressBalances.out_balances);
     if (addressBalances.out_balances.length > 0) {
       setGvTotalBalance(addressBalances.out_balances.reduce((a, b) => a + b));
@@ -570,6 +572,7 @@ export const usePollData = (pollId: string) => {
     remainingTimeString,
 
     canVote,
+    gaslessEnabled,
     gaslessPossible,
     gvAddresses,
     gvBalances,
