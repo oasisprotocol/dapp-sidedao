@@ -6,6 +6,9 @@ import classes from "./index.module.css"
 import { GasRequiredIcon } from '../icons/GasRequiredIcon';
 import { NoGasRequiredIcon } from '../icons/NoGasRequiredIcon';
 import { randomchoice } from '@oasisprotocol/side-dao-contracts';
+import { HourGlassIcon } from '../icons/HourGlassIcon';
+import { StringUtils } from '../../utils/string.utils';
+
 
 const Arrow: FC<{className: string}> = ({className}) => (
   <svg width="20" height="15" viewBox="0 0 20 15" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
@@ -14,10 +17,14 @@ const Arrow: FC<{className: string}> = ({className}) => (
   </svg>
 )
 
-const PollStatusIndicator: FC<{ active: boolean }> = ({ active }) => {
+const PollStatusIndicator: FC<{ active: boolean, isPastDue: boolean }> = ({ active, isPastDue }) => {
   return active
-    ? <span className={classes.pollStatusActive}>Active</span>
-    : <span className={classes.pollStatusCompleted}>Completed</span>;
+    ? <div
+      className={StringUtils.clsx(classes.pollStatusActive, "niceLine")}
+      title={ isPastDue ? "Voting has already finished." : "Voting is currently active."}
+    >Active { isPastDue && <HourGlassIcon size={'small'}/>}
+  </div>
+    : <div className={classes.pollStatusCompleted} title={"Poll is closed, results are available."}>Completed</div>;
 };
 
 export const PollCard: FC<{
@@ -26,11 +33,12 @@ export const PollCard: FC<{
 
   const {
     id: pollId,
-    params: { name, description },
+    params: { name, description, options: { closeTimestamp} },
     proposal: { active }
   } = poll
 
   const gasLess = randomchoice([false, true]) // TODO: find this out by individually asking for this data
+  const isPastDue = !!closeTimestamp && (new Date().getTime()/1000 > closeTimestamp)
 
   return (
     <Link to={`/polls/${pollId}`} style={{ textDecoration: "none" }}>
@@ -41,7 +49,7 @@ export const PollCard: FC<{
         </div>
         <div dangerouslySetInnerHTML={{ __html: micromark(description) }} />
         <div className={classes.pollCardBottom}>
-          <PollStatusIndicator active={active} />
+          <PollStatusIndicator active={active} isPastDue={isPastDue}/>
           {gasLess ? <NoGasRequiredIcon /> : <GasRequiredIcon />}
         </div>
       </div>
