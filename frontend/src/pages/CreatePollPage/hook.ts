@@ -165,6 +165,7 @@ export const useCreatePollData = () => {
     name: "xchainAddress",
     label: "Address",
     visible: accessControlMethod.value === "acl_xchain",
+    placeholder: "Token address on chain",
     required: [true, "Please specify the address on the other chain that is the key to this poll!"],
     validators: value => (value && !isValidAddress(value)) ? "This doesn't seem to be a valid address." : undefined,
   })
@@ -238,7 +239,7 @@ export const useCreatePollData = () => {
       accessControlMethod,
       tokenAddress,
       addressWhitelist,
-      chain, xchainAddress,
+      [chain, xchainAddress],
       voteWeighting,
       gasFree,
       gasFreeExplanation,
