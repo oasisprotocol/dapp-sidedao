@@ -135,7 +135,7 @@ export const ActivePoll: FC<PollData> = (
             { gvAddresses.map((address,index)=> (
               <div key={`gvAddress-${index}`} className={"niceLine"}>
                 { `${ abbrAddr(address) } (${ formatEther(gvBalances[index]) } ROSE)`}
-                <Button data-address={address} size={"small"} color={"secondary"} onClick={() => handleTopup(address)}>Topup</Button>
+                { !isPastDue && (<Button data-address={address} size={"small"} color={"secondary"} onClick={() => handleTopup(address)}>Topup</Button>) }
               </div>
             ))}
           </div>
