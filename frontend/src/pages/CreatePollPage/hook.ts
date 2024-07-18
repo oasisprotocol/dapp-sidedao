@@ -231,10 +231,9 @@ export const useCreatePollData = () => {
     () => {
       if (!gasFree.value) return
       const cost = aclCostEstimates[accessControlMethod.value] * expectedRanges[numberOfExpectedVoters.value]
-      if (isNaN(cost)) return
       suggestedAmountOfRose.setValue(cost.toString())
     },
-    [accessControlMethod.value, numberOfExpectedVoters.value]
+    [gasFree.value, accessControlMethod.value, numberOfExpectedVoters.value]
   );
 
   async function getACLOptions(): Promise<[string, AclOptions]> {
