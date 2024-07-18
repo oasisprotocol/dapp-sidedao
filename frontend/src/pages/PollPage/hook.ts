@@ -34,15 +34,25 @@ const calculateRemainingTimeFrom = (deadline: number, now: number): RemainingTim
   }
 }
 
+const maybePlural = (amount: number, singular: string, plural: string): string => `${amount} ${(amount === 1) ? singular : plural}`;
+
 const getTextDescriptionOfTime = (remaining: RemainingTime | undefined): string | undefined => {
   if (!remaining) return undefined;
   const hasDays = !!remaining.days
   const hasHours = hasDays || !!remaining.hours
-  const hasMinutes = hasHours || !!remaining.minutes
+  const hasMinutes = !hasDays && (hasHours || !!remaining.minutes)
+  const hasSeconds = !hasHours
+  const fragments: string[] = []
+  if (hasDays) fragments.push(maybePlural(remaining.days, "day","days"))
+  if (hasHours) fragments.push(maybePlural(remaining.hours, "hour", "hours"))
+  if (hasMinutes) fragments.push(maybePlural(remaining.minutes,"minute", "minutes"))
+  if (hasSeconds) fragments.push(maybePlural(remaining.seconds, "second", "seconds"))
+  const timeString = fragments.join(", ")
+
   if (remaining.isPastDue) {
-    return `Voting finished ${hasDays ? remaining.days + " days, " : ""}${hasHours ? remaining.hours + " hours, " : ""}${hasMinutes ? remaining.minutes + " minutes, " : ""}${remaining.seconds} seconds ago.`;
+    return `Voting finished ${timeString} ago.`;
   } else {
-    return `Poll closes in ${hasDays ? remaining.days + " days, " : ""}${hasHours ? remaining.hours + " hours, " : ""}${hasMinutes ? remaining.minutes + " minutes, " : ""}${remaining.seconds} seconds.`;
+    return `Poll closes in ${timeString}.`;
   }
 }
 
