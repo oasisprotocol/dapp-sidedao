@@ -255,7 +255,7 @@ const canCreatePoll = computed(() => {
       toValue(isDateValid) &&
       toValue(isSubsidyValid) &&
       toValue(xchain_addr_valid) &&
-      toValue(xchain_holder_valid.value && toValue(xchain_slot))
+      toValue(xchain_holder_valid.value && xchain_slot.value !== undefined)
     );
   }
 
