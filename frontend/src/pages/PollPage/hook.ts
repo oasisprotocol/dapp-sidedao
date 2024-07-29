@@ -397,21 +397,28 @@ export const usePollData = (pollId: string) => {
     setIsWhitelistACL(params.acl == import.meta.env.VITE_CONTRACT_ACL_VOTERALLOWLIST);
     setIsXChainACL(params.acl == import.meta.env.VITE_CONTRACT_ACL_STORAGEPROOF);
 
+    console.log("This is", ipfsParams.acl.options)
+
     if (!('xchain' in ipfsParams.acl.options)) {
       if ('token' in ipfsParams.acl.options) {
         const tokenAddress = ipfsParams.acl.options.token;
         const newAclProof = new Uint8Array();
         setAclProof(newAclProof);
+        console.log("Getting token details")
+        setAclTokenInfo(await tokenDetailsFromProvider(
+          tokenAddress,
+          eth.state.provider as unknown as JsonRpcProvider,
+        ));
+        console.log("Have token details.")
+        console.log("Checking PollACL.canVoteOnPoll")
         setCanAclVote(0n != (await pollACL.canVoteOnPoll(
           daoAddress,
           proposalId,
           userAddress,
           newAclProof,
         )));
-        setAclTokenInfo(await tokenDetailsFromProvider(
-          tokenAddress,
-          eth.state.provider as unknown as JsonRpcProvider,
-        ));
+        console.log("Checked")
+
       } else if ('allowList' in ipfsParams.acl.options) {
         const newAclProof = new Uint8Array();
         setAclProof(newAclProof);

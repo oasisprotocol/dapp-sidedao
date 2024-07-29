@@ -21,6 +21,12 @@ export const ActivePoll: FC<PollData> = (
     selectedChoice,
     canSelect,
     setSelectedChoice,
+    canAclVote,
+    isTokenHolderACL,
+    isWhitelistACL,
+    isXChainACL,
+    aclTokenInfo,
+    xchainOptions,
     canVote,
     gaslessEnabled,
     gaslessPossible,
@@ -108,8 +114,29 @@ export const ActivePoll: FC<PollData> = (
       { remainingTimeString && <h4>{remainingTimeString}</h4>}
       { publishVotes && <div>Votes will be made public when the poll is closed.</div> }
       { isPastDue && <h4>Voting results will be available when {isMine ? "you close" : "the owner formally closes"} the poll.</h4>}
+      { !canAclVote && (
+        <>
+          <h4>You are not allowed to vote on this poll.</h4>
+          { isWhitelistACL && <p>
+            Voting on this poll is restricted to a list of addresses,
+            and apparently, this account is not on that list.
+          </p> }
+          { isTokenHolderACL && <p>
+            Voting on this poll is restricted to holders of a token on Sapphire,
+            and apparently, this account doesn't hold any.
+          </p>}
+          { isXChainACL && (
+            <>
+              <p>
+                Only token holders of a cross-chain token may vote on this poll:
+              </p>
+              { xchainOptions!.xchain.chainId }
+            </>
+          )}
+        </>
+      )}
       <div className={classes.buttons}>
-        { hasWallet && !isPastDue && (<div className={"niceLine"}>
+        { hasWallet && canAclVote && !isPastDue && (<div className={"niceLine"}>
             {gaslessPossible ? <NoGasRequiredIcon /> : <GasRequiredIcon /> }
             <Button
               disabled={!canVote}
