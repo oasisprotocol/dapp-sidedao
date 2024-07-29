@@ -17,6 +17,7 @@ import {
 import { decryptJSON, DemoNetwork } from '../../utils/crypto.demo';
 import { Pinata } from '../../utils/Pinata';
 import { useEthereum } from '../../hooks/useEthereum';
+import { IPollACL__factory } from '@oasisprotocol/side-dao-contracts';
 
 type LoadedPoll = PollManager.ProposalWithIdStructOutput & { ipfsParams: Poll; };
 
@@ -76,9 +77,7 @@ export const usePollData = (pollId: string) => {
     pollManager: dao,
     pollManagerAddress: daoAddress,
     pollManagerWithSigner: signerDao,
-    // pollManagerACL
     gaslessVoting,
-    pollACL,
   } = useContracts(eth)
 
     const proposalId = `0x${pollId}`;
@@ -141,17 +140,6 @@ export const usePollData = (pollId: string) => {
       )),
     [winningChoice, eth.state.address, existingVote, remainingTime?.isPastDue]
   );
-
-  useEffect(
-    () => {
-      if (pollACL && hasWallet && daoAddress) {
-        pollACL.canManagePoll(daoAddress, proposalId, userAddress).then(setCanClose)
-      } else {
-        setCanClose(false)
-      }
-    },
-    [pollACL, daoAddress, proposalId, userAddress, hasWallet]
-  )
 
   const closePoll = useCallback(async (): Promise<void> => {
     setIsClosing(true)
@@ -340,7 +328,7 @@ export const usePollData = (pollId: string) => {
 
 
   const loadProposal = useCallback(async () => {
-    if (!dao || !daoAddress || !pollACL || !gaslessVoting) {
+    if (!dao || !daoAddress || !gaslessVoting) {
       // console.log("not loading, because dependencies are not yet available")
       return
     }
@@ -373,6 +361,9 @@ export const usePollData = (pollId: string) => {
       // TODO: should go to 404
       return;
     }
+
+    const pollACL = IPollACL__factory.connect(params.acl, eth.state.provider)
+    setCanClose(await pollACL.canManagePoll(daoAddress, proposalId, userAddress))
 
     const proposal = { id: proposalId, active, topChoice, params };
     const ipfsData = await Pinata.fetchData(params.ipfsHash);
@@ -475,7 +466,7 @@ export const usePollData = (pollId: string) => {
       setGvTotalBalance(0n);
     }
 
-  }, [dao, daoAddress, pollACL, gaslessVoting, userAddress, pollLoaded, eth.state.provider, xchainRPC, eth.state.signer, fetchStorageProof]);
+  }, [dao, daoAddress, gaslessVoting, userAddress, pollLoaded, eth.state.provider, xchainRPC, eth.state.signer, fetchStorageProof]);
 
   useEffect(
     () => {
@@ -537,7 +528,7 @@ export const usePollData = (pollId: string) => {
     () => {
       void loadProposal()
     },
-    [dao, daoAddress, pollACL, gaslessVoting, userAddress, pollLoaded]
+    [dao, daoAddress, gaslessVoting, userAddress, pollLoaded]
   );
 
   useEffect(() => {
@@ -558,6 +549,7 @@ export const usePollData = (pollId: string) => {
     poll,
     active: !!poll?.proposal?.active,
 
+    canAclVote,
     isTokenHolderACL,
     isWhitelistACL,
     isXChainACL,
