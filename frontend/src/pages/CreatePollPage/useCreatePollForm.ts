@@ -1,13 +1,6 @@
-import { useEffect, useState } from 'react';
-// import { AbiCoder } from "ethers";
-import { AclOptions, Poll, PollManager } from "../../types"
-import { useEthereum } from '../../hooks/useEthereum';
-import { chainChoices, encryptJSON, isValidAddress } from '../../utils/crypto.demo';
-import { Pinata } from '../../utils/Pinata';
-import { useContracts } from '../../hooks/useContracts';
-import classes from "./index.module.css"
-
+import { useEffect, useMemo, useState } from 'react';
 import {
+  Choice,
   deny, FieldConfiguration,
   findErrorsInFields,
   useBooleanField, useLabel,
@@ -15,6 +8,9 @@ import {
   useTextArrayField,
   useTextField,
 } from '../../components/InputFields';
+import { useCreatePollUtils } from './useCreatePollUtils';
+
+import classes from "./index.module.css"
 
 // The steps / pages of the wizard
 const StepTitles= {
@@ -26,8 +22,6 @@ const StepTitles= {
 type CreationStep = keyof typeof StepTitles
 const process: CreationStep[] = Object.keys(StepTitles) as CreationStep[]
 const numberOfSteps = process.length
-
-const acl_allowAll = import.meta.env.VITE_CONTRACT_ACL_ALLOWALL;
 
 const expectedRanges = {
   "1-100": 100,
@@ -43,7 +37,6 @@ const aclCostEstimates = {
   acl_xchain: 0.2,
 } as const
 
-
 // Split a list of addresses by newLine, comma or space
 const splitAddresses = (addressSoup: string): string[] => addressSoup
   .split('\n')
@@ -53,29 +46,14 @@ const splitAddresses = (addressSoup: string): string[] => addressSoup
   .filter((x) => x.length > 0)
 
 
-export const useCreatePollData = () => {
-  const eth = useEthereum()
-  const { pollManagerWithSigner: daoSigner } = useContracts(eth)
+export const useCreatePollForm = () => {
+  const { chains, isValidAddress, createPoll: doCreatePoll } = useCreatePollUtils()
+
   const [isCreating, setIsCreating] = useState<boolean>(false);
   const [step, setStep] = useState<CreationStep>("basics");
   const [stepIndex, setStepIndex] = useState(0);
 
-  useEffect(() => {
-    setStepIndex(process.indexOf(step))
-  }, [step]);
-
-  const goToPreviousStep = () => {
-    if (stepIndex === 0) return
-    setStep(process[stepIndex - 1])
-  }
-
-  const goToNextStep = () => {
-    if (stepIndex === numberOfSteps - 1) return
-    if (findErrorsInFields(stepFields[step])) return
-    setStep(process[stepIndex + 1])
-  }
-
-  const question = useTextField({
+  const question= useTextField({
     name: "question",
     label: "Question",
     placeholder: "Your question",
@@ -140,7 +118,7 @@ export const useCreatePollData = () => {
     label: "Token Address",
     visible: accessControlMethod.value === "acl_tokenHolders",
     required: [true, "Please specify the address of the token that is the key to this poll!"],
-    validators: value => (value && !isValidAddress(value)) ? "This doesn't seem to be a valid address." : undefined,
+    validators: value => !isValidAddress(value) ? "This doesn't seem to be a valid address." : undefined,
   })
 
   const addressWhitelist = useTextArrayField({
@@ -165,35 +143,78 @@ export const useCreatePollData = () => {
     },
   })
 
+  const chainChoices: Choice[] = useMemo(
+    () => Object.entries(chains)
+      .map(([name, id]) => ({
+        value: id,
+        label: `${name} (${id})`
+      })),
+  [chains],
+  )
+
   const chain= useOneOfField({
     name: "chain",
     label: "Chain",
-    visible:  accessControlMethod.value === "acl_xchain",
+    visible: accessControlMethod.value === "acl_xchain",
     choices: chainChoices,
   })
 
-  const xchainAddress = useTextField({
-    name: "xchainAddress",
-    label: "Address",
+  const xchainTokenAddress = useTextField({
+    name: "xchainTokenAddress",
+    label: "Token Address",
     visible: accessControlMethod.value === "acl_xchain",
     placeholder: "Token address on chain",
     required: [true, "Please specify the address on the other chain that is the key to this poll!"],
-    validators: value => (value && !isValidAddress(value)) ? "This doesn't seem to be a valid address." : undefined,
+    validators: [
+      value => !isValidAddress(value) ? "This doesn't seem to be a valid address." : undefined,
+      // _value => "random",
+    ],
+  })
+
+  const xchainTokenAddressStatus = useLabel({
+    name: "xchainAddressStatus",
+    initialValue: "",
+    containerClassName: classes.addressStatus,
+    visible: xchainTokenAddress.visible,
+  })
+
+  useEffect(
+    () => {
+      if (!xchainTokenAddress.visible || !xchainTokenAddress.value) return
+      // console.log("Gonna validate")
+      xchainTokenAddressStatus.setValue("...")
+      if (!xchainTokenAddress.validate()) {
+        xchainTokenAddressStatus.setValue("")
+        return
+      }
+      // console.log("Validate OK")
+      xchainTokenAddressStatus.setValue("2")
+    },
+    [xchainTokenAddress.value, xchainTokenAddress.visible]
+  )
+
+  const xchainWalletAddress = useTextField({
+    name: "xchainWalletAddress",
+    label: "Wallet Address",
+    visible: xchainTokenAddressStatus.value === "2",
+    placeholder: "Wallet address of a token holder on chain",
+    required: [true, "Please specify the address of a token holder!"],
+    // validators: value => isValidAddress(value) ? "This doesn't seem to be a valid address." : undefined,
   })
 
   const voteWeighting = useOneOfField({
     name: "voteWeighting",
     label: "Vote weight",
     choices: [
-    {
-      value: "weight_perWallet",
-      label: "1 vote per wallet",
-    },
-    {
-      value: "weight_perToken",
-      label: "According to token distribution",
-      enabled: deny("Coming soon"),
-    }
+      {
+        value: "weight_perWallet",
+        label: "1 vote per wallet",
+      },
+      {
+        value: "weight_perToken",
+        label: "According to token distribution",
+        enabled: deny("Coming soon"),
+      }
     ],
   } as const)
 
@@ -236,18 +257,6 @@ export const useCreatePollData = () => {
     [gasFree.value, accessControlMethod.value, numberOfExpectedVoters.value]
   );
 
-  async function getACLOptions(): Promise<[string, AclOptions]> {
-    const acl = acl_allowAll;
-    // const abi = AbiCoder.defaultAbiCoder();
-    return [
-      '0x', // Empty bytes is passed
-      {
-        address: acl,
-        options: { allowAll: true },
-      },
-    ];
-  }
-
   const stepFields: Record<CreationStep, FieldConfiguration> = {
     basics: [
       question,
@@ -259,7 +268,9 @@ export const useCreatePollData = () => {
       accessControlMethod,
       tokenAddress,
       addressWhitelist,
-      [chain, xchainAddress],
+      chain,
+      [xchainTokenAddress, xchainTokenAddressStatus],
+      xchainWalletAddress,
       voteWeighting,
       gasFree,
       gasFreeExplanation,
@@ -268,52 +279,17 @@ export const useCreatePollData = () => {
     results: [],
   }
 
-  const doCreatePoll = async () => {
-    // TODO: check for any errors
+  const goToPreviousStep = () => {
+    if (stepIndex === 0) return
+    setStep(process[stepIndex - 1])
+    setStepIndex(stepIndex - 1)
+  }
 
-    const [aclData, aclOptions] = await getACLOptions();
-
-    const poll: Poll = {
-      creator: eth.state.address!,
-      name: question.value,
-      description: description.value,
-      choices: answers.value,
-      options: {
-        publishVotes: false, // publishVotes.value,
-        closeTimestamp: 0, //toValue(expirationTime) ? toValue(expirationTime)!.valueOf() / 1000 : 0,
-      },
-      acl: aclOptions,
-    };
-
-    const { key, cipherbytes } = encryptJSON(poll);
-
-    const ipfsHash = await Pinata.pinData(cipherbytes);
-    console.log('Poll ipfsHash', ipfsHash);
-
-    const proposalParams: PollManager.ProposalParamsStruct = {
-      ipfsHash,
-      ipfsSecret: key,
-      numChoices: answers.value.length,
-      publishVotes: poll.options.publishVotes,
-      closeTimestamp: poll.options.closeTimestamp,
-      acl: acl_allowAll, // toValue(chosenPollACL),
-    };
-
-    const createProposalTx = await daoSigner!.create(proposalParams, aclData, {
-      // Provide additional subsidy
-      value: 10, //toValue(subsidyAmount) ?? 0n,
-    });
-    console.log('doCreatePoll: creating proposal tx', createProposalTx.hash);
-
-    const receipt = (await createProposalTx.wait())!;
-    if (receipt.status !== 1) {
-      throw new Error('createProposal tx receipt reported failure.');
-    }
-    const proposalId = receipt.logs[0].data;
-
-    console.log('doCreatePoll: Proposal ID', proposalId);
-
-
+  const goToNextStep = () => {
+    if (stepIndex === numberOfSteps - 1) return
+    if (findErrorsInFields(stepFields[step])) return
+    setStep(process[stepIndex + 1])
+    setStepIndex(stepIndex + 1)
   }
 
   const createPoll = async () => {
@@ -321,7 +297,11 @@ export const useCreatePollData = () => {
 
     setIsCreating(true)
     try {
-      const newId = await doCreatePoll()
+      const newId = await doCreatePoll(
+        question.value,
+        description.value,
+        answers.value,
+        )
       console.log("Created new poll", newId)
     } catch (ex) {
       console.log("Failed to create poll", ex)
@@ -341,5 +321,4 @@ export const useCreatePollData = () => {
     isCreating,
     createPoll
   }
-
 }

@@ -1,6 +1,6 @@
 import { Card } from '../../components/Card';
 import { Layout } from '../../components/Layout';
-import { useCreatePollData } from './hook';
+import { useCreatePollForm } from './useCreatePollForm';
 import classes from "./index.module.css"
 import { Button } from '../../components/Button';
 import { DottedProgressIndicator } from '../../components/DottedProgressIndicator';
@@ -13,7 +13,7 @@ export const CreatePollPage = () => {
     previousStep, nextStep,
     fields,
     createPoll
-  } = useCreatePollData()
+  } = useCreatePollForm()
   // console.log("Current step is", step, ",", stepIndex, "of", numberOfSteps)
 
   // console.log("Q is", question)
