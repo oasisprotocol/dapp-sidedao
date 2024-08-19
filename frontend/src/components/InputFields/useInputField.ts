@@ -23,6 +23,7 @@ export type InputFieldProps<DataType> = {
   hidden?: boolean,
   enabled?: Decision,
   disabled?: Decision,
+  containerClassName?: string,
 }
 
 export type InputFieldControls<DataType> = Pick<InputFieldProps<DataType>, "label" | "description" | "placeholder" | "name"> & {
@@ -30,6 +31,7 @@ export type InputFieldControls<DataType> = Pick<InputFieldProps<DataType>, "labe
   visible: boolean,
   enabled: boolean,
   whyDisabled?: string,
+  containerClassName?: string,
   value: DataType,
   setValue: (value: DataType) => void
   allProblems: AllProblems
@@ -98,6 +100,7 @@ export function useInputField<DataType>(
     name, label, placeholder, description, initialValue,
     cleanUp,
     validators = [],
+    containerClassName,
   } = props
 
   const [required, requiredMessage] = expandCoupledData(
@@ -122,15 +125,21 @@ export function useInputField<DataType>(
     if (different) {
       setValue(cleanValue)
     }
-    const currentProblems: (ProblemAtLocation | undefined)[] = []
+    const currentProblems: (ProblemAtLocation)[] = []
+    let hasError = false
     if (required && isEmpty(cleanValue)) {
-      currentProblems.push(wrapProblem(requiredMessage, "root", "error"))
+      currentProblems.push(wrapProblem(requiredMessage, "root", "error")!)
+      hasError = true
     }
     getAsArray(validators).filter(v => !!v).forEach(validator => {
-      const validatorReport = (validator!)(cleanValue)
+      const validatorReport = hasError ? [] : (validator!)(cleanValue)
 
       getAsArray(validatorReport).map(report => wrapProblem(report, "root", "error"))
-        .forEach(problem => currentProblems.push(problem!))
+        .forEach(problem => {
+          if (!problem) return
+          if (problem.level === "error") hasError = true
+          currentProblems.push(problem!)
+        })
 
     })
     const realProblems = currentProblems.filter(p => !!p) as ProblemAtLocation[]
@@ -186,6 +195,7 @@ export function useInputField<DataType>(
     visible,
     enabled: isEnabled,
     whyDisabled: isEnabled ? undefined : getReason(enabled),
+    containerClassName,
   }
 }
 

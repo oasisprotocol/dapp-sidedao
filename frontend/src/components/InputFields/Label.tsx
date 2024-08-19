@@ -8,7 +8,7 @@ import { ProblemList } from './ProblemDisplay';
 export const Label: FC<LabelControls> = (props) => {
   const {
     label, description, visible,
-    value, allProblems, clearProblem,
+    value, allProblems, clearProblem, containerClassName,
     classnames,
   } = props
   if (!visible) return
@@ -34,7 +34,7 @@ export const Label: FC<LabelControls> = (props) => {
   )
 
   return (
-    <div className={classes.fieldContainer}>
+    <div className={StringUtils.clsx(classes.fieldContainer, containerClassName)}>
       {(!!label || !!description)
         ? (
           <label>

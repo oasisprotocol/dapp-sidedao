@@ -1,14 +1,14 @@
 import { InputFieldControls, InputFieldProps, useInputField } from './useInputField';
 import { getAsArray, SingleOrArray } from './util';
 
-type LabelProps = Pick<InputFieldProps<string>, 'name' | 'label' | 'description' | 'visible' | 'hidden' | 'initialValue'> & {
+type LabelProps = Pick<InputFieldProps<string>, 'name' | 'label' | 'description' | 'visible' | 'hidden' | 'initialValue' | 'containerClassName'> & {
   classnames?: SingleOrArray<string>
 }
 
 export type LabelControls = Pick<InputFieldControls<any>,
   'name' | 'label' | 'description' | 'type'
-  | 'visible' | 'value' | 'validate'
-  | 'allProblems' | 'clearProblem' | 'clearAllProblems'> & {
+  | 'visible' | 'value' | 'setValue' | 'validate'
+  | 'allProblems' | 'clearProblem' | 'clearAllProblems' | 'containerClassName'> & {
   classnames: string[]
 }
 
