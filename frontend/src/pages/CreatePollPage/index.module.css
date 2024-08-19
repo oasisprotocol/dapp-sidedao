@@ -20,3 +20,7 @@
     font-size: 15px;
     color: #414749;
 }
+
+.addressStatus {
+    width: 4em !important;
+}
