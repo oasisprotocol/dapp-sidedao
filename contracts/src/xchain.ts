@@ -10,12 +10,32 @@ export function randomchoice<T>(array:T[]):T {
   return array[Math.floor(Math.random() * array.length)];
 }
 
-export const chain_info: Record<number,any> = {
+interface ChainDefinition {
+  name: string;
+  chain: string;
+  icon?: string;
+  nativeCurrency: {name:string; symbol:string; decimals:number;};
+  infoURL: string;
+  shortName: string;
+  chainId: number;
+  networkId: number;
+  slip44?: number;  // https://github.com/satoshilabs/slips/blob/master/slip-0044.md
+  rpcUrls: string[];
+  features?: {name:string}[];
+  hardfork: string;
+  explorers?: {name:string;url:string;standard:string;icon?:string;}[];
+  ens?: {registry:string};
+  customEIPs?: number[];
+  parent?: {type:string; chain:string; bridges:{url:string}[];};
+  cannotMakeStorageProofs?:boolean;
+}
+
+export const chain_info: Record<number,ChainDefinition> = {
     1: {
         "name": "Ethereum Mainnet",
         "chain": "ETH",
         "icon": "ethereum",
-        "rpc": [
+        "rpcUrls": [
           "https://eth-mainnet.g.alchemy.com/v2/asYK8chMrnekMUTAvVwaNG2OHyp4fLCe"
           //"https://mainnet.infura.io/v3/${INFURA_API_KEY}",
           //"wss://mainnet.infura.io/ws/v3/${INFURA_API_KEY}",
@@ -34,7 +54,7 @@ export const chain_info: Record<number,any> = {
           //"https://rpc.mevblocker.io/fullprivacy"
         ],
         "features": [{ "name": "EIP155" }, { "name": "EIP1559" }],
-        "faucets": [],
+        "hardfork": "cancun",
         "nativeCurrency": {
           "name": "Ether",
           "symbol": "ETH",
@@ -71,7 +91,10 @@ export const chain_info: Record<number,any> = {
     56: {
         "name": "BNB Smart Chain Mainnet",
         "chain": "BSC",
-        "rpc": [
+        "hardfork": "shanghai",
+        // Same as cancun, but without 4788
+        "customEIPs": [1153, 4844, 5656, 6780, 7516],
+        "rpcUrls": [
           "https://bsc-dataseed1.bnbchain.org",
           "https://bsc-dataseed2.bnbchain.org",
           "https://bsc-dataseed3.bnbchain.org",
@@ -88,7 +111,6 @@ export const chain_info: Record<number,any> = {
           //"wss://bsc.publicnode.com",
           //"wss://bsc-ws-node.nariox.org"
         ],
-        "faucets": [],
         "nativeCurrency": {
           "name": "BNB Chain Native Token",
           "symbol": "BNB",
@@ -116,22 +138,23 @@ export const chain_info: Record<number,any> = {
     42161: {
         "name": "Arbitrum One",
         "chainId": 42161,
+        "hardfork": "london",
         "shortName": "arb1",
         "chain": "ETH",
         "networkId": 42161,
+        "slip44": 9001,
         "nativeCurrency": {
           "name": "Ether",
           "symbol": "ETH",
           "decimals": 18
         },
-        "rpc": [
+        "rpcUrls": [
           //"https://arbitrum-mainnet.infura.io/v3/${INFURA_API_KEY}",
           //"https://arb-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}",
           "https://arb1.arbitrum.io/rpc",
           "https://arbitrum-one.publicnode.com",
           //"wss://arbitrum-one.publicnode.com"
         ],
-        "faucets": [],
         "explorers": [
           {
             "name": "Arbiscan",
@@ -159,8 +182,9 @@ export const chain_info: Record<number,any> = {
     },
     10: {
         "name": "OP Mainnet",
+        "hardfork": "cancun",
         "chain": "ETH",
-        "rpc": [
+        "rpcUrls": [
           "https://opt-mainnet.g.alchemy.com/v2/LTUd8wMSlbXxWBHpYyFE-WyOh2wud4Hb",
           //"https://mainnet.optimism.io",
           //"https://optimism.publicnode.com",
@@ -168,7 +192,6 @@ export const chain_info: Record<number,any> = {
           //"https://optimism.gateway.tenderly.co",
           //"wss://optimism.gateway.tenderly.co"
         ],
-        "faucets": [],
         "nativeCurrency": {
           "name": "Ether",
           "symbol": "ETH",
@@ -178,12 +201,13 @@ export const chain_info: Record<number,any> = {
         "shortName": "oeth",
         "chainId": 10,
         "networkId": 10,
-
+        "slip44": 614,
         "explorers": [
           {
             "name": "etherscan",
             "url": "https://optimistic.etherscan.io",
-            "standard": "EIP3091"
+            "standard": "EIP3091",
+            "icon": "etherscan"
           },
           {
             "name": "blockscout",
@@ -201,9 +225,10 @@ export const chain_info: Record<number,any> = {
     },
     137: {
         "name": "Polygon Mainnet",
+        "hardfork": "london",
         "chain": "Polygon",
         "icon": "polygon",
-        "rpc": [
+        "rpcUrls": [
           "https://polygon-mainnet.g.alchemy.com/v2/cwgNHMG7HVg1gg_PiN2tZdr27wbW8h9d"
           //"https://polygon-rpc.com/",
           //"https://rpc-mainnet.matic.network",
@@ -216,7 +241,6 @@ export const chain_info: Record<number,any> = {
           //"https://polygon.gateway.tenderly.co",
           //"wss://polygon.gateway.tenderly.co"
         ],
-        "faucets": [],
         "nativeCurrency": {
           "name": "MATIC",
           "symbol": "MATIC",
@@ -241,34 +265,105 @@ export const chain_info: Record<number,any> = {
           }
         ]
     },
-    80001: {
-      "name": "Polygon Testnet Mumbai",
-      "chain": "Polygon",
-      "icon": "polygon",
-      "rpc": [
-        //"https://rpc.ankr.com/polygon_mumbai",
-        //"https://rpc.ankr.com/polygon_mumbai",
-        //"https://gateway.tenderly.co/public/polygon-mumbai",
-        "https://polygon-mumbai.g.alchemy.com/v2/g4qVlKDewH8F19bv47GB1Iq3Ca_XxWhN"
+    80002: {
+      "name": "Polygon Testnet (Amoy)",
+      "hardfork": "london",
+      "chain": "polygon-testnet",
+      "icon": "polygon-testnet-amoy",
+      "rpcUrls": [
+        "https://rpc-amoy.polygon.technology/"
       ],
-      "faucets": [],
       "nativeCurrency": {
         "name": "MATIC",
         "symbol": "MATIC",
         "decimals": 18
       },
-      "infoURL": "https://polygon.technology/",
-      "shortName": "matic",
-      "chainId": 80001,
-      "networkId": 80001,
+      "infoURL": "https://polygon.technology/blog/introducing-the-amoy-testnet-for-polygon-pos",
+      "shortName": "polygon-amoy",
+      "chainId": 80002,
+      "networkId": 80002,
       "explorers": [
+        {
+          name: "polygonscan-amoy",
+          url: "https://amoy.polygonscan.com/",
+          standard: "EIP3091"
+        }
       ]
-  },
-
+    },
+    23294: {
+      chainId: 0x5afe,
+      networkId: 0x5afe,
+      hardfork: 'london',
+      name: 'Oasis Sapphire',
+      chain: 'oasis',
+      shortName: 'sapphire',
+      cannotMakeStorageProofs: true,
+      infoURL: 'https://oasisprotocol.org/sapphire',
+      icon: 'https://votee.oasis.io/rose.png',
+      nativeCurrency: {
+        name: 'ROSE',
+        symbol: 'ROSE',
+        decimals: 18,
+      },
+      rpcUrls: [
+        'https://sapphire.oasis.io/',
+        //'wss://sapphire.oasis.io/ws'
+      ],
+      explorers: [
+        {
+          name: 'Oasis Sapphire Mainnet Explorer',
+          url: 'https://explorer.oasis.io/mainnet/sapphire',
+          standard: 'EIP3091'
+        }
+      ],
+    },
+    23295: {
+      chainId: 0x5aff,
+      networkId: 0x5aff,
+      hardfork: 'london',
+      name: 'Oasis Sapphire Testnet',
+      chain: 'oasis-testnet',
+      shortName: 'sapphire-testnet',
+      cannotMakeStorageProofs: true,
+      infoURL: 'https://docs.oasis.io/node/testnet/',
+      icon: 'https://votee.oasis.io/rose.png',
+      nativeCurrency: { name: 'TEST', symbol: 'TEST', decimals: 18 },
+      rpcUrls: [
+        'https://testnet.sapphire.oasis.dev/',
+        //'wss://testnet.sapphire.oasis.dev/ws'
+      ],
+      explorers: [
+        {
+          url: 'https://explorer.oasis.io/testnet/sapphire',
+          name: 'Oasis Sapphire Testnet Explorer',
+          standard: 'EIP3091'
+        }
+      ],
+    },
+    23293: {
+      chainId: 0x5afd,
+      networkId: 0x5afd,
+      hardfork: 'london',
+      chain: 'oasis-localnet',
+      infoURL: 'https://github.com/oasisprotocol/oasis-web3-gateway/pkgs/container/sapphire-localnet',
+      name: 'Sapphire Localnet',
+      shortName: 'sapphire-localnet',
+      cannotMakeStorageProofs: true,
+      icon: 'https://votee.oasis.io/rose.png',
+      nativeCurrency: {
+        name: 'ROSE',
+        symbol: 'ROSE',
+        decimals: 18,
+      },
+      rpcUrls: [
+        'http://localhost:8545/',
+        //'ws://localhost:8546'
+      ],
+    },
 } as const;
 
 function _getNameAndChainidMap() {
-  const res: Record<number,string> = {};
+  const res: Record<string,number> = {};
   for( const x in chain_info ) {
     const y = chain_info[x];
     res[y.name] = y.chainId;
@@ -285,7 +380,7 @@ export function xchainRPC(chainId:number)
     }
 
     const info = chain_info[chainId];
-    const rpc_url = randomchoice(info.rpc as string[]);
+    const rpc_url = randomchoice(info.rpcUrls as string[]);
     console.log('Using RPC URL', rpc_url);
     return new JsonRpcProvider(rpc_url);
 }
@@ -396,19 +491,39 @@ export const ETHEREUMJS_POLYGON_BLOCK_OPTIONS = {
   skipConsensusFormatValidation: true
 } as BlockOptions;
 
-
+/// Retrieve RLP encoded block header
 export async function getBlockHeaderRLP(
   provider: JsonRpcProvider,
-  blockHash: string,
-  opts?: BlockOptions)
-{
-  opts = opts ?? ETHEREUMJS_POLYGON_BLOCK_OPTIONS;
+  blockHash: string
+) {
+  // Detect which chain RPC provider is, construct custom chain config with hardfork
+  const net = await provider.getNetwork();
+  const chainId = Number(net.chainId);
+  if( ! chainId ) {
+    throw new Error("Unable to determine chain ID!");
+  }
+  if( ! (chainId in chain_info) ) {
+    throw new Error("Unsupported chain ID");
+  }
+  const chain = chain_info[chainId];
+  if( ! chain.hardfork ) {
+    throw new Error("Unknown hardfork for chain!");
+  }
+
+  const opts = {
+    common: Common.custom(CustomChain.PolygonMainnet, {
+      hardfork: chain.hardfork,
+    }),
+    skipConsensusFormatValidation: true
+  } as BlockOptions;
+
+  // Some chains need specific EIPs enabled
+  if( chain.customEIPs ) {
+    const customEIPs: number[] = chain.customEIPs;
+    opts.common!.setEIPs(customEIPs);
+  }
 
   const result = await provider.send('eth_getBlockByHash', [blockHash, false]) as JsonRpcBlock;
-
-  //return hexlify(blockHeaderFromRpc(result, opts).serialize());
-
-  //const h = BlockHeader.fromHeaderData(x, opts);
 
   const b = Block.fromRPC(result, [], opts);
   return hexlify(b.header.serialize());

@@ -10,12 +10,10 @@ import SuccessInfo from '@/components/SuccessInfo.vue';
 import { retry, Pinata, encryptJSON } from '@/utils';
 import type { PollManager, AclOptions, Poll } from '@oasisprotocol/side-dao-contracts';
 import { getAddress, parseEther, JsonRpcProvider, AbiCoder } from 'ethers';
-import { BlockOptions } from "@ethereumjs/block";
 
 import { usePollManager, usePollManagerWithSigner } from '../contracts';
 import { useEthereumStore } from '../stores/ethereum';
 import { computedAsync } from '../utils';
-import { loadKZG } from 'kzg-wasm?init'
 
 import {
   fetchAccountProof,
@@ -26,7 +24,6 @@ import {
   xchain_ChainNamesToChainId,
   xchainRPC,
 } from '@oasisprotocol/side-dao-contracts';
-import { Chain, Common, CustomChain, Hardfork } from '@ethereumjs/common';
 
 const eth = useEthereumStore();
 const dao = usePollManager();
@@ -291,33 +288,6 @@ async function createPoll(e: Event): Promise<void> {
   }
 }
 
-async function getBlockOptions(chainId: number): Promise<BlockOptions> {
-  switch (chainId) {
-    case 1: // Eth Mainnet
-      // eslint-disable-next-line no-case-declarations
-      const kzg = await loadKZG();
-      return {
-        common: new Common({
-          chain: Chain.Mainnet,
-          hardfork: Hardfork.Cancun,
-          customCrypto: {
-            kzg: kzg as any,
-          },
-        }),
-      }
-
-    case 137: // Polygon Mainnet
-      return {
-        common: Common.custom(CustomChain.PolygonMainnet, {hardfork: 'london'}),
-        skipConsensusFormatValidation: true
-      }
-
-    default:
-      console.log("No block options available for", chainId)
-      return {}
-  }
-}
-
 /// Returns the `data` parameter used to initialize the ACL when creating a poll
 async function getACLOptions(): Promise<[string, AclOptions]> {
   const acl = toValue(chosenPollACL);
@@ -364,8 +334,7 @@ async function getACLOptions(): Promise<[string, AclOptions]> {
     const rpc = xchainRPC(chainId);
     const blockHash = toValue(xchain_hash);
     const contractAddress = toValue(xchain_addr);
-    const blockOptions = await getBlockOptions(chainId)
-    const headerRlpBytes = await getBlockHeaderRLP(rpc, blockHash, blockOptions);
+    const headerRlpBytes = await getBlockHeaderRLP(rpc, blockHash);
     const rlpAccountProof = await fetchAccountProof(rpc, blockHash, contractAddress);
     console.log('headerRlpBytes', headerRlpBytes);
     console.log('rlpAccountProof', rlpAccountProof);

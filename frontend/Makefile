@@ -1,7 +1,15 @@
 include ../common.mk
 
-build:
-	$(NPM) run build
+all: build
 
 dev:
-	$(NPM) run dev
+	$(NPM) $@
+
+build:
+	$(NPM) $@
+
+clean:
+	rm -rf dist
+
+veryclean: clean
+	rm -rf node_modules
