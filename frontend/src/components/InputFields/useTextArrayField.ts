@@ -1,23 +1,20 @@
 import { InputFieldControls, InputFieldProps, useInputField } from './useInputField';
 import {
-  atLeastXItems, expandCoupledData,
+  atLeastXItems,
+  expandCoupledData,
   getAsArray,
   getNumberMessage,
   NumberMessageTemplate,
   CoupledData,
-  thereIsOnly, findDuplicates, SingleOrArray, ValidatorFunction, wrapProblem, flatten,
+  thereIsOnly,
+  findDuplicates,
+  SingleOrArray,
+  ValidatorFunction,
+  wrapProblem,
+  ProblemAtLocation,
+  flatten,
 } from './util';
-
-const wrapItemValidatorFunction = (validator: ValidatorFunction<string>): ValidatorFunction<string[]> =>
-  (values) =>
-    flatten(values
-      .map(value=> validator(value))
-      .map((reports, index) =>
-        getAsArray(reports)
-          .map(rep => wrapProblem(rep, `value-${index}`, "error"))
-          .filter(p => !!p)
-      )
-    )
+import { useState } from 'react';
 
 /**
  * Parameters for defining an input field that accepts a list of strings
@@ -147,6 +144,8 @@ export type TextArrayControls = InputFieldControls<string[]> & {
   canRemoveItem: (index: number) => boolean
   removeItemLabel: string
   removeItem: (index: number) => void
+
+  pendingValidationIndex: number | undefined
 }
 
 export function useTextArrayField(props: TextArrayProps): TextArrayControls {
@@ -156,9 +155,12 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
     initialItemCount,
     placeholderTemplate,
     validators = [],
+    validatorsGenerator,
     itemValidator = [],
     onItemEdited,
   } = props;
+
+  const [pendingValidationIndex, setPendingValidationIndex] = useState<number | undefined>();
 
   const [allowEmptyItems, emptyItemMessage] = expandCoupledData(
     props.allowEmptyItems,
@@ -197,75 +199,86 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
     placeholders,
   } = props
 
+  const wrapItemValidatorFunction = (itemValidator: ValidatorFunction<string>, values: string[]): ValidatorFunction<string[]>[] =>
+    values.map((value, index): ValidatorFunction<string[]> => async () => {
+      setPendingValidationIndex(index)
+      const reports = getAsArray(await itemValidator(value))
+        .map(rep => wrapProblem(rep, `value-${index}`, "error"))
+        .filter((p): p is ProblemAtLocation => !!p)
+      setPendingValidationIndex(undefined)
+      return reports
+    })
+
   const controls = useInputField<string[]>(
     "text-array",
     {
-    ...props,
-    initialValue,
-    cleanUp: (values) => values.map(s => s.trim()),
-    validators: [
+      ...props,
+      initialValue,
+      cleanUp: (values) => values.map(s => s.trim()),
+      validators: undefined,
+      validatorsGenerator: values => [
 
-      // No empty elements, please
-      allowEmptyItems ? undefined : (values) => values.map((value, index) => value ? undefined : {
-        message: emptyItemMessage,
-        location: `value-${index}`,
-      }),
+        // No empty elements, please
+        allowEmptyItems ? undefined : (values) => values.map((value, index) => value ? undefined : {
+          message: emptyItemMessage,
+          location: `value-${index}`,
+        }),
 
-      // Do we have enough elements?
-      minItemCount
-        ? (values => {
-            const currentCount = values.filter(v => !!v).length
-            return (currentCount < minItemCount)
-              ? `${getNumberMessage(tooFewItemsMessage, minItemCount)} (Currently, ${thereIsOnly(currentCount)}.)`
-              : undefined
-          }
-        ) : undefined,
+        // Do we have enough elements?
+        minItemCount
+          ? (values => {
+              const currentCount = values.filter(v => !!v).length
+              return (currentCount < minItemCount)
+                ? `${getNumberMessage(tooFewItemsMessage, minItemCount)} (Currently, ${thereIsOnly(currentCount)}.)`
+                : undefined
+            }
+          ) : undefined,
 
-      // Do we have too many elements?
-      maxItemCount
-        ? (values => {
-            const currentCount = values.filter(v => !!v).length
-            return (currentCount > maxItemCount)
-              ? `${getNumberMessage(tooManyItemsMessage, maxItemCount)} (Currently, there are ${currentCount}.)`
-              : undefined
-          }
-        ) : undefined,
+        // Do we have too many elements?
+        maxItemCount
+          ? (values => {
+              const currentCount = values.filter(v => !!v).length
+              return (currentCount > maxItemCount)
+                ? `${getNumberMessage(tooManyItemsMessage, maxItemCount)} (Currently, there are ${currentCount}.)`
+                : undefined
+            }
+          ) : undefined,
 
-      // Check minimum length on all items
-      minLength
-        ? (values => values.map((value, index) => (!!value && value.length < minLength) ? {
-            message: `${getNumberMessage(tooShortItemMessage, minLength)} (Currently: ${value.length})`,
-            location: `value-${index}`,
-          } : undefined)
-        ) : undefined,
+        // Check minimum length on all items
+        minLength
+          ? (values => values.map((value, index) => (!!value && value.length < minLength) ? {
+              message: `${getNumberMessage(tooShortItemMessage, minLength)} (Currently: ${value.length})`,
+              location: `value-${index}`,
+            } : undefined)
+          ) : undefined,
 
-      // Check maximum length on all items
-      maxLength
-        ? (values => values.map((value, index) => (!!value && value.length > maxLength) ? {
-            message: `${getNumberMessage(tooLongItemMessage, maxLength)} (Currently: ${value.length})`,
-            location: `value-${index}`,
-          } : undefined)
-        ) : undefined,
+        // Check maximum length on all items
+        maxLength
+          ? (values => values.map((value, index) => (!!value && value.length > maxLength) ? {
+              message: `${getNumberMessage(tooLongItemMessage, maxLength)} (Currently: ${value.length})`,
+              location: `value-${index}`,
+            } : undefined)
+          ) : undefined,
 
-      // Check for duplicates
-      allowDuplicates
-        ? undefined
-        : (values => findDuplicates(values).flatMap((list, listIndex) => {
-          const realList = list.filter((index) => !!values[index])
-          return realList.map(index => ({
-            message: duplicatesErrorMessages[listIndex],
-            location: `value-${index}`,
-            level: ["warning", "error"][listIndex],
-          }))
-        })),
+        // Check for duplicates
+        allowDuplicates
+          ? undefined
+          : (values => findDuplicates(values).flatMap((list, listIndex) => {
+            const realList = list.filter((index) => !!values[index])
+            return realList.map(index => ({
+              message: duplicatesErrorMessages[listIndex],
+              location: `value-${index}`,
+              level: ["warning", "error"][listIndex],
+            }))
+          })),
 
-      // Specified custom per-item validators
-      ...((getAsArray(itemValidator).filter(v => !!v) as ValidatorFunction<string>[])
-        .map((validator) => wrapItemValidatorFunction(validator))),
+        // Specified custom per-item validators
+        ...flatten((getAsArray(itemValidator).filter(v => !!v) as ValidatorFunction<string>[])
+          .map((validator) => wrapItemValidatorFunction(validator, values))),
 
-      // Specified custom global validators
-      ...getAsArray(validators),
-    ],
+        // Specified custom global validators
+        ...getAsArray(  validatorsGenerator ? validatorsGenerator(values) : validators),
+      ],
   }, {
     isEmpty: (value) => !value.length,
     isEqual: (a, b) => a.join("-") === b.join("-"),
@@ -292,6 +305,7 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
       controls.setValue(controls.value.filter((_oldValue, oldIndex) => oldIndex !== index))
     },
 
+    pendingValidationIndex,
   }
 
   newControls.canRemoveItem = (index: number) => {

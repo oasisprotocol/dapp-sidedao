@@ -5,9 +5,14 @@ type FieldLike = Pick<InputFieldControls<any>, 'name' | 'type' | 'visible' | 'va
 
 export type FieldConfiguration = SingleOrArray<FieldLike>[]
 
-export const findErrorsInFields = (fields: FieldConfiguration): boolean =>
-  !fields
+export const findErrorsInFields = async (fields: FieldConfiguration): Promise<boolean> => {
+  const visibleFields = fields
     .flatMap(config => getAsArray(config))
     .filter(field => field.visible)
-    .map(field => field.validate())
-    .every(e => e)
+  let hasError = false
+  for (const field of visibleFields) {
+    const isFieldOK = await field.validate()
+    hasError = hasError || !isFieldOK
+  }
+  return hasError
+}

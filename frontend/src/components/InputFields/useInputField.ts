@@ -9,6 +9,8 @@ import {
   wrapProblem,
 } from './util';
 
+type ValidatorBundle<DataType> = SingleOrArray<undefined | ValidatorFunction<DataType>>
+
 export type InputFieldProps<DataType> = {
   name: string;
   description?: string;
@@ -18,7 +20,8 @@ export type InputFieldProps<DataType> = {
   cleanUp?: (value: DataType) => DataType
   required?: CoupledData<boolean, string>;
   requiredMessage?: string
-  validators?: SingleOrArray<undefined | ValidatorFunction<DataType>>,
+  validatorsGenerator?: (values: DataType) => ValidatorBundle<DataType>;
+  validators?: ValidatorBundle<DataType>;
   visible?: boolean,
   hidden?: boolean,
   enabled?: Decision,
@@ -35,7 +38,8 @@ export type InputFieldControls<DataType> = Pick<InputFieldProps<DataType>, "labe
   value: DataType,
   setValue: (value: DataType) => void
   allProblems: AllProblems
-  validate: () => boolean
+  validate: () => Promise<boolean>
+  validationPending: boolean
   clearProblem: (id: string) => void
   clearProblemsAt: (location: string) => void
   clearAllProblems: () => void
@@ -100,6 +104,7 @@ export function useInputField<DataType>(
     name, label, placeholder, description, initialValue,
     cleanUp,
     validators = [],
+    validatorsGenerator,
     containerClassName,
   } = props
 
@@ -111,6 +116,7 @@ export function useInputField<DataType>(
 
   const [value, setValue] = useState<DataType>(initialValue)
   const [problems, setProblems] = useState<ProblemAtLocation[]>([])
+  const [validationPending, setValidationPending] = useState(false)
   const [allProblems, setAllProblems] = useState<AllProblems>({})
   const { isEmpty, isEqual } = dataTypeControl
 
@@ -119,33 +125,55 @@ export function useInputField<DataType>(
 
   const isEnabled = getVerdict(enabled);
 
-  const validate = () : boolean => {
+  const validate = async () : Promise<boolean> => {
+
+    // Clear any previous problems
+    setProblems([])
+    setValidationPending(true)
+
+    // Clean up the value
     const cleanValue = cleanUp ? cleanUp(value) : value
     const different = !isEqual(cleanValue, value)
     if (different) {
       setValue(cleanValue)
     }
-    const currentProblems: (ProblemAtLocation)[] = []
+
+    // Let's start to collect the new problems
+    const currentProblems: ProblemAtLocation[] = []
     let hasError = false
+
+    // If it's required but empty, that's already an error
     if (required && isEmpty(cleanValue)) {
       currentProblems.push(wrapProblem(requiredMessage, "root", "error")!)
       hasError = true
     }
-    getAsArray(validators).filter(v => !!v).forEach(validator => {
-      const validatorReport = hasError ? [] : (validator!)(cleanValue)
 
-      getAsArray(validatorReport).map(report => wrapProblem(report, "root", "error"))
-        .forEach(problem => {
+    // Identify the user-configured validators to use
+    const realValidators = getAsArray(validatorsGenerator ? validatorsGenerator(cleanValue) : validators)
+      .filter((v): v is ValidatorFunction<DataType> => !!v)
+
+    // Go through all the validators
+    for (const validator of realValidators) {
+      // Do we have anything to worry about from this validator?
+      const validatorReport = hasError
+        ? [] // If we already have an error, don't even bother with any more validators
+        : await validator(cleanValue) // Execute the current validators
+
+      getAsArray(validatorReport)  // Maybe we have a single report, maybe an array. Receive it as an array.
+        .map(report => wrapProblem(report, "root", "error")) // Wrap single strings to proper reports
+        .forEach(problem => { // Go through all the reports
           if (!problem) return
           if (problem.level === "error") hasError = true
-          currentProblems.push(problem!)
+          currentProblems.push(problem)
         })
 
-    })
-    const realProblems = currentProblems.filter(p => !!p) as ProblemAtLocation[]
-    setProblems(realProblems)
+    }
 
-    return !realProblems.some(problem => problem.level === "error")
+    setProblems(currentProblems)
+    setValidationPending(false)
+
+    // Do we have any actual errors?
+    return !currentProblems.some(problem => problem.level === "error")
   }
 
   const clearProblem = (id: string) => {
@@ -192,6 +220,7 @@ export function useInputField<DataType>(
     clearAllProblems,
 
     validate,
+    validationPending,
     visible,
     enabled: isEnabled,
     whyDisabled: isEnabled ? undefined : getReason(enabled),

@@ -10,14 +10,11 @@ export const CreatePollPage = () => {
   const {
     stepTitle,
     stepIndex, numberOfSteps,
+    validationPending,
     previousStep, nextStep,
     fields,
     createPoll
   } = useCreatePollForm()
-  // console.log("Current step is", step, ",", stepIndex, "of", numberOfSteps)
-
-  // console.log("Q is", question)
-  // console.log("Answers:", answers)
 
   return (
     <Layout variation="dashboard" >
@@ -29,7 +26,7 @@ export const CreatePollPage = () => {
         <InputFieldGroup fields={fields} />
         <div className={classes.buttons}>
           { stepIndex > 0 && <Button onClick={previousStep} color={"secondary"} variant={"outline"} >Back</Button> }
-          { stepIndex < numberOfSteps - 1 && <Button onClick={nextStep}>Next</Button> }
+          { stepIndex < numberOfSteps - 1 && <Button onClick={nextStep} pending={validationPending}>Next</Button> }
           { stepIndex === numberOfSteps - 1 && <Button onClick={createPoll}>Create poll</Button> }
         </div>
       </Card>

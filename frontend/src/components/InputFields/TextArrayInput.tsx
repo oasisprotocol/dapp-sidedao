@@ -4,6 +4,7 @@ import classes from "./index.module.css";
 import { StringUtils } from '../../utils/string.utils';
 import { ProblemList } from './ProblemDisplay';
 import { checkProblems } from './util';
+import { SpinnerIcon } from '../icons/SpinnerIcon';
 
 const TrashIcon: FC<{
   label: string,
@@ -74,7 +75,8 @@ export const TextArrayInput: FC<TextArrayControls & {}> = (
     visible,
     enabled,
     whyDisabled,
-
+    validationPending,
+    pendingValidationIndex,
   }
 ) => {
 
@@ -88,6 +90,10 @@ export const TextArrayInput: FC<TextArrayControls & {}> = (
   const wrappedField = (
     <div className={classes.textArrayValue}>
       <ProblemList problems={rootProblems} onRemove={clearProblem} />
+      { validationPending && (pendingValidationIndex === undefined) && <div className={"niceLine"}>
+        Checking ...
+        <SpinnerIcon width={24} height={24} spinning={true}/>
+      </div>}
       { value.map((value, index) => {
         const itemProblems = allProblems[`value-${index}`] || []
         const {hasError, hasWarning } = checkProblems(itemProblems)
@@ -107,6 +113,7 @@ export const TextArrayInput: FC<TextArrayControls & {}> = (
                 disabled={!enabled}
                 title={whyDisabled}
               />
+              { (pendingValidationIndex === index) && <SpinnerIcon width={24} height={24} spinning={true}/> }
               {canRemoveItem(index) && <TrashIcon enabled={enabled} label={whyDisabled ?? removeItemLabel} remove={() => removeItem(index)} />}
             </div>
             <ProblemList problems={itemProblems} onRemove={clearProblem} />

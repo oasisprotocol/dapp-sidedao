@@ -52,6 +52,7 @@ export const useCreatePollForm = () => {
   const [isCreating, setIsCreating] = useState<boolean>(false);
   const [step, setStep] = useState<CreationStep>("basics");
   const [stepIndex, setStepIndex] = useState(0);
+  const [validationPending, setValidationPending] = useState(false)
 
   const question= useTextField({
     name: "question",
@@ -118,7 +119,7 @@ export const useCreatePollForm = () => {
     label: "Token Address",
     visible: accessControlMethod.value === "acl_tokenHolders",
     required: [true, "Please specify the address of the token that is the key to this poll!"],
-    validators: value => !isValidAddress(value) ? "This doesn't seem to be a valid address." : undefined,
+    validators: value=> !isValidAddress(value) ? "This doesn't seem to be a valid address." : undefined,
   })
 
   const addressWhitelist = useTextArrayField({
@@ -166,7 +167,7 @@ export const useCreatePollForm = () => {
     placeholder: "Token address on chain",
     required: [true, "Please specify the address on the other chain that is the key to this poll!"],
     validators: [
-      value => !isValidAddress(value) ? "This doesn't seem to be a valid address." : undefined,
+      value=> !isValidAddress(value) ? "This doesn't seem to be a valid address." : undefined,
       // _value => "random",
     ],
   })
@@ -285,9 +286,12 @@ export const useCreatePollForm = () => {
     setStepIndex(stepIndex - 1)
   }
 
-  const goToNextStep = () => {
+  const goToNextStep = async () => {
     if (stepIndex === numberOfSteps - 1) return
-    if (findErrorsInFields(stepFields[step])) return
+    setValidationPending(true)
+    const hasErrors = await findErrorsInFields(stepFields[step])
+    setValidationPending(false)
+    if (hasErrors) return
     setStep(process[stepIndex + 1])
     setStepIndex(stepIndex + 1)
   }
@@ -317,6 +321,7 @@ export const useCreatePollForm = () => {
     numberOfSteps,
     fields: stepFields[step],
     previousStep: goToPreviousStep,
+    validationPending,
     nextStep: goToNextStep,
     isCreating,
     createPoll

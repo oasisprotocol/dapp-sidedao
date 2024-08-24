@@ -4,6 +4,7 @@ import { StringUtils } from '../../utils/string.utils';
 import { TextFieldControls } from './useTextField';
 import { ProblemList } from './ProblemDisplay';
 import { checkProblems } from './util';
+import { SpinnerIcon } from '../icons/SpinnerIcon';
 
 export const TextInput: FC<TextFieldControls & {}> = (
   {
@@ -15,6 +16,7 @@ export const TextInput: FC<TextFieldControls & {}> = (
     setValue,
     allProblems,
     clearProblem,
+    validationPending,
     visible,
     enabled,
     whyDisabled,
@@ -50,6 +52,10 @@ export const TextInput: FC<TextFieldControls & {}> = (
     )}>
       {field}
       <ProblemList problems={rootProblems} onRemove={clearProblem} />
+      { validationPending && <div className={"niceLine"}>
+        Checking ...
+        <SpinnerIcon width={24} height={24} spinning={true}/>
+      </div>}
     </div>
   )
 

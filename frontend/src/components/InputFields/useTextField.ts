@@ -1,5 +1,11 @@
 import { InputFieldControls, InputFieldProps, useInputField } from './useInputField';
-import { CoupledData, expandCoupledData, getAsArray, getNumberMessage, NumberMessageTemplate } from './util';
+import {
+  CoupledData,
+  expandCoupledData,
+  getAsArray,
+  getNumberMessage,
+  NumberMessageTemplate,
+} from './util';
 
 type TextFieldProps = Omit<InputFieldProps<string>, "initialValue"> & {
   initialValue?: string
@@ -42,6 +48,7 @@ export type TextFieldControls = InputFieldControls<string> & {
 export function useTextField(props: TextFieldProps): TextFieldControls {
   const {
     initialValue = "",
+    validatorsGenerator,
     validators,
   } = props
 
@@ -61,22 +68,23 @@ export function useTextField(props: TextFieldProps): TextFieldControls {
     {
       ...props,
       initialValue,
-      validators: [
+      validators: undefined,
+      validatorsGenerator: value => [
         // Check minimum length
-        minLength ? ((value: string) => ((value !== "") && (value.length < minLength!))
+        minLength ? (() => ((value !== "") && (value.length < minLength!))
             ? `${getNumberMessage(tooShortMessage, minLength)} (Currently: ${value.length})`
             : undefined
         ) : undefined,
 
         // Check maximum length
-        maxLength ? ((value: string) => ((value !== "") && (value.length > maxLength!))
+        maxLength ? (() => ((value !== "") && (value.length > maxLength!))
             ? `${getNumberMessage(tooLongMessage, maxLength)} (Currently: ${value.length})`
             : undefined
         ) : undefined,
 
         // Any custom validators
-        ...getAsArray(validators),
-      ].filter(v => !!v),
+        ...getAsArray(validatorsGenerator ? validatorsGenerator(value) : validators)
+      ],
     }, {
       isEmpty: text => !text,
       isEqual: (a, b) => a === b,
