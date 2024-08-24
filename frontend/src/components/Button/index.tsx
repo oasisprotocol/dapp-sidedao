@@ -64,11 +64,7 @@ export const Button: FC<Props> = ({
       type={type}
     >
       {children}
+      { pending && <SpinnerIcon width={24} height={24} spinning={true}/> }
     </button>
-    { pending && (
-      <div className={classes.rotating}>
-        <SpinnerIcon width={48} height={84} />
-      </div>
-    ) }
   </>
 )
