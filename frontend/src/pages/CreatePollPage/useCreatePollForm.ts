@@ -147,7 +147,7 @@ export const useCreatePollForm = () => {
 
   const chainChoices: Choice[] = useMemo(
     () => Object.entries(chains)
-      .map(([name, id]) => ({
+      .map(([id, name]) => ({
         value: id,
         label: `${name} (${id})`
       })),

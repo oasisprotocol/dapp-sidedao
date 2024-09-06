@@ -13,7 +13,7 @@
   },
   "packageManager": "pnpm@8.15.4",
   "engines": {
-    "node": ">=20"
+    "node": ">=18"
   },
   "dependencies": {
     "@fontsource-variable/figtree": "^5.0.20",
