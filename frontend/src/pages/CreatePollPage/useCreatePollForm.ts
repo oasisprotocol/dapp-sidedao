@@ -58,8 +58,7 @@ export const useCreatePollForm = () => {
     name: "question",
     label: "Question",
     placeholder: "Your question",
-    required: true,
-    requiredMessage: "Please specify the question for your poll!",
+    required: [true, "Please specify the question for your poll!"],
     minLength: [10, minLength => `Please describe the question using at least ${minLength} characters!`],
     maxLength: [80, maxLength => `Please state the question in more more than ${maxLength} characters!`],
   })

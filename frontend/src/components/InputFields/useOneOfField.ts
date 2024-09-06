@@ -12,6 +12,7 @@ export type Choice<DataType = string> = {
 type OneOfFieldProps<DataType = string> = Omit<InputFieldProps<DataType>, "initialValue" |  "required" | "placeholder"> & {
   initialValue?: DataType;
   choices: Choice<DataType>[],
+  requiredMessage?: string,
 }
 
 export type OneOfFieldControls<DataType> = InputFieldControls<DataType> & {
@@ -30,7 +31,7 @@ export function useOneOfField<DataType>(props: OneOfFieldProps<DataType>): OneOf
     {
       ...props,
       initialValue,
-      requiredMessage,
+      required: [true, requiredMessage],
       cleanUp: v => v,
     },
     {

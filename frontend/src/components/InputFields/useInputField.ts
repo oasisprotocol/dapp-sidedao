@@ -19,7 +19,6 @@ export type InputFieldProps<DataType> = {
   initialValue: DataType
   cleanUp?: (value: DataType) => DataType
   required?: CoupledData<boolean, string>;
-  requiredMessage?: string
   validatorsGenerator?: (values: DataType) => ValidatorBundle<DataType>;
   validators?: ValidatorBundle<DataType>;
   visible?: boolean,
