@@ -430,7 +430,10 @@ export async function isERCTokenContract(provider: JsonRpcProvider, address: str
   return true;
 }
 
-export async function guessStorageSlot(provider: JsonRpcProvider, account: string, holder: string, blockHash = 'latest'): Promise<{index:number,balance:bigint,balanceDecimal:string} | null> {
+export async function guessStorageSlot(
+  provider: JsonRpcProvider, account: string, holder: string, blockHash = 'latest',
+  progressCallback?: (progress: string) => void | undefined
+): Promise<{index:number,balance:bigint,balanceDecimal:string} | null> {
   const tokenDetails = await tokenDetailsFromProvider(account, provider);
   const abi = ["function balanceOf(address account) view returns (uint256)"];
   const c = new Contract(account, abi, provider);
@@ -447,8 +450,10 @@ export async function guessStorageSlot(provider: JsonRpcProvider, account: strin
 
   let restOfList = [...Array(256).keys()].filter(i => !shortlist.includes(i));
 
+  const allSlots = shortlist.concat(restOfList)
   // Query most likely range of slots
-  for( const i of shortlist.concat(restOfList) ) {
+  for( const i of allSlots ) {
+    if (progressCallback) progressCallback(`Checking slot #${i} (${allSlots.indexOf(i)+1} of ${allSlots.length})`)
     const result = await provider.send('eth_getStorageAt', [
       account,
       getMapSlot(holder, i),
