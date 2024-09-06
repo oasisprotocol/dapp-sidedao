@@ -171,37 +171,19 @@ export const useCreatePollForm = () => {
       value=> !isValidAddress(value) ? "This doesn't seem to be a valid address." : undefined,
       // _value => "random",
     ],
+    validateOnChange: true,
+    showValidationSuccess: true,
   })
-
-  const xchainTokenAddressStatus = useLabel({
-    name: "xchainAddressStatus",
-    initialValue: "",
-    containerClassName: classes.addressStatus,
-    visible: xchainTokenAddress.visible,
-  })
-
-  useEffect(
-    () => {
-      if (!xchainTokenAddress.visible || !xchainTokenAddress.value) return
-      // console.log("Gonna validate")
-      xchainTokenAddressStatus.setValue("...")
-      if (!xchainTokenAddress.validate()) {
-        xchainTokenAddressStatus.setValue("")
-        return
-      }
-      // console.log("Validate OK")
-      xchainTokenAddressStatus.setValue("2")
-    },
-    [xchainTokenAddress.value, xchainTokenAddress.visible]
-  )
 
   const xchainWalletAddress = useTextField({
     name: "xchainWalletAddress",
     label: "Wallet Address",
-    visible: xchainTokenAddressStatus.value === "2",
+    visible: xchainTokenAddress.isValidated && !xchainTokenAddress.hasProblems,
     placeholder: "Wallet address of a token holder on chain",
     required: [true, "Please specify the address of a token holder!"],
-    // validators: value => isValidAddress(value) ? "This doesn't seem to be a valid address." : undefined,
+    validators: value => !isValidAddress(value) ? "This doesn't seem to be a valid address." : undefined,
+    validateOnChange: true,
+    showValidationSuccess: true,
   })
 
   const voteWeighting = useOneOfField({
@@ -271,7 +253,7 @@ export const useCreatePollForm = () => {
       tokenAddress,
       addressWhitelist,
       chain,
-      [xchainTokenAddress, xchainTokenAddressStatus],
+      xchainTokenAddress,
       xchainWalletAddress,
       voteWeighting,
       gasFree,
