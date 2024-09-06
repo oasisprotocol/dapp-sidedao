@@ -209,7 +209,7 @@ export const useCreatePollForm = () => {
 
   const gasFreeExplanation = useLabel({
     name: "gasFreeExplanation",
-    initialValue: "We calculate and suggest the amount of ROSE needed for gas based on the amount of users that are expected to vote. Any remaining ROSE from the gas sponsoring wallet will be refunded to you once the poll is closed.",
+    value: "We calculate and suggest the amount of ROSE needed for gas based on the amount of users that are expected to vote. Any remaining ROSE from the gas sponsoring wallet will be refunded to you once the poll is closed.",
     visible: gasFree.value,
     classnames: classes.explanation,
   })

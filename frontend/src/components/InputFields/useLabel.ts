@@ -1,8 +1,9 @@
 import { InputFieldControls, InputFieldProps, useInputField } from './useInputField';
 import { getAsArray, SingleOrArray } from './util';
 
-type LabelProps = Pick<InputFieldProps<string>, 'name' | 'label' | 'description' | 'visible' | 'hidden' | 'initialValue' | 'containerClassName'> & {
+type LabelProps = Pick<InputFieldProps<string>, 'name' | 'label' | 'description' | 'visible' | 'hidden' | 'containerClassName'> & {
   classnames?: SingleOrArray<string>
+  value: string
 }
 
 export type LabelControls = Pick<InputFieldControls<any>,
@@ -13,12 +14,13 @@ export type LabelControls = Pick<InputFieldControls<any>,
 }
 
 export const useLabel = (props: LabelProps): LabelControls => {
-  const { classnames = []} = props
+  const { value, classnames = []} = props
 
   const controls = useInputField(
     "label",
     {
       ...props,
+      initialValue: value,
     }, {
       isEmpty: value => !value,
       isEqual: (a, b) => a === b,
@@ -26,6 +28,7 @@ export const useLabel = (props: LabelProps): LabelControls => {
 
   return {
     ...controls,
+    value,
     classnames: getAsArray(classnames)
   }
 
