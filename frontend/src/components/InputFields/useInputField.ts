@@ -188,6 +188,7 @@ export function useInputField<DataType>(
   const [value, setValue] = useState<DataType>(initialValue)
   const [problems, setProblems] = useState<ProblemAtLocation[]>([])
   const [isValidated, setIsValidated] = useState(false)
+  const [lastValidatedData, setLastValidatedData] = useState<DataType | undefined>()
   const [validationPending, setValidationPending] = useState(false)
   const [allProblems, setAllProblems] = useState<AllProblems>({})
   const { isEmpty, isEqual } = dataTypeControl
@@ -228,23 +229,29 @@ export function useInputField<DataType>(
     // Go through all the validators
     for (const validator of realValidators) {
       // Do we have anything to worry about from this validator?
-      const validatorReport = hasError
-        ? [] // If we already have an error, don't even bother with any more validators
-        : await validator(cleanValue) // Execute the current validators
+      try {
+        const validatorReport = hasError
+          ? [] // If we already have an error, don't even bother with any more validators
+          : await validator(cleanValue, lastValidatedData !== cleanValue) // Execute the current validators
 
-      getAsArray(validatorReport)  // Maybe we have a single report, maybe an array. Receive it as an array.
-        .map(report => wrapProblem(report, "root", "error")) // Wrap single strings to proper reports
-        .forEach(problem => { // Go through all the reports
-          if (!problem) return
-          if (problem.level === "error") hasError = true
-          currentProblems.push(problem)
-        })
+        getAsArray(validatorReport)  // Maybe we have a single report, maybe an array. Receive it as an array.
+          .map(report => wrapProblem(report, "root", "error")) // Wrap single strings to proper reports
+          .forEach(problem => { // Go through all the reports
+            if (!problem) return
+            if (problem.level === "error") hasError = true
+            currentProblems.push(problem)
+          })
+      } catch (validatorError) {
+        console.log("Error while running validator", validatorError)
+        currentProblems.push(wrapProblem(`Error while checking: ${validatorError + ""}`, "root", "error")!)
+      }
 
     }
 
     setProblems(currentProblems)
     setValidationPending(false)
     setIsValidated(true)
+    setLastValidatedData(cleanValue)
 
     // Do we have any actual errors?
     return !currentProblems.some(problem => problem.level === "error")
