@@ -5,6 +5,7 @@ import { TextFieldControls } from './useTextField';
 import { ProblemList } from './ProblemDisplay';
 import { checkProblems } from './util';
 import { SpinnerIcon } from '../icons/SpinnerIcon';
+import { CheckCircleIcon } from '../icons/CheckCircleIcon';
 
 export const TextInput: FC<TextFieldControls & {}> = (
   {
@@ -15,6 +16,8 @@ export const TextInput: FC<TextFieldControls & {}> = (
     placeholder,
     setValue,
     allProblems,
+    isValidated,
+    indicateValidationSuccess,
     clearProblem,
     validationPending,
     visible,
@@ -43,6 +46,9 @@ export const TextInput: FC<TextFieldControls & {}> = (
 
   const rootProblems = allProblems.root || []
 
+  const hasSomeProblems = Object.keys(allProblems).some(key => allProblems[key].length)
+  const hasNoProblems = !hasSomeProblems
+
   const { hasWarning, hasError} = checkProblems(rootProblems)
 
   const wrappedField = (
@@ -50,7 +56,10 @@ export const TextInput: FC<TextFieldControls & {}> = (
       classes.textValue,
       hasError ? classes.fieldWithError : hasWarning ? classes.fieldWithWarning : '',
     )}>
-      {field}
+      <div className="niceLine">
+        {field}
+        { isValidated && indicateValidationSuccess && hasNoProblems && <CheckCircleIcon />}
+      </div>
       <ProblemList problems={rootProblems} onRemove={clearProblem} />
       { validationPending && <div className={"niceLine"}>
         Checking ...

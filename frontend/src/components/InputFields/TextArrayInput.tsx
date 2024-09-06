@@ -5,6 +5,7 @@ import { StringUtils } from '../../utils/string.utils';
 import { ProblemList } from './ProblemDisplay';
 import { checkProblems } from './util';
 import { SpinnerIcon } from '../icons/SpinnerIcon';
+import { CheckCircleIcon } from '../icons/CheckCircleIcon';
 
 const TrashIcon: FC<{
   label: string,
@@ -77,6 +78,8 @@ export const TextArrayInput: FC<TextArrayControls & {}> = (
     whyDisabled,
     validationPending,
     pendingValidationIndex,
+    indicateValidationSuccess,
+    isValidated,
   }
 ) => {
 
@@ -114,7 +117,8 @@ export const TextArrayInput: FC<TextArrayControls & {}> = (
                 title={whyDisabled}
               />
               { (pendingValidationIndex === index) && <SpinnerIcon width={24} height={24} spinning={true}/> }
-              {canRemoveItem(index) && <TrashIcon enabled={enabled} label={whyDisabled ?? removeItemLabel} remove={() => removeItem(index)} />}
+              { isValidated && indicateValidationSuccess && !itemProblems.length && <CheckCircleIcon />}
+              { canRemoveItem(index) && <TrashIcon enabled={enabled} label={whyDisabled ?? removeItemLabel} remove={() => removeItem(index)} />}
             </div>
             <ProblemList problems={itemProblems} onRemove={clearProblem} />
           </div>

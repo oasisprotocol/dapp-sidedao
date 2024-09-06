@@ -11,23 +11,90 @@ import {
 
 type ValidatorBundle<DataType> = SingleOrArray<undefined | ValidatorFunction<DataType>>
 
+/**
+ * Data type for describing a field
+ */
 export type InputFieldProps<DataType> = {
   name: string;
   description?: string;
   label?: string;
   placeholder?: string;
   initialValue: DataType
+
+  /**
+   * Optional function to normalize the value
+   */
   cleanUp?: (value: DataType) => DataType
+
+  /**
+   * Is this field required?
+   *
+   * Optionally, you can also specify the corresponding error message.
+   */
   required?: CoupledData<boolean, string>;
+
   validatorsGenerator?: (values: DataType) => ValidatorBundle<DataType>;
+
+  /**
+   * Validators to apply to values
+   */
   validators?: ValidatorBundle<DataType>;
+
+  /**
+   * Should this field be shown?
+   *
+   * You can also use the "hidden" field for the same effect,
+   * just avoid contradictory values.
+   */
   visible?: boolean,
+
+  /**
+   * Should this field be hidden?
+   *
+   * You can also use the "visible" field for the same effect,
+   * just avoid contradictory values.
+   */
   hidden?: boolean,
+
+  /**
+   * Is this field enabled, that is, editable?
+   *
+   * Optionally, you can also specify why not.
+   *
+   * You can also use the "disabled" field for the same effect,
+   * just avoid contradictory values.
+   */
   enabled?: Decision,
+
+  /**
+   * Is this field disabled, that is, read only?
+   *
+   * Optionally, you can also specify why.
+   *
+   * You can also use the "enabled" field for the same effect,
+   * just avoid contradictory values.
+   */
   disabled?: Decision,
+
+  /**
+   * Extra classes to add to the container
+   */
   containerClassName?: string,
+
+  /**
+   * Should this field be validated after every change?
+   */
+  validateOnChange?: boolean,
+
+  /**
+   * Besides errors, should we also indicate successful validation status?
+   */
+  showValidationSuccess?: boolean
 }
 
+/**
+ * Data type passed from the field controller to the field UI widget
+ */
 export type InputFieldControls<DataType> = Pick<InputFieldProps<DataType>, "label" | "description" | "placeholder" | "name"> & {
   type: string,
   visible: boolean,
@@ -37,8 +104,10 @@ export type InputFieldControls<DataType> = Pick<InputFieldProps<DataType>, "labe
   value: DataType,
   setValue: (value: DataType) => void
   allProblems: AllProblems
+  isValidated: boolean
   validate: () => Promise<boolean>
   validationPending: boolean
+  indicateValidationSuccess: boolean
   clearProblem: (id: string) => void
   clearProblemsAt: (location: string) => void
   clearAllProblems: () => void
@@ -105,6 +174,8 @@ export function useInputField<DataType>(
     validators = [],
     validatorsGenerator,
     containerClassName,
+    validateOnChange,
+    showValidationSuccess = false,
   } = props
 
   const [required, requiredMessage] = expandCoupledData(
@@ -112,9 +183,10 @@ export function useInputField<DataType>(
     [false, "This field is required"],
   )
 
-
+  const [pristine, setPristine] = useState(true)
   const [value, setValue] = useState<DataType>(initialValue)
   const [problems, setProblems] = useState<ProblemAtLocation[]>([])
+  const [isValidated, setIsValidated] = useState(false)
   const [validationPending, setValidationPending] = useState(false)
   const [allProblems, setAllProblems] = useState<AllProblems>({})
   const { isEmpty, isEqual } = dataTypeControl
@@ -124,16 +196,17 @@ export function useInputField<DataType>(
 
   const isEnabled = getVerdict(enabled);
 
-  const validate = async () : Promise<boolean> => {
+  const validate = async (preserve = false) : Promise<boolean> => {
 
     // Clear any previous problems
     setProblems([])
     setValidationPending(true)
+    setIsValidated(false)
 
     // Clean up the value
     const cleanValue = cleanUp ? cleanUp(value) : value
     const different = !isEqual(cleanValue, value)
-    if (different) {
+    if (different && !preserve) {
       setValue(cleanValue)
     }
 
@@ -170,6 +243,7 @@ export function useInputField<DataType>(
 
     setProblems(currentProblems)
     setValidationPending(false)
+    setIsValidated(true)
 
     // Do we have any actual errors?
     return !currentProblems.some(problem => problem.level === "error")
@@ -201,6 +275,14 @@ export function useInputField<DataType>(
       setAllProblems(problemTree)
     }, [problems]);
 
+  useEffect(
+    () => {
+      if (visible && validateOnChange && !pristine) {
+        void validate(true)
+      }
+    }, [visible, value, validateOnChange]
+  )
+
 
   return {
     type,
@@ -209,15 +291,19 @@ export function useInputField<DataType>(
     label,
     placeholder,
     value,
-    setValue: value => {
+    setValue: newValue => {
+      if (newValue === value) return
+      setPristine(false)
       // clearError();
-      setValue(value)
+      setValue(newValue)
+      setIsValidated(false)
     },
     allProblems,
+    isValidated,
     clearProblem,
     clearProblemsAt,
     clearAllProblems,
-
+    indicateValidationSuccess: showValidationSuccess,
     validate,
     validationPending,
     visible,

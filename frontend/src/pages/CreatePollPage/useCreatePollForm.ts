@@ -119,6 +119,8 @@ export const useCreatePollForm = () => {
     visible: accessControlMethod.value === "acl_tokenHolders",
     required: [true, "Please specify the address of the token that is the key to this poll!"],
     validators: value=> !isValidAddress(value) ? "This doesn't seem to be a valid address." : undefined,
+    validateOnChange: true,
+    showValidationSuccess: true,
   })
 
   const addressWhitelist = useTextArrayField({
