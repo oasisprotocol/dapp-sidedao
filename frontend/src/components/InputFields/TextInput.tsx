@@ -16,6 +16,7 @@ export const TextInput: FC<TextFieldControls & {}> = (
     placeholder,
     setValue,
     allProblems,
+    hasProblems,
     isValidated,
     indicateValidationSuccess,
     clearProblem,
@@ -46,8 +47,8 @@ export const TextInput: FC<TextFieldControls & {}> = (
 
   const rootProblems = allProblems.root || []
 
-  const hasSomeProblems = Object.keys(allProblems).some(key => allProblems[key].length)
-  const hasNoProblems = !hasSomeProblems
+
+  const hasNoProblems = !hasProblems
 
   const { hasWarning, hasError} = checkProblems(rootProblems)
 

@@ -104,6 +104,7 @@ export type InputFieldControls<DataType> = Pick<InputFieldProps<DataType>, "labe
   value: DataType,
   setValue: (value: DataType) => void
   allProblems: AllProblems
+  hasProblems: boolean
   isValidated: boolean
   validate: () => Promise<boolean>
   validationPending: boolean
@@ -299,6 +300,7 @@ export function useInputField<DataType>(
       setIsValidated(false)
     },
     allProblems,
+    hasProblems: Object.keys(allProblems).some(key => allProblems[key].length),
     isValidated,
     clearProblem,
     clearProblemsAt,
