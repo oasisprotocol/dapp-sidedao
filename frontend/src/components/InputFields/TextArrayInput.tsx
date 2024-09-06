@@ -77,6 +77,7 @@ export const TextArrayInput: FC<TextArrayControls & {}> = (
     enabled,
     whyDisabled,
     validationPending,
+    validationStatusMessage,
     pendingValidationIndex,
     indicateValidationSuccess,
     isValidated,
@@ -94,7 +95,7 @@ export const TextArrayInput: FC<TextArrayControls & {}> = (
     <div className={classes.textArrayValue}>
       <ProblemList problems={rootProblems} onRemove={clearProblem} />
       { validationPending && (pendingValidationIndex === undefined) && <div className={"niceLine"}>
-        Checking ...
+        { validationStatusMessage }
         <SpinnerIcon width={24} height={24} spinning={true}/>
       </div>}
       { value.map((value, index) => {

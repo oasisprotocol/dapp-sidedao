@@ -200,9 +200,9 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
   } = props
 
   const wrapItemValidatorFunction = (itemValidator: ValidatorFunction<string>, values: string[]): ValidatorFunction<string[]>[] =>
-    values.map((value, index): ValidatorFunction<string[]> => async () => {
+    values.map((value, index): ValidatorFunction<string[]> => async (_, changed, controls) => {
       setPendingValidationIndex(index)
-      const reports = getAsArray(await itemValidator(value, true)) // TODo: the "changed" flag should be calculated
+      const reports = getAsArray(await itemValidator(value, changed, controls))
         .map(rep => wrapProblem(rep, `value-${index}`, "error"))
         .filter((p): p is ProblemAtLocation => !!p)
       setPendingValidationIndex(undefined)

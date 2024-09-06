@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-  AllProblems, CoupledData,
+  AllProblems, ValidatorControls, CoupledData,
   Decision, expandCoupledData,
   getAsArray, getReason, getVerdict, invertDecision,
   ProblemAtLocation,
@@ -108,6 +108,8 @@ export type InputFieldControls<DataType> = Pick<InputFieldProps<DataType>, "labe
   isValidated: boolean
   validate: () => Promise<boolean>
   validationPending: boolean
+  validationStatusMessage: string,
+  validatorProgress: number | undefined
   indicateValidationSuccess: boolean
   clearProblem: (id: string) => void
   clearProblemsAt: (location: string) => void
@@ -198,12 +200,24 @@ export function useInputField<DataType>(
 
   const isEnabled = getVerdict(enabled);
 
+  const [validatorProgress, setValidatorProgress] = useState<number>()
+  const [validatorStatusMessage, setValidatorStatusMessage] = useState<string>()
+
+  const validatorControls: ValidatorControls = {
+    updateStatus: ({ progress, message }) => {
+      if (progress) setValidatorProgress(progress)
+      if (message) setValidatorStatusMessage(message)
+    }
+  }
+
   const validate = async (preserve = false) : Promise<boolean> => {
 
     // Clear any previous problems
     setProblems([])
     setValidationPending(true)
     setIsValidated(false)
+    setValidatorStatusMessage(undefined)
+    setValidatorProgress(undefined)
 
     // Clean up the value
     const cleanValue = cleanUp ? cleanUp(value) : value
@@ -232,7 +246,7 @@ export function useInputField<DataType>(
       try {
         const validatorReport = hasError
           ? [] // If we already have an error, don't even bother with any more validators
-          : await validator(cleanValue, lastValidatedData !== cleanValue) // Execute the current validators
+          : await validator(cleanValue, lastValidatedData !== cleanValue, validatorControls) // Execute the current validators
 
         getAsArray(validatorReport)  // Maybe we have a single report, maybe an array. Receive it as an array.
           .map(report => wrapProblem(report, "root", "error")) // Wrap single strings to proper reports
@@ -315,6 +329,8 @@ export function useInputField<DataType>(
     indicateValidationSuccess: showValidationSuccess,
     validate,
     validationPending,
+    validationStatusMessage: validatorStatusMessage ?? "Checking ...",
+    validatorProgress,
     visible,
     enabled: isEnabled,
     whyDisabled: isEnabled ? undefined : getReason(enabled),

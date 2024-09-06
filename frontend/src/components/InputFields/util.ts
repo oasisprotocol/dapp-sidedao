@@ -48,8 +48,16 @@ export function flatten<Data>(array: Data[][]): Data[] {
 
 export type AllProblems = Record<string, Problem[]>
 
-export type SyncValidatorFunction<DataType> = (value: DataType, changed: boolean) => SingleOrArray<ValidatorProduct>
-export type AsyncValidatorFunction<DataType> = (value: DataType, changed: boolean) => Promise<SingleOrArray<ValidatorProduct>>
+export type ValidatorControls = {
+  updateStatus: (
+    status: {
+      message?: string,
+      progress?: number,
+    } ) => void
+}
+
+export type SyncValidatorFunction<DataType> = (value: DataType, changed: boolean, controls: ValidatorControls) => SingleOrArray<ValidatorProduct>
+export type AsyncValidatorFunction<DataType> = (value: DataType, changed: boolean, controls: ValidatorControls) => Promise<SingleOrArray<ValidatorProduct>>
 export type ValidatorFunction<DataType> = SyncValidatorFunction<DataType> | AsyncValidatorFunction<DataType>
 
 export const checkProblems = (problems: Problem[] = []) => ({

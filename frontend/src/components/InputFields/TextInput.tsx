@@ -21,6 +21,7 @@ export const TextInput: FC<TextFieldControls & {}> = (
     indicateValidationSuccess,
     clearProblem,
     validationPending,
+    validationStatusMessage,
     visible,
     enabled,
     whyDisabled,
@@ -63,7 +64,7 @@ export const TextInput: FC<TextFieldControls & {}> = (
       </div>
       <ProblemList problems={rootProblems} onRemove={clearProblem} />
       { validationPending && <div className={"niceLine"}>
-        Checking ...
+        { validationStatusMessage }
         <SpinnerIcon width={24} height={24} spinning={true}/>
       </div>}
     </div>
