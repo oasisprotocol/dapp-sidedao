@@ -25,6 +25,7 @@ import {
   VITE_CONTRACT_POLLMANAGER,
   VITE_NETWORK_BIGINT,
 } from '../../constants/config';
+import { useGaslessStatus } from '../../components/PollCard/useGaslessStatus';
 
 type LoadedPoll = PollManager.ProposalWithIdStructOutput & { ipfsParams: Poll; };
 
@@ -53,7 +54,7 @@ export const usePollData = (pollId: string) => {
     pollACL,
   } = useContracts(eth)
 
-    const proposalId = `0x${pollId}`;
+  const proposalId = `0x${pollId}`;
 
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -71,11 +72,7 @@ export const usePollData = (pollId: string) => {
   const [votes, setVotes] = useState<ListOfVotes>({ ...noVotes });
   const [canClose, setCanClose] = useState(false);
   const [canAclVote, setCanAclVote] = useState(false);
-  const [gvAddresses, setGvAddresses] = useState<string[]>([]);
-  const [gvBalances, setGvBalances] = useState<bigint[]>([]);
-  const [gvTotalBalance, setGvTotalBalance] = useState<bigint>(0n);
-  const [gaslessEnabled, setGaslessEnabled] = useState(false)
-  const [gaslessPossible, setGaslessPossible] = useState(false)
+
   const [isTokenHolderACL, setIsTokenHolderACL] = useState(false);
   const [aclTokenInfo, setAclTokenInfo] = useState<TokenInfo>();
 
@@ -92,6 +89,7 @@ export const usePollData = (pollId: string) => {
   const [isMine, setIsMine] = useState(false)
   const [hasWallet, setHasWallet] = useState(false)
   const [hasWalletOnWrongNetwork, setHasWalletOnWrongNetwork] = useState(false)
+  const { gaslessEnabled, gaslessPossible, gvAddresses, gvBalances } = useGaslessStatus(proposalId)
 
   useEffect(
     () => setCanVote(!!eth.state.address &&
@@ -445,17 +443,6 @@ export const usePollData = (pollId: string) => {
       }
     }
 
-    // Retrieve gasless voting addresses & balances
-    const addressBalances = await gaslessVoting.listAddresses(daoAddress, proposalId);
-    setGvAddresses(addressBalances.out_addrs);
-    setGaslessEnabled(!!addressBalances.out_addrs.length)
-    setGvBalances(addressBalances.out_balances);
-    if (addressBalances.out_balances.length > 0) {
-      setGvTotalBalance(addressBalances.out_balances.reduce((a, b) => a + b));
-    } else {
-      setGvTotalBalance(0n);
-    }
-
   }, [dao, daoAddress, pollACL, gaslessVoting, userAddress, pollLoaded, eth.state.provider, xchainRPC, eth.state.signer, fetchStorageProof]);
 
   useEffect(
@@ -499,20 +486,6 @@ export const usePollData = (pollId: string) => {
       }
     }
   }, [hasClosed, poll])
-
-  useEffect(() => {
-    if (gvTotalBalance > 0n) {
-      setGaslessPossible(true)
-      // console.log(
-      //   'Gasless voting available',
-      //   formatEther(gvTotalBalance),
-      //   'ROSE balance, addresses:',
-      //   gvAddresses.join(', '),
-      // );
-    } else {
-      setGaslessPossible(false)
-    }
-  }, [gvTotalBalance, gvAddresses]);
 
   useEffect(
     () => {
