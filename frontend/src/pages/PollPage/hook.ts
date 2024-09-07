@@ -272,10 +272,13 @@ export const usePollData = (pollId: string) => {
       setIsVoting(true)
       await doVote();
       setHasVoted(true)
-    } catch (e: any) {
+    } catch (e) {
+      let errorString = e + ""
+      if (errorString.startsWith("Error: user rejected action")) {
+        errorString = "The signer refused to sign this vote."
+      }
+      window.alert(`Failed to submit vote: ${errorString}`)
       console.log(e);
-      // setError(e.reason ?? e.message);
-      setError("Failed to submit vote!");
     } finally {
       setIsVoting(false)
     }
