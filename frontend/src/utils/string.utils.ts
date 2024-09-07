@@ -30,5 +30,7 @@ export abstract class StringUtils {
     return s.slice(0, sliceIndex)
   }
 
-  static maybePlural = (amount: number, singular: string, plural: string): string => `${amount} ${(amount === 1) ? singular : plural}`;
+  static maybePluralUnits = (amount: number, singular: string, plural: string): string => (amount === 1) ? singular : plural;
+
+  static maybePlural = (amount: number, singular: string, plural: string): string => `${amount} ${StringUtils.maybePluralUnits(amount, singular, plural)}`;
 }
