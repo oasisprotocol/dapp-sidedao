@@ -87,6 +87,11 @@ export type InputFieldProps<DataType> = {
   validateOnChange?: boolean,
 
   /**
+   * Should we indicate when validation is running?
+   */
+  showValidationStatus?: boolean
+
+  /**
    * Besides errors, should we also indicate successful validation status?
    */
   showValidationSuccess?: boolean
@@ -183,6 +188,7 @@ export function useInputField<DataType>(
     validatorsGenerator,
     containerClassName,
     validateOnChange,
+    showValidationStatus = true,
     showValidationSuccess = false,
   } = props
 
@@ -224,7 +230,9 @@ export function useInputField<DataType>(
     const wasOK = isValidated && !hasProblems
 
     // Clear any previous problems
-    setProblems([])
+    if (showValidationStatus) {
+      setProblems([])
+    }
     setValidationPending(true)
     setIsValidated(false)
     setValidatorStatusMessage(undefined)
@@ -339,7 +347,7 @@ export function useInputField<DataType>(
     clearAllProblems,
     indicateValidationSuccess: showValidationSuccess,
     validate,
-    validationPending,
+    validationPending: showValidationStatus && validationPending,
     validationStatusMessage: validatorStatusMessage ?? "Checking ...",
     validatorProgress,
     visible,
