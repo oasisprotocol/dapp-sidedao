@@ -136,9 +136,10 @@ export const usePollData = (pollId: string) => {
     setIsClosing(true)
     await eth.switchNetwork(); // ensure we're on the correct network first!
     // console.log("Preparing close tx...")
-    const tx = await signerDao!.close(proposalId);
-    // console.log('Close proposal tx', tx);
     try {
+      const tx = await signerDao!.close(proposalId);
+    // console.log('Close proposal tx', tx);
+
       const receipt = await tx.wait();
 
       if (receipt!.status != 1) throw new Error('close ballot tx failed');
@@ -146,7 +147,7 @@ export const usePollData = (pollId: string) => {
         setHasClosed(true)
       }
     } catch (e) {
-      console.log(e);
+      console.log("TX close problem", e)
     } finally {
       setIsClosing(false)
     }
