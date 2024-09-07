@@ -487,15 +487,15 @@ export const usePollData = (pollId: string) => {
   useEffect(()=>{
     if (hasClosed) {
       if (!poll) {
-        console.log("No poll loaded, waiting to load")
+        // console.log("No poll loaded, waiting to load")
       } else if (poll.proposal.active) {
-        console.log("Apparently, we have closed a poll, but we still perceive it as active, so scheduling a reload...")
+        // console.log("Apparently, we have closed a poll, but we still perceive it as active, so scheduling a reload...")
         setTimeout(() => {
-          console.log("Reloading now")
+          // console.log("Reloading now")
           setPollLoaded(false)
         }, 5 * 1000)
       } else {
-        console.log("We no longer perceive it as active, so we can stop reloading")
+        // console.log("We no longer perceive it as active, so we can stop reloading")
         setHasClosed(false)
       }
     }
