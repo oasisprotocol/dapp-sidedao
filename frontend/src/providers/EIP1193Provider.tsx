@@ -4,7 +4,7 @@ import * as sapphire from '@oasisprotocol/sapphire-paratime'
 import { EIP1193Error } from '../utils/errors'
 import detectEthereumProvider from '@metamask/detect-provider'
 import { EIP1193Context, EIP1193ProviderContext } from './EIP1193Context'
-import { VITE_NETWORK } from '../constants/config'
+import { VITE_NETWORK_BIGINT } from '../constants/config'
 import { CHAINS } from '../constants/config'
 
 declare global {
@@ -36,7 +36,7 @@ export const EIP1193ContextProvider: FC<PropsWithChildren> = ({ children }) => {
     return accounts[0]
   }
 
-  const _addNetwork = (chainId = VITE_NETWORK) => {
+  const _addNetwork = (chainId: bigint = VITE_NETWORK_BIGINT) => {
     if (!CHAINS.has(chainId)) {
       throw new Error(`Chain configuration for chain id '${chainId}' not found!`)
     }
@@ -48,7 +48,7 @@ export const EIP1193ContextProvider: FC<PropsWithChildren> = ({ children }) => {
     })
   }
 
-  const switchNetwork = async (toChainId = VITE_NETWORK) => {
+  const switchNetwork = async (toChainId: bigint = VITE_NETWORK_BIGINT) => {
     const ethProvider = new BrowserProvider(window.ethereum!)
     const sapphireEthProvider = sapphire.wrap(ethProvider) as BrowserProvider & sapphire.SapphireAnnex
 

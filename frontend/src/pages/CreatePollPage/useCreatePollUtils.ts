@@ -12,8 +12,12 @@ import {
   guessStorageSlot
 } from '@oasisprotocol/side-dao-contracts';
 import { useCallback } from 'react';
-
-const acl_allowAll = import.meta.env.VITE_CONTRACT_ACL_ALLOWALL;
+import {
+  VITE_CONTRACT_ACL_ALLOWALL,
+  VITE_CONTRACT_ACL_STORAGEPROOF,
+  VITE_CONTRACT_ACL_TOKENHOLDER,
+  VITE_CONTRACT_ACL_VOTERALLOWLIST,
+} from '../../constants/config';
 
 const chains = xchain_ChainNamesToChainId
 

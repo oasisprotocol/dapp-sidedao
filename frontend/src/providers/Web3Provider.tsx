@@ -3,8 +3,8 @@ import { FC, PropsWithChildren, useCallback,
 import * as sapphire from '@oasisprotocol/sapphire-paratime'
 import {
   CHAINS,
-  VITE_NETWORK,
-} from '../constants/config'
+  VITE_NETWORK_BIGINT, VITE_NETWORK_NUMBER,
+} from '../constants/config';
 import {
   UnknownNetworkError,
 } from '../utils/errors'
@@ -64,7 +64,7 @@ export const Web3ContextProvider: FC<PropsWithChildren> = ({ children }) => {
       throw new Error('[Web3Context] Sapphire provider is required!')
     }
 
-    if (!CHAINS.has(chainId) || VITE_NETWORK !== chainId) {
+    if (!CHAINS.has(chainId) || VITE_NETWORK_BIGINT !== chainId) {
       throw new UnknownNetworkError('Unknown network!')
     }
 
@@ -81,7 +81,7 @@ export const Web3ContextProvider: FC<PropsWithChildren> = ({ children }) => {
   const _chainChanged = useCallback((chainId: string) => {
     // TODO: Integrate seamlessly, so that page reload is not needed
 
-    if (parseInt(chainId) === Number(VITE_NETWORK)) {
+    if (parseInt(chainId) === VITE_NETWORK_NUMBER) {
       console.log("Switched to home network")
     } else {
       console.log("Apparently, we have switched to a different network")
@@ -167,7 +167,7 @@ export const Web3ContextProvider: FC<PropsWithChildren> = ({ children }) => {
     _addEventListenersOnce(window.ethereum)
   }
 
-  const switchNetwork = async (chainId = VITE_NETWORK) => {
+  const switchNetwork = async (chainId = VITE_NETWORK_BIGINT) => {
     return switchNetworkEIP1193(chainId)
   }
 

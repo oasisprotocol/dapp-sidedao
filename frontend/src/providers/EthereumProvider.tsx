@@ -5,11 +5,12 @@ import { BrowserProvider, JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner, Ze
 import { wrap as sapphireWrap, NETWORKS as SAPPHIRE_NETWORKS } from '@oasisprotocol/sapphire-paratime';
 import { DemoConnectionStatus, DemoNetwork, demoNetworkFromChainId } from '../utils/crypto.demo';
 import { DemoEIP1193Provider } from '../utils/eip1193.demo';
+import { VITE_WEB3_GATEWAY } from '../constants/config';
 
 const ethereumInitialState: EthereumState = {
   signer: undefined,
   provider: sapphireWrap(
-    new JsonRpcProvider(import.meta.env.VITE_WEB3_GATEWAY, 'any'),
+    new JsonRpcProvider(VITE_WEB3_GATEWAY, 'any'),
   ) as JsonRpcProvider,
   network: DemoNetwork.FromConfig,
   address: undefined,

@@ -1,9 +1,10 @@
 // @ts-ignore
 import { LRUCache } from 'lru-cache';
+import { VITE_IPFS_GATEWAY, VITE_PINATA_JWT } from '../constants/config';
 
 export abstract class Pinata {
-  static JWT_TOKEN = import.meta.env.VITE_PINATA_JWT;
-  static GATEWAY_URL = import.meta.env.VITE_IPFS_GATEWAY;
+  static JWT_TOKEN = VITE_PINATA_JWT;
+  static GATEWAY_URL = VITE_IPFS_GATEWAY;
 
   static #cache = new LRUCache<string, Uint8Array>({ ttl: 60 * 60 * 5, max: 100 });
 

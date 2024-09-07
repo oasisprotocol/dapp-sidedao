@@ -1,5 +1,6 @@
 import { AEAD, NonceSize, KeySize, TagSize } from '@oasisprotocol/deoxysii'
 import { sha256 } from '@noble/hashes/sha256';
+import { VITE_NETWORK_NUMBER } from '../constants/config';
 
 /// XXX: Seriously JavaScript... can't compare Uint8Arrays???
 function areBytewiseEqual(a: Uint8Array, b: Uint8Array) {
@@ -56,7 +57,7 @@ export enum DemoNetwork {
   PolygonMumbai = 0x13381,
   Local = 1337,
 
-  FromConfig = parseInt(import.meta.env.VITE_NETWORK),
+  FromConfig = VITE_NETWORK_NUMBER,
 }
 
 const demoNetworkNameMap: Record<DemoNetwork, string> = {

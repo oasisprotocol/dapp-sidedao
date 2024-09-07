@@ -12,6 +12,11 @@ import type {
 } from  "../types"
 import { EthereumContext } from '../providers/EthereumContext';
 import { useEffect, useState } from 'react';
+import {
+  VITE_CONTRACT_GASLESSVOTING,
+  VITE_CONTRACT_POLLMANAGER,
+  VITE_CONTRACT_POLLMANAGER_ACL,
+} from '../constants/config';
 
 export const useContracts = (eth: EthereumContext) => {
 
@@ -30,15 +35,15 @@ export const useContracts = (eth: EthereumContext) => {
       setGaslessVoting(undefined)
       return
     }
-    const pollManagerAddr = import.meta.env.VITE_CONTRACT_POLLMANAGER;
+    const pollManagerAddr = VITE_CONTRACT_POLLMANAGER;
     // console.log('PollManager at', pollManagerAddr);
     setPollManager(PollManager__factory.connect(pollManagerAddr, eth.state.provider))
 
-    const pollManagerAclAddr = import.meta.env.VITE_CONTRACT_POLLMANAGER_ACL;
+    const pollManagerAclAddr = VITE_CONTRACT_POLLMANAGER_ACL;
     // console.log('IPollManagerACL at', pollManagerAclAddr);
     setPollManagerACL(IPollManagerACL__factory.connect(pollManagerAclAddr, eth.state.provider))
 
-    const gaslessVotingAddr = import.meta.env.VITE_CONTRACT_GASLESSVOTING;
+    const gaslessVotingAddr = VITE_CONTRACT_GASLESSVOTING;
     // console.log('GaslessVoting at', gaslessVotingAddr);
     setGaslessVoting(GaslessVoting__factory.connect(gaslessVotingAddr, eth.state.provider))
 
@@ -57,7 +62,7 @@ export const useContracts = (eth: EthereumContext) => {
       setPollManagerWithSigner(undefined)
       return
     }
-    const pollManagerAddr = import.meta.env.VITE_CONTRACT_POLLMANAGER;
+    const pollManagerAddr = VITE_CONTRACT_POLLMANAGER;
     // console.log('PollManager at', pollManagerAddr);
     setPollManagerWithSigner(PollManager__factory.connect(pollManagerAddr, eth.state.signer));
   }, [eth.state.signer])

@@ -18,6 +18,13 @@ import { decryptJSON, DemoNetwork } from '../../utils/crypto.demo';
 import { Pinata } from '../../utils/Pinata';
 import { useEthereum } from '../../hooks/useEthereum';
 import { DateUtils } from '../../utils/date.utils';
+import {
+  VITE_CONTRACT_ACL_STORAGEPROOF,
+  VITE_CONTRACT_ACL_TOKENHOLDER,
+  VITE_CONTRACT_ACL_VOTERALLOWLIST,
+  VITE_CONTRACT_POLLMANAGER,
+  VITE_NETWORK_BIGINT,
+} from '../../constants/config';
 
 type LoadedPoll = PollManager.ProposalWithIdStructOutput & { ipfsParams: Poll; };
 
@@ -154,7 +161,7 @@ export const usePollData = (pollId: string) => {
       }
 
       const request = {
-        dao: import.meta.env.VITE_CONTRACT_POLLMANAGER,
+        dao: VITE_CONTRACT_POLLMANAGER,
         voter: await eth.state.signer.getAddress(),
         proposalId: proposalId,
         choiceId: choice,
@@ -165,7 +172,7 @@ export const usePollData = (pollId: string) => {
         {
           name: 'GaslessVoting',
           version: '1',
-          chainId: import.meta.env.VITE_NETWORK,
+          chainId: VITE_NETWORK_BIGINT,
           verifyingContract: await gaslessVoting.getAddress(),
         },
         {
@@ -366,9 +373,9 @@ export const usePollData = (pollId: string) => {
       setVotes({...noVotes})
     }
 
-    setIsTokenHolderACL(params.acl == import.meta.env.VITE_CONTRACT_ACL_TOKENHOLDER);
-    setIsWhitelistACL(params.acl == import.meta.env.VITE_CONTRACT_ACL_VOTERALLOWLIST);
-    setIsXChainACL(params.acl == import.meta.env.VITE_CONTRACT_ACL_STORAGEPROOF);
+    setIsTokenHolderACL(params.acl == VITE_CONTRACT_ACL_TOKENHOLDER);
+    setIsWhitelistACL(params.acl == VITE_CONTRACT_ACL_VOTERALLOWLIST);
+    setIsXChainACL(params.acl == VITE_CONTRACT_ACL_STORAGEPROOF);
 
     if (!('xchain' in ipfsParams.acl.options)) {
       if ('token' in ipfsParams.acl.options) {
