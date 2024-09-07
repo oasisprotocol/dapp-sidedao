@@ -61,7 +61,7 @@ export const ActivePoll: FC<PollData> = (
     if (!amountString) return
     const amount = parseEther(amountString)
     if (amount > 0n) {
-      console.log("Should topup", address, amount)
+      // console.log("Should topup", address, amount)
       void topUp(address, amount)
     }
   }

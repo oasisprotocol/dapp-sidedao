@@ -117,14 +117,13 @@ export const usePollData = (pollId: string) => {
   useEffect(
     () => {
       if (pollACL && hasWallet && daoAddress) {
-        pollACL.canManagePoll(daoAddress, proposalId, userAddress).then(canManage =>
-          setCanClose(canManage
-            && (
-              !poll?.proposal.params.closeTimestamp ||
-              !!remainingTime?.isPastDue
-            )
-          )
-        )
+        pollACL.canManagePoll(daoAddress, proposalId, userAddress).then(canManage => {
+          const hasCloseTime: boolean = !!poll?.proposal.params.closeTimestamp
+          const isPastDue = !!remainingTime?.isPastDue
+          const result = canManage && (!hasCloseTime || isPastDue)
+          // console.log("canManage?", canManage, "hasCloseTime?", hasCloseTime, "isPastDue?", isPastDue, "result?", result)
+          setCanClose(result)
+        })
       } else {
         setCanClose(false)
       }
