@@ -97,6 +97,12 @@ export type NumberMessageTemplate = string | NumberStringFunction
 export const getNumberMessage = (template: NumberMessageTemplate, amount: number): string =>
   ((typeof template) === "string") ? (template as string) : ((template as NumberStringFunction)(amount))
 
+type DateStringFunction = (date: Date) => string
+export type DateMessageTemplate = string | DateStringFunction
+
+export const getDateMessage = (template: DateMessageTemplate, date: Date): string =>
+  ((typeof template) === "string") ? (template as string) : ((template as DateStringFunction)(date))
+
 /**
  * Get the indices of duplicate elements in an array
  */
