@@ -12,7 +12,7 @@ type LabelProps = Pick<InputFieldProps<string>, 'name' | 'label' | 'description'
   renderer?: RendererFunction<string>
 }
 
-export type LabelControls = Pick<InputFieldControls<any>,
+export type LabelControls = Pick<InputFieldControls<string>,
   'name' | 'label' | 'description' | 'type'
   | 'visible' | 'value' | 'setValue' | 'validate' | 'hasProblems'
   | 'allProblems' | 'clearProblem' | 'clearAllProblems' | 'containerClassName'> & {
