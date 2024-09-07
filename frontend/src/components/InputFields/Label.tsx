@@ -9,13 +9,19 @@ export const Label: FC<LabelControls> = (props) => {
   const {
     label, description, visible,
     value, allProblems, clearProblem, containerClassName,
+    formatter,
+    renderer,
     classnames,
   } = props
   if (!visible) return
 
+  const formattedValue = formatter ? formatter(value) : value
+
+  const renderedValue = renderer ? renderer(formattedValue) : formattedValue
+
   const field = (
     <div className={StringUtils.clsx(...classnames)}>
-      { value }
+      { renderedValue }
     </div>
   )
 
