@@ -1,5 +1,5 @@
 import { InputFieldControls, InputFieldProps, useInputField } from './useInputField';
-import { Decision } from './util';
+import { Decision, getVerdict } from './util';
 
 export type Choice<DataType = string> = {
   value: DataType,
@@ -23,8 +23,9 @@ export function useOneOfField<DataType>(props: OneOfFieldProps<DataType>): OneOf
   const {
     choices,
     requiredMessage = "Please select an option!",
-    initialValue = choices[0].value,
   } = props
+  const enabledChoices = choices.filter(choice => getVerdict(choice.enabled, true))
+  const initialValue = props.initialValue ??  (enabledChoices[0] ?? choices[0]).value
 
   const controls = useInputField<DataType>(
     "oneOf",
