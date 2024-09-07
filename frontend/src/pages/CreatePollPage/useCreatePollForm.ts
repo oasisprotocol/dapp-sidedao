@@ -561,8 +561,9 @@ export const useCreatePollForm = () => {
         closeTime: hasCloseDate.value ? pollCloseDate.value : undefined,
       }, logger)
 
-      console.log("Created new poll", newId)
-      navigate(`/polls/${newId.substring(2)}`)
+      if (newId) {
+        navigate(`/polls/${newId.substring(2)}`)
+      }
     } catch (ex) {
       let exString = "" + ex;
       if (exString.startsWith("Error: user rejected action")) {
