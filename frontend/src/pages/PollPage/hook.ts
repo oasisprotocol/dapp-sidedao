@@ -117,7 +117,14 @@ export const usePollData = (pollId: string) => {
   useEffect(
     () => {
       if (pollACL && hasWallet && daoAddress) {
-        pollACL.canManagePoll(daoAddress, proposalId, userAddress).then(setCanClose)
+        pollACL.canManagePoll(daoAddress, proposalId, userAddress).then(canManage =>
+          setCanClose(canManage
+            && (
+              !poll?.proposal.params.closeTimestamp ||
+              !!remainingTime?.isPastDue
+            )
+          )
+        )
       } else {
         setCanClose(false)
       }
