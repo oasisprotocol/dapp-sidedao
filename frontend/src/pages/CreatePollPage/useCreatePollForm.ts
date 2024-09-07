@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  Choice,
+  Choice, collectErrorsInFields,
   deny, FieldConfiguration,
   findErrorsInFields,
-  useBooleanField, useLabel,
+  useBooleanField, useDateField, useLabel,
   useOneOfField,
   useTextArrayField,
   useTextField,
@@ -12,6 +12,9 @@ import { useCreatePollUtils } from './useCreatePollUtils';
 
 import classes from "./index.module.css"
 import { StringUtils } from '../../utils/string.utils';
+import { DateUtils } from '../../utils/date.utils';
+import { useTime } from '../../hooks/useTime';
+import { MIN_CLOSE_TIME_MINUTES } from '../../constants/config';
 
 // The steps / pages of the wizard
 const StepTitles= {
@@ -63,6 +66,8 @@ export const useCreatePollForm = () => {
   const [step, setStep] = useState<CreationStep>("basics");
   const [stepIndex, setStepIndex] = useState(0);
   const [validationPending, setValidationPending] = useState(false)
+
+  const { now } = useTime()
 
   const question= useTextField({
     name: "question",
@@ -359,6 +364,82 @@ export const useCreatePollForm = () => {
     [gasFree.value, accessControlMethod.value, numberOfExpectedVoters.value]
   );
 
+  const resultDisplayType = useOneOfField({
+    name: "resultDisplayType",
+    label: "Type of result display",
+    choices: [
+      {
+        value: "end_result_only",
+        label: "Show only the end result",
+        enabled: deny("Coming soon"),
+      },
+      {
+        value: "percentages",
+        label: "Show percentage for each answer",
+      },
+      {
+        value: "percentages_and_voters",
+        label: "Show percentage for each answer, plus the list of voters",
+        description: "The individual votes will still be hidden, only the existence of the vote will be published.",
+        enabled: deny("Coming soon"),
+      },
+      {
+        value: "percentages_and_votes",
+        label: "Show percentage and votes for each answer",
+        description: "Everyone can see who voted for what.",
+      },
+    ]
+  })
+
+  const hasCloseDate = useBooleanField({
+    name: "hasCloseDate",
+    label: "Fixed close date"
+  })
+
+  const pollCloseDate = useDateField({
+    name: "pollCloseDate",
+    label: `Poll close date (Time zone: ${Intl.DateTimeFormat().resolvedOptions().timeZone})`,
+    visible: hasCloseDate.value,
+    validateOnChange: true,
+    initialValue: new Date(),
+    showValidationStatus: false,
+    validators: (value) => {
+      const deadline = value.getTime() / 1000
+      const remaining = DateUtils.calculateRemainingTimeFrom(deadline, now)
+      const { isPastDue, totalSeconds } = remaining
+      if (isPastDue || totalSeconds < MIN_CLOSE_TIME_MINUTES * 60) {
+        return `Please set a time at least ${MIN_CLOSE_TIME_MINUTES} minutes in the future!`
+      }
+    }
+
+  })
+
+  const hasValidCloseDate = hasCloseDate.value && !!pollCloseDate.value && !pollCloseDate.hasProblems
+
+  const pollCloseLabel = useLabel({
+    name: "pollCloseLabel",
+    visible: hasValidCloseDate,
+    initialValue: "??"
+  })
+
+  useEffect(
+    () => {
+      void pollCloseDate.validate({forceChange: true})
+    },
+    [hasCloseDate.value, now],
+  );
+
+  useEffect(
+    () => {
+      if (hasValidCloseDate) {
+        const deadline = pollCloseDate.value.getTime()/1000
+        const remaining = DateUtils.calculateRemainingTimeFrom(deadline, now)
+        pollCloseLabel.setValue(DateUtils.getTextDescriptionOfTime(remaining))
+      }
+    },
+    [hasCloseDate.value, hasValidCloseDate, now],
+  );
+
   const stepFields: Record<CreationStep, FieldConfiguration> = {
     basics: [
       question,
@@ -382,7 +463,12 @@ export const useCreatePollForm = () => {
       gasFreeExplanation,
       [numberOfExpectedVoters, suggestedAmountOfRose],
     ],
-    results: [],
+    results: [
+      resultDisplayType,
+      hasCloseDate,
+      pollCloseDate,
+      pollCloseLabel,
+    ],
   }
 
   const goToPreviousStep = () => {
@@ -420,6 +506,8 @@ export const useCreatePollForm = () => {
 
   }
 
+  const hasErrorsOnCurrentPage = collectErrorsInFields(stepFields[step])
+
   return {
     stepTitle: StepTitles[step],
     stepIndex,
@@ -429,6 +517,7 @@ export const useCreatePollForm = () => {
     validationPending,
     nextStep: goToNextStep,
     isCreating,
+    hasErrorsOnCurrentPage,
     createPoll
   }
 }

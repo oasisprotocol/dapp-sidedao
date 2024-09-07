@@ -13,6 +13,7 @@ export const CreatePollPage = () => {
     validationPending,
     previousStep, nextStep,
     fields,
+    hasErrorsOnCurrentPage,
     createPoll
   } = useCreatePollForm()
 
@@ -27,7 +28,7 @@ export const CreatePollPage = () => {
         <div className={classes.buttons}>
           { stepIndex > 0 && <Button onClick={previousStep} color={"secondary"} variant={"outline"} >Back</Button> }
           { stepIndex < numberOfSteps - 1 && <Button onClick={nextStep} pending={validationPending}>Next</Button> }
-          { stepIndex === numberOfSteps - 1 && <Button onClick={createPoll}>Create poll</Button> }
+          { stepIndex === numberOfSteps - 1 && <Button onClick={createPoll} disabled={hasErrorsOnCurrentPage}>Create poll</Button> }
         </div>
       </Card>
       <DottedProgressIndicator steps={ numberOfSteps} currentStepIndex={stepIndex} />
