@@ -274,8 +274,7 @@ export const useCreatePollForm = () => {
         controls.updateStatus({message: "Looking up reference block ..."})
         const block = await getXchainBlock(chain.value)
         if (!block?.hash) return "Failed to fetch latest block."
-        // xchainBlockHash.setValue(block.hash)
-        xchainBlockHash.setValue(StringUtils.truncateAddress(block.hash))
+        xchainBlockHash.setValue(block.hash)
         xchainBlockHeight.setValue(block.number)
       },
     ],
@@ -299,6 +298,7 @@ export const useCreatePollForm = () => {
     visible: hasValidXchainWallet,
     initialValue: "unknown",
     classnames: classes.explanation,
+    renderer: renderAddress,
   })
 
   const xchainBlockHeight = useLabel({

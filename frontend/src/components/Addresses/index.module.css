@@ -1,0 +1,9 @@
+.address {
+  font-family: 'Roboto Mono Variable', monospace;
+  text-decoration: none;
+  /*font-size: 22px;*/
+  font-weight: 700;
+  line-height: 140%;
+  letter-spacing: 0;
+  text-align: right;
+}
