@@ -4,6 +4,7 @@ import { useWeb3 } from '../../hooks/useWeb3'
 import { StringUtils } from '../../utils/string.utils'
 import classes from './index.module.css'
 import { useAppState } from '../../hooks/useAppState'
+import { AddressShower } from '../Addresses';
 
 interface Props {
   className?: string
@@ -33,9 +34,7 @@ export const ConnectedAccount: FC<Props> = ({ className, address, chainName }) =
       {isDesktopScreen && (
         <p className={classes.connectedAccountDetails}>
           <span className={classes.network}>{networkName}</span>
-          <abbr title={address} className={classes.connectedAccountAddress}>
-            {StringUtils.truncateAddress(address)}
-          </abbr>
+          <AddressShower address={address} className={classes.connectedAccountAddress} />
         </p>
       )}
     </a>
