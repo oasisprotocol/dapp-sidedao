@@ -488,6 +488,11 @@ export const useCreatePollForm = () => {
   }
 
   const createPoll = async () => {
+    setValidationPending(true)
+    const hasErrors = await findErrorsInFields(stepFields[step])
+    setValidationPending(false)
+    if (hasErrors) return
+
     console.log("Should create poll", question.value)
 
     setIsCreating(true)
