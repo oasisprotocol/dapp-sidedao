@@ -66,6 +66,7 @@ export const useCreatePollForm = () => {
     getAllowListAclOptions,
     getXchainAclOptions,
     createPoll: doCreatePoll,
+    parseEther,
   } = useCreatePollUtils()
 
   const [isCreating, setIsCreating] = useState<boolean>(false);
@@ -555,7 +556,7 @@ export const useCreatePollForm = () => {
         description: description.value,
         answers: answers.value,
         aclData, aclOptions,
-        subsidizeAmount: gasFree.value ? 10n : undefined,
+        subsidizeAmount: gasFree.value ? parseEther(amountOfSubsidy.value) : undefined,
         publishVotes: resultDisplayType.value === "percentages_and_votes",
         closeTime: hasCloseDate.value ? pollCloseDate.value : undefined,
       }, logger)

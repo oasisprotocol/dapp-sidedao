@@ -1,6 +1,6 @@
 import { useEthereum } from '../../hooks/useEthereum';
 import { useContracts } from '../../hooks/useContracts';
-import { AbiCoder, getAddress, ParamType } from 'ethers';
+import { AbiCoder, getAddress, ParamType, parseEther } from 'ethers';
 import { AclOptions, Poll, PollManager } from "../../types"
 import { encryptJSON } from '../../utils/crypto.demo';
 import { Pinata } from '../../utils/Pinata';
@@ -256,6 +256,7 @@ export const useCreatePollUtils = () => {
     getTokenHolderAclOptions,
     getAllowListAclOptions,
     getXchainAclOptions,
+    parseEther,
     createPoll,
   }
 
