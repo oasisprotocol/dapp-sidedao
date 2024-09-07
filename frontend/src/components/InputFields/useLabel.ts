@@ -7,7 +7,7 @@ type LabelProps = Pick<InputFieldProps<string>, 'name' | 'label' | 'description'
 
 export type LabelControls = Pick<InputFieldControls<any>,
   'name' | 'label' | 'description' | 'type'
-  | 'visible' | 'value' | 'setValue' | 'validate'
+  | 'visible' | 'value' | 'setValue' | 'validate' | 'hasProblems'
   | 'allProblems' | 'clearProblem' | 'clearAllProblems' | 'containerClassName'> & {
   classnames: string[]
 }
