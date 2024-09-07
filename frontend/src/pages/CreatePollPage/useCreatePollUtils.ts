@@ -4,7 +4,13 @@ import { getAddress } from 'ethers';
 import { AclOptions, Poll, PollManager } from "../../types"
 import { encryptJSON } from '../../utils/crypto.demo';
 import { Pinata } from '../../utils/Pinata';
-import { xchain_ChainNamesToChainId } from '@oasisprotocol/side-dao-contracts';
+import {
+  xchain_ChainNamesToChainId,
+  tokenDetailsFromProvider,
+  xchainRPC,
+  isERCTokenContract,
+  guessStorageSlot
+} from '@oasisprotocol/side-dao-contracts';
 import { useCallback } from 'react';
 
 const acl_allowAll = import.meta.env.VITE_CONTRACT_ACL_ALLOWALL;
@@ -92,9 +98,52 @@ export const useCreatePollUtils = () => {
     console.log('doCreatePoll: Proposal ID', proposalId);
   }
 
+  const getSapphireTokenDetails = async (address: string) => {
+    const chainId = 23294
+    const rpc = xchainRPC(chainId);
+    try {
+      return await tokenDetailsFromProvider(getAddress(address), rpc);
+    } catch {
+      return undefined
+    }
+  }
+
+  const isXchainToken = async (chainName: string, address: string) => {
+    const chainId = chains[chainName]
+    const rpc = xchainRPC(chainId);
+    return await isERCTokenContract(rpc, address)
+  }
+
+  const getXchainTokenDetails = async (chainName: string, address: string) => {
+    const chainId = chains[chainName]
+    const rpc = xchainRPC(chainId);
+    return await tokenDetailsFromProvider(getAddress(address), rpc);
+  }
+
+  const checkXchainTokenHolder = async (chainName: string, tokenAddress: string, holderAddress: string, progressCallback?: (progress: string) => void) => {
+    const chainId = chains[chainName]
+    const rpc = xchainRPC(chainId);
+    try {
+      return await guessStorageSlot(rpc, tokenAddress, holderAddress, "latest", progressCallback)
+    } catch (_) {
+      return undefined
+    }
+  }
+
+  const getXchainBlock = async (chainName: string) => {
+    const chainId = chains[chainName]
+    const rpc = xchainRPC(chainId);
+    return rpc.getBlock("latest");
+  }
+
   return {
     chains,
     isValidAddress,
+    getSapphireTokenDetails,
+    isXchainToken,
+    getXchainTokenDetails,
+    checkXchainTokenHolder,
+    getXchainBlock,
     createPoll,
   }
 

@@ -11,6 +11,7 @@ import {
 import { useCreatePollUtils } from './useCreatePollUtils';
 
 import classes from "./index.module.css"
+import { StringUtils } from '../../utils/string.utils';
 
 // The steps / pages of the wizard
 const StepTitles= {
@@ -47,7 +48,16 @@ const splitAddresses = (addressSoup: string): string[] => addressSoup
 
 
 export const useCreatePollForm = () => {
-  const { chains, isValidAddress, createPoll: doCreatePoll } = useCreatePollUtils()
+  const {
+    chains,
+    isValidAddress,
+    getSapphireTokenDetails,
+    isXchainToken,
+    checkXchainTokenHolder,
+    getXchainTokenDetails,
+    getXchainBlock,
+    createPoll: doCreatePoll,
+  } = useCreatePollUtils()
 
   const [isCreating, setIsCreating] = useState<boolean>(false);
   const [step, setStep] = useState<CreationStep>("basics");
@@ -113,14 +123,42 @@ export const useCreatePollForm = () => {
     ],
   } as const)
 
-  const tokenAddress = useTextField({
+  const sapphireTokenAddress = useTextField({
     name: "tokenAddress",
     label: "Token Address",
     visible: accessControlMethod.value === "acl_tokenHolders",
     required: [true, "Please specify the address of the token that is the key to this poll!"],
-    validators: value=> !isValidAddress(value) ? "This doesn't seem to be a valid address." : undefined,
+    validators: [
+      value => !isValidAddress(value) ? "This doesn't seem to be a valid address." : undefined,
+      async (value, changed, controls) => {
+        if (!changed) return
+        controls.updateStatus({message: "Fetching token details..."})
+        const details = await getSapphireTokenDetails(value)
+        if (!details) {
+          return "Can't find token details!"
+        }
+        sapphireTokenName.setValue(details.name)
+        sapphireTokenSymbol.setValue(details.symbol)
+      }
+    ],
     validateOnChange: true,
     showValidationSuccess: true,
+  })
+
+  const hasValidSapphireTokenAddress = sapphireTokenAddress.visible && sapphireTokenAddress.isValidated && !sapphireTokenAddress.hasProblems
+
+  const sapphireTokenName = useLabel({
+    name: "sapphireTokenName",
+    visible: hasValidSapphireTokenAddress,
+    label: "Selected token:",
+    initialValue: "",
+  })
+
+  const sapphireTokenSymbol = useLabel({
+    name: "sapphireTokenSymbol",
+    visible: hasValidSapphireTokenAddress,
+    label: "Symbol:",
+    initialValue: "",
   })
 
   const addressWhitelist = useTextArrayField({
@@ -154,11 +192,17 @@ export const useCreatePollForm = () => {
   [chains],
   )
 
-  const chain= useOneOfField({
+  const chain = useOneOfField({
     name: "chain",
     label: "Chain",
     visible: accessControlMethod.value === "acl_xchain",
     choices: chainChoices,
+    validateOnChange: true,
+    validators: (_value, changed) => {
+      if (!changed) return
+      void xchainTokenAddress.validate({forceChange: true})
+      return undefined
+    },
   })
 
   const xchainTokenAddress = useTextField({
@@ -168,22 +212,96 @@ export const useCreatePollForm = () => {
     placeholder: "Token address on chain",
     required: [true, "Please specify the address on the other chain that is the key to this poll!"],
     validators: [
-      value=> !isValidAddress(value) ? "This doesn't seem to be a valid address." : undefined,
-      // _value => "random",
+      value => isValidAddress(value) ? undefined : "This doesn't seem to be a valid address.",
+      async (value, changed) => {
+        if (!changed) return
+        return await isXchainToken(chain.value, value) ? undefined : "The address is valid, but this doesn't seem to be a token."
+      },
+      async (value, changed, controls) => {
+        if (!changed) return
+        controls.updateStatus({message: "Fetching token details..."})
+        const details = await getXchainTokenDetails(chain.value, value)
+        if (!details) {
+          return "Can't find token details!"
+        }
+        xchainTokenName.setValue(details.name)
+        xchainTokenSymbol.setValue(details.symbol)
+      }
     ],
     validateOnChange: true,
     showValidationSuccess: true,
   })
 
+  const hasValidXchainTokenAddress = xchainTokenAddress.visible && xchainTokenAddress.isValidated && !xchainTokenAddress.hasProblems
+
+  const xchainTokenName = useLabel({
+    name: "xchainTokenName",
+    visible: hasValidXchainTokenAddress,
+    label: "Selected token:",
+    initialValue: "",
+  })
+
+  const xchainTokenSymbol = useLabel({
+    name: "xchainTokenSymbol",
+    visible: hasValidXchainTokenAddress,
+    label: "Symbol:",
+    initialValue: "",
+  })
+
   const xchainWalletAddress = useTextField({
     name: "xchainWalletAddress",
     label: "Wallet Address",
-    visible: xchainTokenAddress.isValidated && !xchainTokenAddress.hasProblems,
+    visible: hasValidXchainTokenAddress,
     placeholder: "Wallet address of a token holder on chain",
     required: [true, "Please specify the address of a token holder!"],
-    validators: value => !isValidAddress(value) ? "This doesn't seem to be a valid address." : undefined,
+    validators: [
+      value => isValidAddress(value) ? undefined : "This doesn't seem to be a valid address.",
+      async (value, changed, controls) => {
+        if (!changed) return
+        const slot = await checkXchainTokenHolder(chain.value, xchainTokenAddress.value, value, (progress) => {
+          controls.updateStatus({message: progress})
+        })
+        if (!slot) return "Can't confirm this token at this wallet."
+        xchainWalletSlot.setValue(`Confirmed ${slot.balanceDecimal} ${xchainTokenSymbol.value} at slot #${slot.index}.`)
+      },
+      async (_value, changed, controls) => {
+        if (!changed) return
+        controls.updateStatus({message: "Looking up reference block ..."})
+        const block = await getXchainBlock(chain.value)
+        if (!block?.hash) return "Failed to fetch latest block."
+        // xchainBlockHash.setValue(block.hash)
+        xchainBlockHash.setValue(StringUtils.truncateAddress(block.hash))
+        xchainBlockHeight.setValue(block.number)
+      },
+    ],
     validateOnChange: true,
     showValidationSuccess: true,
+  })
+
+  const hasValidXchainWallet = hasValidXchainTokenAddress && xchainWalletAddress.isValidated && !xchainWalletAddress.hasProblems
+
+  const xchainWalletSlot = useLabel({
+    name: "xchainWalletSlot",
+    label: "Tokens confirmed:",
+    visible: hasValidXchainWallet,
+    initialValue: "",
+    classnames: classes.explanation
+  })
+
+  const xchainBlockHash = useLabel({
+    name: "xchainBlockHash",
+    label: "Reference Block Hash",
+    visible: hasValidXchainWallet,
+    initialValue: "unknown",
+    classnames: classes.explanation,
+  })
+
+  const xchainBlockHeight = useLabel({
+    name: "xchainBlockHeight",
+    label: "Block Height",
+    visible: hasValidXchainWallet,
+    initialValue: "unknown",
+    classnames: classes.explanation,
   })
 
   const voteWeighting = useOneOfField({
@@ -209,7 +327,7 @@ export const useCreatePollForm = () => {
 
   const gasFreeExplanation = useLabel({
     name: "gasFreeExplanation",
-    value: "We calculate and suggest the amount of ROSE needed for gas based on the amount of users that are expected to vote. Any remaining ROSE from the gas sponsoring wallet will be refunded to you once the poll is closed.",
+    initialValue: "We calculate and suggest the amount of ROSE needed for gas based on the amount of users that are expected to vote. Any remaining ROSE from the gas sponsoring wallet will be refunded to you once the poll is closed.",
     visible: gasFree.value,
     classnames: classes.explanation,
   })
@@ -250,11 +368,15 @@ export const useCreatePollForm = () => {
     ],
     permission: [
       accessControlMethod,
-      tokenAddress,
+      sapphireTokenAddress,
+      [sapphireTokenName, sapphireTokenSymbol],
       addressWhitelist,
       chain,
       xchainTokenAddress,
+      [xchainTokenName, xchainTokenSymbol],
       xchainWalletAddress,
+      xchainWalletSlot,
+      [xchainBlockHash, xchainBlockHeight],
       voteWeighting,
       gasFree,
       gasFreeExplanation,
