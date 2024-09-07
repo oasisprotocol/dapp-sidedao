@@ -11,10 +11,12 @@ import {
 import { useCreatePollUtils } from './useCreatePollUtils';
 
 import classes from "./index.module.css"
-import { StringUtils } from '../../utils/string.utils';
 import { DateUtils } from '../../utils/date.utils';
 import { useTime } from '../../hooks/useTime';
 import { MIN_CLOSE_TIME_MINUTES } from '../../constants/config';
+import { AclOptions } from '../../types';
+import { renderAddress } from '../../components/Addresses';
+import { useNavigate } from 'react-router-dom';
 
 // The steps / pages of the wizard
 const StepTitles= {
@@ -59,6 +61,10 @@ export const useCreatePollForm = () => {
     checkXchainTokenHolder,
     getXchainTokenDetails,
     getXchainBlock,
+    getAllowAllACLOptions,
+    getTokenHolderAclOptions,
+    getAllowListAclOptions,
+    getXchainAclOptions,
     createPoll: doCreatePoll,
   } = useCreatePollUtils()
 
@@ -67,6 +73,7 @@ export const useCreatePollForm = () => {
   const [stepIndex, setStepIndex] = useState(0);
   const [validationPending, setValidationPending] = useState(false)
 
+  const navigate = useNavigate()
   const { now } = useTime()
 
   const question= useTextField({
@@ -180,12 +187,15 @@ export const useCreatePollForm = () => {
     onItemEdited: (index, value, me) => {
       if ((value.indexOf(",") !== -1)|| (value.indexOf(" ") !== -1) || (value.indexOf("\n") !== -1)) {
         const addresses = splitAddresses(value)
+        const newAddresses = [...me.value]
         for (let i = 0; i < addresses.length; i++) {
-          me.value[index + i] = addresses[i]
+          newAddresses[index + i] = addresses[i]
         }
-        me.setValue(me.value)
+        me.setValue(newAddresses)
       }
     },
+    validateOnChange: true,
+    showValidationSuccess: true,
   })
 
   const chainChoices: Choice[] = useMemo(
@@ -267,7 +277,8 @@ export const useCreatePollForm = () => {
           controls.updateStatus({message: progress})
         })
         if (!slot) return "Can't confirm this token at this wallet."
-        xchainWalletSlot.setValue(`Confirmed ${slot.balanceDecimal} ${xchainTokenSymbol.value} at slot #${slot.index}.`)
+        xchainWalletBalance.setValue(`Confirmed ${slot.balanceDecimal} ${xchainTokenSymbol.value}`)
+        xchainWalletSlotNumber.setValue(slot.index.toString())
       },
       async (_value, changed, controls) => {
         if (!changed) return
@@ -275,7 +286,7 @@ export const useCreatePollForm = () => {
         const block = await getXchainBlock(chain.value)
         if (!block?.hash) return "Failed to fetch latest block."
         xchainBlockHash.setValue(block.hash)
-        xchainBlockHeight.setValue(block.number)
+        xchainBlockHeight.setValue(block.number.toString())
       },
     ],
     validateOnChange: true,
@@ -284,12 +295,21 @@ export const useCreatePollForm = () => {
 
   const hasValidXchainWallet = hasValidXchainTokenAddress && xchainWalletAddress.isValidated && !xchainWalletAddress.hasProblems
 
-  const xchainWalletSlot = useLabel({
-    name: "xchainWalletSlot",
+  const xchainWalletBalance = useLabel({
+    name: "xchainWalletBalance",
     label: "Tokens confirmed:",
     visible: hasValidXchainWallet,
     initialValue: "",
     classnames: classes.explanation
+  })
+
+  const xchainWalletSlotNumber = useLabel({
+    name: "xchainWalletSlotNumber",
+    label: "Stored at:",
+    visible: hasValidXchainWallet,
+    initialValue: "",
+    classnames: classes.explanation,
+    formatter: slot => `Slot #${slot}`
   })
 
   const xchainBlockHash = useLabel({
@@ -349,17 +369,17 @@ export const useCreatePollForm = () => {
     ],
   } as const)
 
-  const suggestedAmountOfRose = useTextField({
+  const amountOfSubsidy = useTextField({
     name: "suggestedAmountOfRose",
     visible: gasFree.value,
-    label: "Suggested amount of ROSE",
+    label: "Amount of ROSE to set aside",
   })
 
   useEffect(
     () => {
       if (!gasFree.value) return
       const cost = aclCostEstimates[accessControlMethod.value] * expectedRanges[numberOfExpectedVoters.value]
-      suggestedAmountOfRose.setValue(cost.toString())
+      amountOfSubsidy.setValue(cost.toString())
     },
     [gasFree.value, accessControlMethod.value, numberOfExpectedVoters.value]
   );
@@ -389,7 +409,7 @@ export const useCreatePollForm = () => {
         description: "Everyone can see who voted for what.",
       },
     ]
-  })
+  } as const)
 
   const hasCloseDate = useBooleanField({
     name: "hasCloseDate",
@@ -434,11 +454,17 @@ export const useCreatePollForm = () => {
       if (hasValidCloseDate) {
         const deadline = pollCloseDate.value.getTime()/1000
         const remaining = DateUtils.calculateRemainingTimeFrom(deadline, now)
-        pollCloseLabel.setValue(DateUtils.getTextDescriptionOfTime(remaining))
+        pollCloseLabel.setValue(DateUtils.getTextDescriptionOfTime(remaining) ?? "")
       }
     },
     [hasCloseDate.value, hasValidCloseDate, now],
   );
+
+  const creationStatus = useLabel({
+    name: "creationStatus",
+    label: "",
+    initialValue: "",
+  })
 
   const stepFields: Record<CreationStep, FieldConfiguration> = {
     basics: [
@@ -456,18 +482,19 @@ export const useCreatePollForm = () => {
       xchainTokenAddress,
       [xchainTokenName, xchainTokenSymbol],
       xchainWalletAddress,
-      xchainWalletSlot,
+      [xchainWalletBalance, xchainWalletSlotNumber],
       [xchainBlockHash, xchainBlockHeight],
       voteWeighting,
       gasFree,
       gasFreeExplanation,
-      [numberOfExpectedVoters, suggestedAmountOfRose],
+      [numberOfExpectedVoters, amountOfSubsidy],
     ],
     results: [
       resultDisplayType,
       hasCloseDate,
       pollCloseDate,
       pollCloseLabel,
+      creationStatus,
     ],
   }
 
@@ -487,24 +514,60 @@ export const useCreatePollForm = () => {
     setStepIndex(stepIndex + 1)
   }
 
+  const getAclOptions = async (
+    updateStatus?: ((status: string | undefined) => void) | undefined,
+  ): Promise<[string, AclOptions]> => {
+    const acl = accessControlMethod.value
+    switch (acl) {
+      case 'acl_allowAll':
+        return getAllowAllACLOptions()
+      case 'acl_tokenHolder':
+        return getTokenHolderAclOptions(sapphireTokenAddress.value)
+      case 'acl_allowList':
+        return getAllowListAclOptions(addressWhitelist.value)
+      case 'acl_xchain':
+        return await getXchainAclOptions({
+          chainName: chain.value,
+          contractAddress: xchainTokenAddress.value,
+          slotNumber: parseInt(xchainWalletSlotNumber.value),
+          blockHash: xchainBlockHash.value,
+        }, updateStatus)
+      default:
+        throw new Error(`Unknown ACL contract ${acl}`);
+    }
+  }
+
   const createPoll = async () => {
     setValidationPending(true)
     const hasErrors = await findErrorsInFields(stepFields[step])
     setValidationPending(false)
     if (hasErrors) return
 
-    console.log("Should create poll", question.value)
+    const logger = (message?: string | undefined) => creationStatus.setValue(message ?? "")
+
+    // const logger = console.log
 
     setIsCreating(true)
     try {
-      const newId = await doCreatePoll(
-        question.value,
-        description.value,
-        answers.value,
-        )
+      const [aclData, aclOptions] = await getAclOptions(logger)
+      const newId = await doCreatePoll({
+        question: question.value,
+        description: description.value,
+        answers: answers.value,
+        aclData, aclOptions,
+        subsidizeAmount: gasFree.value ? 10n : undefined,
+        publishVotes: resultDisplayType.value === "percentages_and_votes",
+        closeTime: hasCloseDate.value ? pollCloseDate.value : undefined,
+      }, logger)
+
       console.log("Created new poll", newId)
+      navigate(`/polls/${newId.substring(2)}`)
     } catch (ex) {
-      console.log("Failed to create poll", ex)
+      let exString = "" + ex;
+      if (exString.startsWith("Error: user rejected action")) {
+        exString = "Signer refused to sign transaction."
+      }
+      logger("Failed to create poll: " + exString)
     } finally {
       setIsCreating(false)
     }
