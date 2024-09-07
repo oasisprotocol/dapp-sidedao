@@ -17,44 +17,9 @@ import {
 import { decryptJSON, DemoNetwork } from '../../utils/crypto.demo';
 import { Pinata } from '../../utils/Pinata';
 import { useEthereum } from '../../hooks/useEthereum';
+import { DateUtils } from '../../utils/date.utils';
 
 type LoadedPoll = PollManager.ProposalWithIdStructOutput & { ipfsParams: Poll; };
-
-const calculateRemainingTimeFrom = (deadline: number, now: number): RemainingTime => {
-  const isPastDue = now > deadline
-  const totalSeconds = Math.floor((Math.abs(deadline - now)))
-
-  return {
-    isPastDue,
-    totalSeconds,
-    days: Math.floor(totalSeconds / (24 * 3600)),
-    hours: Math.floor(totalSeconds % (24 * 3600) / 3600),
-    minutes: Math.floor(totalSeconds % 3600 / 60),
-    seconds: totalSeconds % 60
-  }
-}
-
-const maybePlural = (amount: number, singular: string, plural: string): string => `${amount} ${(amount === 1) ? singular : plural}`;
-
-const getTextDescriptionOfTime = (remaining: RemainingTime | undefined): string | undefined => {
-  if (!remaining) return undefined;
-  const hasDays = !!remaining.days
-  const hasHours = hasDays || !!remaining.hours
-  const hasMinutes = !hasDays && (hasHours || !!remaining.minutes)
-  const hasSeconds = !hasHours
-  const fragments: string[] = []
-  if (hasDays) fragments.push(maybePlural(remaining.days, "day","days"))
-  if (hasHours) fragments.push(maybePlural(remaining.hours, "hour", "hours"))
-  if (hasMinutes) fragments.push(maybePlural(remaining.minutes,"minute", "minutes"))
-  if (hasSeconds) fragments.push(maybePlural(remaining.seconds, "second", "seconds"))
-  const timeString = fragments.join(", ")
-
-  if (remaining.isPastDue) {
-    return `Voting finished ${timeString} ago.`;
-  } else {
-    return `Poll closes in ${timeString}.`;
-  }
-}
 
 type LoadedData =
   [
@@ -320,9 +285,9 @@ export const usePollData = (pollId: string) => {
     () => {
       const deadline = poll?.ipfsParams.options.closeTimestamp
       const now = new Date().getTime()/1000
-      const remaining = deadline ? calculateRemainingTimeFrom(deadline, now) : undefined;
+      const remaining = deadline ? DateUtils.calculateRemainingTimeFrom(deadline, now) : undefined;
       setRemainingTime(remaining)
-      setRemainingTimeString(getTextDescriptionOfTime(remaining))
+      setRemainingTimeString(DateUtils.getTextDescriptionOfTime(remaining))
       if (deadline) {
         // console.log("Scheduling next update")
         setTimeout(() => {
@@ -337,7 +302,6 @@ export const usePollData = (pollId: string) => {
   useEffect(() => {
     updateRemainingTime()
   }, [poll]);
-
 
   const loadProposal = useCallback(async () => {
     if (!dao || !daoAddress || !pollACL || !gaslessVoting) {

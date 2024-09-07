@@ -29,4 +29,6 @@ export abstract class StringUtils {
   static truncate = (s: string, sliceIndex = 200) => {
     return s.slice(0, sliceIndex)
   }
+
+  static maybePlural = (amount: number, singular: string, plural: string): string => `${amount} ${(amount === 1) ? singular : plural}`;
 }
