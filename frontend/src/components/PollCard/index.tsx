@@ -5,7 +5,8 @@ import { Link } from 'react-router-dom';
 import classes from "./index.module.css"
 import { GasRequiredIcon } from '../icons/GasRequiredIcon';
 import { NoGasRequiredIcon } from '../icons/NoGasRequiredIcon';
-import { randomchoice } from '@oasisprotocol/side-dao-contracts';
+import { SpinnerIcon } from '../icons/SpinnerIcon';
+import { useGaslessStatus } from './useGaslessStatus';
 import { HourGlassIcon } from '../icons/HourGlassIcon';
 import { StringUtils } from '../../utils/string.utils';
 
@@ -37,7 +38,9 @@ export const PollCard: FC<{
     proposal: { active }
   } = poll
 
-  const gasLess = randomchoice([false, true]) // TODO: find this out by individually asking for this data
+  const proposalId = `0x${pollId}`;
+  const { gaslessPossible } = useGaslessStatus(proposalId)
+
   const isPastDue = !!closeTimestamp && (new Date().getTime()/1000 > closeTimestamp)
 
   return (
@@ -50,7 +53,7 @@ export const PollCard: FC<{
         <div dangerouslySetInnerHTML={{ __html: micromark(description) }} />
         <div className={classes.pollCardBottom}>
           <PollStatusIndicator active={active} isPastDue={isPastDue}/>
-          {gasLess ? <NoGasRequiredIcon /> : <GasRequiredIcon />}
+          { gaslessPossible === undefined ? <SpinnerIcon size={"medium"} spinning /> : (gaslessPossible ? <NoGasRequiredIcon /> : <GasRequiredIcon />)}
         </div>
       </div>
     </Link>
