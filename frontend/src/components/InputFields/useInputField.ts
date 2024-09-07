@@ -92,6 +92,11 @@ export type InputFieldProps<DataType> = {
   showValidationSuccess?: boolean
 }
 
+export type ValidationParams = {
+  preserve?: boolean,
+  forceChange?: boolean
+}
+
 /**
  * Data type passed from the field controller to the field UI widget
  */
@@ -106,7 +111,7 @@ export type InputFieldControls<DataType> = Pick<InputFieldProps<DataType>, "labe
   allProblems: AllProblems
   hasProblems: boolean
   isValidated: boolean
-  validate: () => Promise<boolean>
+  validate: (params?: ValidationParams) => Promise<boolean>
   validationPending: boolean
   validationStatusMessage: string,
   validatorProgress: number | undefined
@@ -193,6 +198,7 @@ export function useInputField<DataType>(
   const [lastValidatedData, setLastValidatedData] = useState<DataType | undefined>()
   const [validationPending, setValidationPending] = useState(false)
   const [allProblems, setAllProblems] = useState<AllProblems>({})
+  const hasProblems = Object.keys(allProblems).some(key => allProblems[key].length)
   const { isEmpty, isEqual } = dataTypeControl
 
   const visible = calculateVisible(props);
@@ -210,7 +216,12 @@ export function useInputField<DataType>(
     }
   }
 
-  const validate = async (preserve = false) : Promise<boolean> => {
+  const validate = async (params?: {
+    preserve?: boolean,
+    forceChange?: boolean
+  }) : Promise<boolean> => {
+    const { preserve = false, forceChange = false } = params ?? {}
+    const wasOK = isValidated && !hasProblems
 
     // Clear any previous problems
     setProblems([])
@@ -246,7 +257,7 @@ export function useInputField<DataType>(
       try {
         const validatorReport = hasError
           ? [] // If we already have an error, don't even bother with any more validators
-          : await validator(cleanValue, lastValidatedData !== cleanValue, validatorControls) // Execute the current validators
+          : await validator(cleanValue, forceChange || !wasOK || lastValidatedData !== cleanValue, validatorControls) // Execute the current validators
 
         getAsArray(validatorReport)  // Maybe we have a single report, maybe an array. Receive it as an array.
           .map(report => wrapProblem(report, "root", "error")) // Wrap single strings to proper reports
@@ -300,7 +311,7 @@ export function useInputField<DataType>(
   useEffect(
     () => {
       if (visible && validateOnChange && !pristine) {
-        void validate(true)
+        void validate({preserve: true})
       }
     }, [visible, value, validateOnChange]
   )
@@ -321,7 +332,7 @@ export function useInputField<DataType>(
       setIsValidated(false)
     },
     allProblems,
-    hasProblems: Object.keys(allProblems).some(key => allProblems[key].length),
+    hasProblems,
     isValidated,
     clearProblem,
     clearProblemsAt,
