@@ -37,7 +37,7 @@ const expectedRanges = {
 const aclCostEstimates = {
   acl_allowAll: 0.1,
   acl_allowList: 0.1,
-  acl_tokenHolders: 0.2,
+  acl_tokenHolder: 0.2,
   acl_xchain: 0.2,
 } as const
 
@@ -114,7 +114,7 @@ export const useCreatePollForm = () => {
     label: "Who can vote",
     choices: [
       { value: "acl_allowAll", label: "Everybody" },
-      { value: "acl_tokenHolders", label: "Holds Token on Sapphire" },
+      { value: "acl_tokenHolder", label: "Holds Token on Sapphire" },
       {
         value: "acl_allowList",
         label: "Address Whitelist",
@@ -131,7 +131,7 @@ export const useCreatePollForm = () => {
   const sapphireTokenAddress = useTextField({
     name: "tokenAddress",
     label: "Token Address",
-    visible: accessControlMethod.value === "acl_tokenHolders",
+    visible: accessControlMethod.value === "acl_tokenHolder",
     required: [true, "Please specify the address of the token that is the key to this poll!"],
     validators: [
       value => !isValidAddress(value) ? "This doesn't seem to be a valid address." : undefined,
