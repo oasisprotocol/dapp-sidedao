@@ -44,7 +44,8 @@ export const ConnectWallet: FC<Props> = ({ mobileSticky }) => {
       if (ex instanceof UnknownNetworkError) {
         // Already handled by provider layer
       } else {
-        setAppError(ex as Error)
+        console.log(ex)
+        alert((ex as Error).message ?? "Failed to connect")
       }
     } finally {
       setIsLoading(false)
@@ -57,7 +58,8 @@ export const ConnectWallet: FC<Props> = ({ mobileSticky }) => {
       await switchNetwork()
       await handleConnectWallet()
     } catch (ex) {
-      setAppError(ex as Error)
+      console.log(ex)
+      alert((ex as Error).message ?? "Failed to connect")
     } finally {
       setIsLoading(false)
     }
