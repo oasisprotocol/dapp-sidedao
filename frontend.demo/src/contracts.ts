@@ -33,17 +33,6 @@ export function usePollManagerWithSigner(): PollManager {
   return PollManager__factory.connect(addr, eth.signer);
 }
 
-export async function usePollACL(): Promise<ComputedRef<IPollACL>> {
-  const eth = useEthereumStore();
-  const dao = usePollManager().value;
-
-  const ref = IPollACL__factory.connect(await dao.getACL(), eth.provider);
-
-  return computed(() => {
-    return ref;
-  });
-}
-
 export async function usePollManagerACL(): Promise<ComputedRef<IPollManagerACL>> {
   const eth = useEthereumStore();
   const addr = import.meta.env.VITE_CONTRACT_POLLMANAGER_ACL;
