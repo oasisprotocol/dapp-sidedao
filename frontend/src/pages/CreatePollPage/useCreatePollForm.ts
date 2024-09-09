@@ -232,7 +232,7 @@ export const useCreatePollForm = () => {
       async (value, changed, controls) => {
         if (!changed) return
         controls.updateStatus({message: "Fetching token details..."})
-        const details = await getXchainTokenDetails(chain.value, value)
+        const details = await getXchainTokenDetails({ chainName: chain.value, address: value})
         if (!details) {
           return "Can't find token details!"
         }

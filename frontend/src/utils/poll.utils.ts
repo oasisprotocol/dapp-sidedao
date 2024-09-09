@@ -144,9 +144,12 @@ export const isXchainToken = async (chainName: string, address: string) => {
   return await isERCTokenContract(rpc, address)
 }
 
-export const getXchainTokenDetails = async (chainName: string, address: string) => {
-  const chainId = chains[chainName]
-  const rpc = xchainRPC(chainId);
+export const getXchainTokenDetails = async (props: {chainId?: number, chainName?: string, address: string}) => {
+  const {chainId, chainName, address} = props
+  if (!chainId && !chainName) throw new Error("Must specify either chainId, or chainName")
+  const wantedChainId = chainId ?? chains[chainName!]
+  if (!wantedChainId) throw new Error(`Can't identify chain from id:${chainId}, name:${chainName}`)
+  const rpc = xchainRPC(wantedChainId);
   return await tokenDetailsFromProvider(getAddress(address), rpc);
 }
 
