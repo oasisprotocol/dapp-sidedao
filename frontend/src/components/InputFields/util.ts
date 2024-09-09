@@ -126,9 +126,14 @@ type SimpleDecision = boolean
 type FullDecision = { verdict: boolean, reason?: string }
 export type Decision = SimpleDecision | FullDecision
 
+type FullPositiveDecision = { verdict: boolean, reason?: string }
+type FullNegativeDecision = { verdict: boolean, reason: string }
+export type DecisionWithReason = true | FullPositiveDecision | FullNegativeDecision
+
 export const allow = (reason?: string ): Decision => ({ verdict: true, reason })
 
 export const deny = (reason?: string ): Decision => ({ verdict: false, reason })
+export const denyWithReason = (reason: string ): FullNegativeDecision => ({ verdict: false, reason })
 
 export const expandDecision = (decision: Decision): FullDecision =>
   (typeof decision === "boolean") ? { verdict: decision } : decision
