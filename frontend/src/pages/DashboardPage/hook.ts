@@ -38,7 +38,7 @@ async function fetchProposals(
           );
           proposalsMap[id] = { id, params, proposal } as FullProposal;
         } catch (e) {
-          return console.error('failed to fetch proposal params from IPFS', e);
+          return console.log('failed to fetch proposal params from IPFS for', id);
         }
       }),
     );
