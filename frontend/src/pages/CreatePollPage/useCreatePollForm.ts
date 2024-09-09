@@ -119,7 +119,11 @@ export const useCreatePollForm = () => {
     label: "Who can vote",
     choices: [
       { value: "acl_allowAll", label: "Everybody" },
-      { value: "acl_tokenHolder", label: "Holds Token on Sapphire" },
+      {
+        value: "acl_tokenHolder",
+        label: "Holds Token on Sapphire",
+        hidden: true, // We decided to hide this option, since this is not the focus
+      },
       {
         value: "acl_allowList",
         label: "Address Whitelist",
