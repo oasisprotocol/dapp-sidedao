@@ -18,12 +18,11 @@ import {
   VITE_CONTRACT_POLLMANAGER_ACL,
 } from '../constants/config';
 
-export const useContracts = (eth: EthereumContext) => {
+export const useContracts = (eth: EthereumContext, aclAddress?: string | undefined) => {
 
   const [pollManager, setPollManager] = useState<PollManager | undefined>();
   const [pollManagerAddress, setPollManagerAddress] = useState<string | undefined>()
   const [pollManagerWithSigner, setPollManagerWithSigner] = useState<PollManager | undefined>();
-  const [aclAddress, setAclAddress] = useState<string | undefined>();
   const [pollACL, setPollACL] = useState<IPollACL | undefined>();
   const [pollManagerACL, setPollManagerACL] = useState<IPollManagerACL | undefined>();
   const [gaslessVoting, setGaslessVoting] = useState<GaslessVoting>()
@@ -67,13 +66,6 @@ export const useContracts = (eth: EthereumContext) => {
     setPollManagerWithSigner(PollManager__factory.connect(pollManagerAddr, eth.state.signer));
   }, [eth.state.signer])
 
-  useEffect(() => {
-    if (!pollManager) {
-      setAclAddress(undefined)
-    } else {
-      pollManager.getACL().then(setAclAddress)
-    }
-  }, [pollManager]);
 
   useEffect( () => {
     if (!eth.state.provider || !aclAddress) {

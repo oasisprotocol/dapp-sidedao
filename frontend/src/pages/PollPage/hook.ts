@@ -46,14 +46,7 @@ const noVotes: ListOfVotes = { out_count: 0n, out_voters: [], out_choices: [] }
 export const usePollData = (pollId: string) => {
   const eth = useEthereum()
   const { userAddress, isHomeChain } = eth
-  const {
-    pollManager: dao,
-    pollManagerAddress: daoAddress,
-    pollManagerWithSigner: signerDao,
-    // pollManagerACL
-    gaslessVoting,
-    pollACL,
-  } = useContracts(eth)
+
 
   const proposalId = `0x${pollId}`;
   const isDemo = pollId === "demo"
@@ -94,6 +87,14 @@ export const usePollData = (pollId: string) => {
   const [hasWalletOnWrongNetwork, setHasWalletOnWrongNetwork] = useState(false)
   const { gaslessEnabled, gaslessPossible, gvAddresses, gvBalances } = useGaslessStatus(proposalId)
   const { now } = useTime()
+  const {
+    pollManager: dao,
+    pollManagerAddress: daoAddress,
+    pollManagerWithSigner: signerDao,
+    // pollManagerACL
+    gaslessVoting,
+    pollACL,
+  } = useContracts(eth, poll?.proposal.params.acl)
 
   useEffect(
     () => setCanVote(
