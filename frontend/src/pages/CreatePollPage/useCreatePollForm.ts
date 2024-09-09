@@ -575,6 +575,9 @@ export const useCreatePollForm = () => {
     setValidationPending(false)
     if (hasErrors) return
 
+    if (!daoSigner) throw new Error("DAO signer not found!")
+    if (!eth.state.address) throw new Error("Can't find my own address!")
+
     const logger = (message?: string | undefined) => creationStatus.setValue(message ?? "")
 
     // const logger = console.log
@@ -582,7 +585,7 @@ export const useCreatePollForm = () => {
     setIsCreating(true)
     try {
       const [aclData, aclOptions] = await getAclOptions(logger)
-      const newId = await doCreatePoll({
+      const newId = await doCreatePoll(daoSigner, eth.state.address, {
         question: question.value,
         description: description.value,
         answers: answers.value,
