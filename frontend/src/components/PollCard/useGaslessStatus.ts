@@ -17,6 +17,11 @@ export const useGaslessStatus = (proposalId: string) => {
   const [gaslessPossible, setGaslessPossible] = useState<boolean | undefined>()
 
   const checkGaslessStatus = async () => {
+    if (proposalId === "0xdemo") {
+      setGaslessPossible(true)
+      setGaslessEnabled(true)
+      return
+    }
     const addressBalances = await gaslessVoting!.listAddresses(daoAddress!, proposalId);
     setGvAddresses(addressBalances.out_addrs);
     setGaslessEnabled(!!addressBalances.out_addrs.length)

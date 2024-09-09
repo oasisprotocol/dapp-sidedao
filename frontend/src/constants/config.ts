@@ -1,5 +1,7 @@
 
 // EIP-3085: wallet_addEthereumChain RPC Method
+import { LoadedPoll } from '../types';
+
 interface AddEthereumChainParameter {
   chainId: string
   chainName: string
@@ -106,3 +108,26 @@ export {
 }
 
 export const MIN_CLOSE_TIME_MINUTES = 3
+
+export const demoPoll: LoadedPoll = {
+  id: "demo",
+  proposal: {
+    active: true,
+  },
+  ipfsParams: {
+    creator: "demo",
+    name: "What is your favorite form of investment?",
+    description: "",
+    choices: ["US dollar", "Physical gold", "Crypto"],
+    options: {
+      publishVotes: false,
+    },
+  },
+} as LoadedPoll
+
+export const demoSettings = {
+  timeForVoting: 610,
+  waitSecondsBeforeFormallyClosing: 5,
+  jumpToSecondsBeforeClosing: 5,
+  timeContractionSeconds: 5,
+}

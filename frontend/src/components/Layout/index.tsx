@@ -8,7 +8,7 @@ import { useInView } from 'react-intersection-observer'
 import { LayoutBase } from '../LayoutBase'
 import { Button } from '../Button';
 import { Alert } from '../Alert';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 type LayoutVariation = "landing" | "dashboard" | "light" | "dark"
 
@@ -45,7 +45,8 @@ export const Layout: FC<PropsWithChildren & {
     initialInView: true,
   })
 
-  const connectButton =  <ConnectWallet mobileSticky={isMobileScreen && !inView} />
+  const isDemo = useLocation().pathname.endsWith("/demo")
+  const connectButton = isDemo ? undefined : <ConnectWallet mobileSticky={isMobileScreen && !inView} />
 
   return (
     <>

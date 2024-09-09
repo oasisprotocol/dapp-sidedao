@@ -19,12 +19,15 @@ import { Pinata } from '../../utils/Pinata';
 import { useEthereum } from '../../hooks/useEthereum';
 import { DateUtils } from '../../utils/date.utils';
 import {
+  demoPoll, demoSettings,
   VITE_CONTRACT_ACL_STORAGEPROOF,
   VITE_CONTRACT_ACL_TOKENHOLDER,
   VITE_CONTRACT_ACL_VOTERALLOWLIST,
   VITE_CONTRACT_POLLMANAGER,
   VITE_NETWORK_BIGINT,
 } from '../../constants/config';
+import { useTime } from '../../hooks/useTime';
+import { tuneValue } from '../../utils/tuning';
 import { useGaslessStatus } from '../../components/PollCard/useGaslessStatus';
 
 type LoadedData =
@@ -53,6 +56,7 @@ export const usePollData = (pollId: string) => {
   } = useContracts(eth)
 
   const proposalId = `0x${pollId}`;
+  const isDemo = pollId === "demo"
 
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -82,15 +86,18 @@ export const usePollData = (pollId: string) => {
   const [canVote, setCanVote] = useState(false)
 
   const [canSelect, setCanSelect] = useState(false)
+  const [deadline, setDeadline] = useState<number | undefined>()
   const [remainingTime, setRemainingTime] = useState<RemainingTime>()
   const [remainingTimeString, setRemainingTimeString] = useState<string | undefined>()
   const [isMine, setIsMine] = useState(false)
   const [hasWallet, setHasWallet] = useState(false)
   const [hasWalletOnWrongNetwork, setHasWalletOnWrongNetwork] = useState(false)
   const { gaslessEnabled, gaslessPossible, gvAddresses, gvBalances } = useGaslessStatus(proposalId)
+  const { now } = useTime()
 
   useEffect(
-    () => setCanVote(!!eth.state.address &&
+    () => setCanVote(
+      (!!eth.state.address || isDemo) &&
       !isClosing &&
       winningChoice === undefined &&
       selectedChoice !== undefined &&
@@ -112,6 +119,7 @@ export const usePollData = (pollId: string) => {
 
   useEffect(
     () => {
+      if (isDemo) return
       if (pollACL && hasWallet && daoAddress) {
         pollACL.canManagePoll(daoAddress, proposalId, userAddress).then(canManage => {
           const hasCloseTime: boolean = !!poll?.proposal.params.closeTimestamp
@@ -152,6 +160,25 @@ export const usePollData = (pollId: string) => {
     if (selectedChoice === undefined) throw new Error('no choice selected');
 
     const choice = selectedChoice;
+
+    if (isDemo) {
+      if (!confirm("Are you sure you want to submit your vote? (Normally you should see a MetaMask popup at this point, but this demo doesn't require any wallet, so this will have to do...)")) return
+      setExistingVote(choice)
+      setHasVoted(true)
+      const remainingSeconds = remainingTime?.totalSeconds
+      if (!!deadline && !!remainingSeconds && remainingSeconds > demoSettings.jumpToSecondsBeforeClosing + demoSettings.timeContractionSeconds) {
+        // Let's quickly get rid of the remaining time.
+        tuneValue({
+          startValue: deadline,
+          transitionTime: demoSettings.timeContractionSeconds,
+          endValue: Date.now() / 1000 + demoSettings.jumpToSecondsBeforeClosing + demoSettings.timeContractionSeconds,
+          stepInMs: 100,
+          setValue: setDeadline,
+          easing: true,
+        })
+      }
+      return
+    }
 
     if (!gaslessVoting) throw new Error('No Gasless Voting!');
     if (!signerDao) throw new Error('No Signer Dao');
@@ -259,6 +286,7 @@ export const usePollData = (pollId: string) => {
     }
 
     setExistingVote(choice);
+    setHasVoted(true)
   }, [selectedChoice, gaslessVoting, signerDao, gaslessPossible, eth.state.signer, eth.state.provider, gvAddresses, aclProof])
 
   async function vote(): Promise<void> {
@@ -266,7 +294,6 @@ export const usePollData = (pollId: string) => {
       setError("")
       setIsVoting(true)
       await doVote();
-      setHasVoted(true)
     } catch (e) {
       let errorString = e + ""
       if (errorString.startsWith("Error: user rejected action")) {
@@ -294,27 +321,53 @@ export const usePollData = (pollId: string) => {
     [pollId]
   );
 
-  const updateRemainingTime = useCallback(
+  useEffect(() => {
+    if (isDemo) {
+      setDeadline(now + demoSettings.timeForVoting)
+    } else {
+      setDeadline(poll?.ipfsParams.options.closeTimestamp)
+    }
+  }, [poll])
+
+  useEffect(
     () => {
-      const deadline = poll?.ipfsParams.options.closeTimestamp
-      const now = new Date().getTime()/1000
       const remaining = deadline ? DateUtils.calculateRemainingTimeFrom(deadline, now) : undefined;
       setRemainingTime(remaining)
       setRemainingTimeString(DateUtils.getTextDescriptionOfTime(remaining))
-      if (deadline) {
-        // console.log("Scheduling next update")
-        setTimeout(() => {
-          // console.log("Should update remainingTime")
-          updateRemainingTime()
-        }, 1000)
+      if (
+        isDemo &&
+        poll?.proposal.active &&
+        remaining?.isPastDue &&
+        remaining.totalSeconds < (demoSettings.waitSecondsBeforeFormallyClosing + 5) &&
+        remaining.totalSeconds >= demoSettings.waitSecondsBeforeFormallyClosing
+      ) {
+        // Let's formally close the poll
+        setPoll({
+          ...poll,
+          proposal: {
+            ...poll.proposal,
+            active: false,
+            topChoice: 0n,
+          }
+        } as any)
+        // Get some random vote numbers
+        const voteNumbers = poll.ipfsParams.choices.map(() => Math.round(Math.random()*100))
+        const voteBigInts = voteNumbers.map(BigInt)
+        // Let's pick a winner
+        const winningIndexNumber = voteNumbers.indexOf(Math.max(...voteNumbers))
+        const winningIndexBigInt = BigInt(winningIndexNumber)
+        // Simulate loading the results
+        setTimeout(
+          () => {
+            setVoteCounts(voteBigInts)
+            setWinningChoice(winningIndexBigInt)
+            setSelectedChoice(winningIndexBigInt)
+          }, 1000
+        )
       }
     },
-    [poll, setRemainingTime]
+    [deadline, now],
   )
-
-  useEffect(() => {
-    updateRemainingTime()
-  }, [poll]);
 
   const loadProposal = useCallback(async () => {
     if (!dao || !daoAddress || !pollACL || !gaslessVoting) {
@@ -328,6 +381,21 @@ export const usePollData = (pollId: string) => {
     // console.log("Attempting to load", proposalId)
 
     setPoll(undefined)
+
+    if (isDemo) {
+      setPoll(demoPoll)
+      setVoteCounts([])
+      setWinningChoice(undefined)
+      setVotes({...noVotes})
+      setIsTokenHolderACL(false)
+      setIsWhitelistACL(false)
+      setIsXChainACL(false)
+      setCanAclVote(true)
+      setHasWallet(true)
+      setHasWalletOnWrongNetwork(false)
+      setCanClose(false)
+      return
+    }
 
     let loadedData: LoadedData
     try {
@@ -493,10 +561,12 @@ export const usePollData = (pollId: string) => {
   );
 
   useEffect(() => {
+    if (isDemo) return
     setIsMine(poll?.ipfsParams.creator?.toLowerCase() === userAddress.toLowerCase())
   }, [poll, userAddress])
 
   useEffect(() => {
+    if (isDemo) return
     setHasWallet(isHomeChain && userAddress !== ZeroAddress)
     setHasWalletOnWrongNetwork(!isHomeChain && userAddress !== ZeroAddress)
   }, [userAddress, isHomeChain])
