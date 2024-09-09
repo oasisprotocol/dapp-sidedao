@@ -8,7 +8,7 @@ import { IPollACL } from "./IPollACL.sol";
 interface IPollManager {
     function proxy(address voter, bytes32 proposalId, uint8 choiceId, bytes calldata in_data) external;
 
-    function getACL() external view returns (IPollManagerACL);
+    // function getACL() external view returns (IPollManagerACL);
 
     function getPollACL(bytes32 proposalId) external view returns (IPollACL);
 

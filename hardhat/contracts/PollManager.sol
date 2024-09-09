@@ -127,12 +127,12 @@ contract PollManager is IERC165, IPollManager {
             || interfaceId == type(IPollManager).interfaceId;
     }
 
-    function getACL()
-        external view
-        returns (IPollManagerACL)
-    {
-        return s_managerACL;
-    }
+    // function getACL()
+    //    external view
+    //    returns (IPollManagerACL)
+    // {
+    //    return s_managerACL;
+    // }
 
     function getPollACL(bytes32 proposalId)
         external view
