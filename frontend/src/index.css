@@ -133,3 +133,10 @@ h3 {
 .socialOnDark {
   background: white;
 }
+
+.noWrap {
+  text-wrap: nowrap;
+  button {
+    text-wrap: nowrap;
+  }
+}
