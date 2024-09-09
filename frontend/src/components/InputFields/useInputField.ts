@@ -95,6 +95,11 @@ export type InputFieldProps<DataType> = {
    * Besides errors, should we also indicate successful validation status?
    */
   showValidationSuccess?: boolean
+
+  /**
+   * Effects to run after the value changed
+   */
+  onValueChange?: (value: DataType) => void
 }
 
 export type ValidationParams = {
@@ -190,6 +195,7 @@ export function useInputField<DataType>(
     validateOnChange,
     showValidationStatus = true,
     showValidationSuccess = false,
+    onValueChange,
   } = props
 
   const [required, requiredMessage] = expandCoupledData(
@@ -338,6 +344,7 @@ export function useInputField<DataType>(
       // clearError();
       setValue(newValue)
       setIsValidated(false)
+      if (onValueChange) onValueChange(newValue)
     },
     allProblems,
     hasProblems,
