@@ -412,6 +412,36 @@ export const useCreatePollForm = () => {
     ]
   } as const)
 
+  const authorResultDisplayType = useOneOfField({
+    name: "authorResultDisplayType",
+    label: "Type of result display for the author",
+    visible: resultDisplayType.value !== "percentages_and_votes",
+    choices: [
+      {
+        value: "same",
+        label: "Same as for everybody else",
+      },
+      {
+        value: "also_percentages",
+        label: "Also show percentage for each answer",
+        hidden: resultDisplayType.value === "percentages",
+      },
+      {
+        value: "voters",
+        label: "Also show the list of voters",
+        hidden: ["percentages_and_votes", "percentages_and_voters"].includes(resultDisplayType.value),
+        enabled: deny("Coming soon"),
+        description: "The individual votes will still be hidden, only the existence of the vote will be published.",
+      },
+      {
+        value: "votes",
+        label: "Also show the votes for each answer",
+        description: "The author can see who voted for what.",
+        enabled: deny("Coming soon"),
+      },
+    ]
+  } as const)
+
   const hasCloseDate = useBooleanField({
     name: "hasCloseDate",
     label: "Fixed close date"
@@ -492,6 +522,7 @@ export const useCreatePollForm = () => {
     ],
     results: [
       resultDisplayType,
+      authorResultDisplayType,
       hasCloseDate,
       pollCloseDate,
       pollCloseLabel,
