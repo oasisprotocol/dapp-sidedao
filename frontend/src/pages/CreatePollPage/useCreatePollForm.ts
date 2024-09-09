@@ -8,7 +8,17 @@ import {
   useTextArrayField,
   useTextField,
 } from '../../components/InputFields';
-import { useCreatePollUtils } from './useCreatePollUtils';
+import {
+  chains,
+  checkXchainTokenHolder, createPoll as doCreatePoll, getAllowAllACLOptions, getAllowListAclOptions,
+  getSapphireTokenDetails, getTokenHolderAclOptions, getXchainAclOptions, getXchainBlock,
+  getXchainTokenDetails,
+  isValidAddress,
+  isXchainToken,
+  parseEther,
+} from '../../utils/poll.utils';
+import { useEthereum } from '../../hooks/useEthereum';
+import { useContracts } from '../../hooks/useContracts';
 
 import classes from "./index.module.css"
 import { DateUtils } from '../../utils/date.utils';
@@ -53,21 +63,8 @@ const splitAddresses = (addressSoup: string): string[] => addressSoup
 
 
 export const useCreatePollForm = () => {
-  const {
-    chains,
-    isValidAddress,
-    getSapphireTokenDetails,
-    isXchainToken,
-    checkXchainTokenHolder,
-    getXchainTokenDetails,
-    getXchainBlock,
-    getAllowAllACLOptions,
-    getTokenHolderAclOptions,
-    getAllowListAclOptions,
-    getXchainAclOptions,
-    createPoll: doCreatePoll,
-    parseEther,
-  } = useCreatePollUtils()
+  const eth = useEthereum()
+  const { pollManagerWithSigner: daoSigner } = useContracts(eth)
 
   const [isCreating, setIsCreating] = useState<boolean>(false);
   const [step, setStep] = useState<CreationStep>("basics");
