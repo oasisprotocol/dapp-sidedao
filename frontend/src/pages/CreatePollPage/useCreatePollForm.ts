@@ -382,10 +382,47 @@ export const useCreatePollForm = () => {
     [gasFree.value, accessControlMethod.value, numberOfExpectedVoters.value]
   );
 
-  const resultDisplayType = useOneOfField({
-    name: "resultDisplayType",
-    label: "Type of result display",
+  const publicResultDisplayType = useOneOfField({
+    name: "publicResultDisplayType",
+    label: "Type of result display for the general public",
     choices: [
+      {
+        value: "no_data",
+        label: "Nothing is published",
+        enabled: deny("Coming soon"),
+      },
+      {
+        value: "end_result_only",
+        label: "Show only the end result",
+        enabled: deny("Coming soon"),
+      },
+      {
+        value: "percentages",
+        label: "Show percentage for each answer",
+      },
+      {
+        value: "percentages_and_voters",
+        label: "Show percentage for each answer, plus the list of voters",
+        description: "The individual votes will still be hidden, only the existence of the vote will be published.",
+        enabled: deny("Coming soon"),
+      },
+      {
+        value: "percentages_and_votes",
+        label: "Show percentage and votes for each answer",
+        description: "Everyone can see who voted for what.",
+      },
+    ]
+  } as const)
+
+  const participantResultDisplayType = useOneOfField({
+    name: "participantResultDisplayType",
+    label: "Type of result display for participants",
+    choices: [
+      {
+        value: "no_data",
+        label: "Nothing is published",
+        enabled: deny("Coming soon"),
+      },
       {
         value: "end_result_only",
         label: "Show only the end result",
@@ -412,7 +449,7 @@ export const useCreatePollForm = () => {
   const authorResultDisplayType = useOneOfField({
     name: "authorResultDisplayType",
     label: "Type of result display for the author",
-    visible: resultDisplayType.value !== "percentages_and_votes",
+    visible: publicResultDisplayType.value !== "percentages_and_votes",
     choices: [
       {
         value: "same",
@@ -421,12 +458,12 @@ export const useCreatePollForm = () => {
       {
         value: "also_percentages",
         label: "Also show percentage for each answer",
-        hidden: resultDisplayType.value === "percentages",
+        hidden: publicResultDisplayType.value === "percentages",
       },
       {
         value: "voters",
         label: "Also show the list of voters",
-        hidden: ["percentages_and_votes", "percentages_and_voters"].includes(resultDisplayType.value),
+        hidden: ["percentages_and_votes", "percentages_and_voters"].includes(publicResultDisplayType.value),
         enabled: deny("Coming soon"),
         description: "The individual votes will still be hidden, only the existence of the vote will be published.",
       },
@@ -518,7 +555,8 @@ export const useCreatePollForm = () => {
       [numberOfExpectedVoters, amountOfSubsidy],
     ],
     results: [
-      resultDisplayType,
+      publicResultDisplayType,
+      participantResultDisplayType,
       authorResultDisplayType,
       hasCloseDate,
       pollCloseDate,
@@ -588,7 +626,7 @@ export const useCreatePollForm = () => {
         answers: answers.value,
         aclData, aclOptions,
         subsidizeAmount: gasFree.value ? parseEther(amountOfSubsidy.value) : undefined,
-        publishVotes: resultDisplayType.value === "percentages_and_votes",
+        publishVotes: publicResultDisplayType.value === "percentages_and_votes",
         closeTime: hasCloseDate.value ? pollCloseDate.value : undefined,
       }, logger)
 
