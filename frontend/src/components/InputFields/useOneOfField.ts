@@ -24,8 +24,9 @@ export function useOneOfField<DataType>(props: OneOfFieldProps<DataType>): OneOf
     choices,
     requiredMessage = "Please select an option!",
   } = props
-  const enabledChoices = choices.filter(choice => getVerdict(choice.enabled, true))
-  const initialValue = props.initialValue ??  (enabledChoices[0] ?? choices[0]).value
+  const visibleChoices = choices.filter(choice => !choice.hidden)
+  const enabledChoices = visibleChoices.filter(choice => getVerdict(choice.enabled, true))
+  const initialValue = props.initialValue ?? (enabledChoices[0] ?? visibleChoices[0]).value
 
   const controls = useInputField<DataType>(
     "oneOf",
