@@ -60,11 +60,12 @@
     height: 100%;
     border-radius: 8px 0px 0px 8px;
     left: 0px;
-    background: #D2D1FFA0;
+    background: #bdbce6;
 }
 
 .selectedChoice {
     border: 3px solid #010038;
+    background: #D2D1FF;
 }
 
 .activeChoice {
