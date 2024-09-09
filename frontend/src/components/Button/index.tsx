@@ -3,9 +3,9 @@ import { FC, MouseEventHandler, PropsWithChildren } from 'react'
 import { StringUtils } from '../../utils/string.utils'
 import { SpinnerIcon } from '../icons/SpinnerIcon';
 
-type ButtonSize = 'small' | 'medium'
-type ButtonColor = 'primary' | 'secondary' | 'success'
-type ButtonVariant = 'solid' | 'outline' | 'text'
+export type ButtonSize = 'small' | 'medium'
+export type ButtonColor = 'primary' | 'secondary' | 'success'
+export type ButtonVariant = 'solid' | 'outline' | 'text'
 
 interface Props extends PropsWithChildren {
   disabled?: boolean
