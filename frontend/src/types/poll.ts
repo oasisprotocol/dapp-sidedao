@@ -8,6 +8,8 @@ export type {
 
 export type FullProposal = PollManager.ProposalWithIdStructOutput & { params: Poll } & { empty: Boolean };
 
+export type LoadedPoll = PollManager.ProposalWithIdStructOutput & { ipfsParams: Poll; };
+
 export type RemainingTime = {
   isPastDue: boolean
   totalSeconds: number

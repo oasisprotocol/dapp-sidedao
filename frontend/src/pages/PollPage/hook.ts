@@ -2,7 +2,7 @@ import { useContracts } from '../../hooks/useContracts';
 import { useCallback, useEffect, useState } from 'react';
 import {
   ListOfVotes, Poll, PollManager, PollResults, RemainingTime,
-  TokenInfo, AclOptionsXchain,
+  TokenInfo, AclOptionsXchain, LoadedPoll,
 } from '../../types';
 import { randomchoice, tokenDetailsFromProvider, fetchStorageProof, xchainRPC } from '@oasisprotocol/side-dao-contracts';
 import {
@@ -26,8 +26,6 @@ import {
   VITE_NETWORK_BIGINT,
 } from '../../constants/config';
 import { useGaslessStatus } from '../../components/PollCard/useGaslessStatus';
-
-type LoadedPoll = PollManager.ProposalWithIdStructOutput & { ipfsParams: Poll; };
 
 type LoadedData =
   [
