@@ -17,7 +17,7 @@ interface AlertTypeValues {
 const alertTypeValuesMap: Record<AlertType, AlertTypeValues> = {
   error: {
     header: 'Something went wrong',
-    icon: <WarningCircleIcon />,
+    icon: <WarningCircleIcon width={124} height={124}/>,
   },
   success: {
     header: 'Vote cast',
