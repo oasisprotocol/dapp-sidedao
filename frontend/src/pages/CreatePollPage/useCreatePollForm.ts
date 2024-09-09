@@ -214,12 +214,7 @@ export const useCreatePollForm = () => {
     label: "Chain",
     visible: accessControlMethod.value === "acl_xchain",
     choices: chainChoices,
-    validateOnChange: true,
-    validators: (_value, changed) => {
-      if (!changed) return
-      void xchainTokenAddress.validate({forceChange: true})
-      return undefined
-    },
+    onValueChange: () => xchainTokenAddress.validate({forceChange: true}),
   })
 
   const xchainTokenAddress = useTextField({
