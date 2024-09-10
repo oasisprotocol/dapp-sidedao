@@ -22,7 +22,7 @@ import {
   demoSettings,
   VITE_CONTRACT_POLLMANAGER,
   VITE_NETWORK_BIGINT,
-  VITE_CONTRACT_ACL_TOKENHOLDER, VITE_CONTRACT_ACL_VOTERALLOWLIST, VITE_CONTRACT_ACL_STORAGEPROOF,
+
 } from '../../constants/config';
 import { useTime } from '../../hooks/useTime';
 import { tuneValue } from '../../utils/tuning';
