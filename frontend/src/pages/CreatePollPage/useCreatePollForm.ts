@@ -9,7 +9,7 @@ import {
   useTextField,
 } from '../../components/InputFields';
 import {
-  chains,
+  chainsForXchain,
   checkXchainTokenHolder, createPoll as doCreatePoll, getAllowAllACLOptions, getAllowListAclOptions,
   getSapphireTokenDetails, getTokenHolderAclOptions, getXchainAclOptions, getXchainBlock,
   getXchainTokenDetails,
@@ -201,12 +201,12 @@ export const useCreatePollForm = () => {
   })
 
   const chainChoices: Choice[] = useMemo(
-    () => Object.entries(chains)
+    () => chainsForXchain
       .map(([id, name]) => ({
-        value: id,
+        value: name,
         label: `${name} (${id})`
       })),
-  [chains],
+    []
   )
 
   const chain = useOneOfField({

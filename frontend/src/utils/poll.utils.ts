@@ -2,6 +2,7 @@ import { AbiCoder, getAddress, ParamType } from 'ethers';
 
 import {
   xchain_ChainNamesToChainId,
+  chain_info,
   tokenDetailsFromProvider,
   xchainRPC,
   AclOptions,
@@ -24,6 +25,11 @@ export { parseEther} from "ethers"
 
 // A mapping from chain name to chain IDs
 export const chains = xchain_ChainNamesToChainId
+
+export const chainsForXchain: [number, string][] = Object.keys(chain_info)
+  .map(id => parseInt(id))
+  .filter(chainId => !chain_info[chainId].cannotMakeStorageProofs)
+  .map(chainId => [chainId, chain_info[chainId].name])
 
 // Check if an address is valid
 export const isValidAddress = (address: string) => {

@@ -22,6 +22,7 @@ import {
   isERCTokenContract,
   tokenDetailsFromProvider,
   xchain_ChainNamesToChainId,
+  chain_info,
   xchainRPC,
 } from '@oasisprotocol/side-dao-contracts';
 
@@ -372,6 +373,10 @@ async function getACLOptions(): Promise<[string, AclOptions]> {
   throw new Error(`Unknown ACL contract ${acl}`);
 }
 
+const chainsForXchain = Object.values(xchain_ChainNamesToChainId).filter(
+  (chainId) => !chain_info[chainId].cannotMakeStorageProofs,
+);
+
 async function doCreatePoll(): Promise<string> {
   if (errors.value.length > 0) return '';
 
@@ -630,8 +635,8 @@ async function doCreatePoll(): Promise<string> {
               <label for="xchain-chainid" class="mr-3 text-base text-gray-900 p-3"> Chain: </label>
               <select v-model="xchain_chainId" id="xchain-chainid" class="p-3">
                 <option value="">-- Custom --</option>
-                <option v-for="(key, item) in xchain_ChainNamesToChainId" :value="key" :key="key">
-                  {{ item }} ({{ key }})
+                <option v-for="key in chainsForXchain" :value="key" :key="key">
+                  {{ chain_info[key].name }} ({{ key }})
                 </option>
               </select>
             </div>
