@@ -4,12 +4,11 @@ import {
   ListOfVotes, Poll, PollManager, PollResults, RemainingTime,
   TokenInfo, AclOptionsXchain, LoadedPoll,
 } from '../../types';
-import { randomchoice, ERC20TokenDetailsFromProvider, fetchStorageProof, xchainRPC } from '@oasisprotocol/side-dao-contracts';
+import { randomchoice, fetchStorageProof, xchainRPC, AclOptionsToken } from '@oasisprotocol/side-dao-contracts';
 import {
   BytesLike,
   ethers,
   getBytes,
-  JsonRpcProvider,
   Transaction,
   TransactionReceipt,
   ZeroAddress,
@@ -28,6 +27,8 @@ import {
 import { useTime } from '../../hooks/useTime';
 import { tuneValue } from '../../utils/tuning';
 import { useGaslessStatus } from '../../components/PollCard/useGaslessStatus';
+import { getSapphireTokenDetails, getERC20TokenDetails } from '../../utils/poll.utils';
+import { DecisionWithReason, denyWithReason, getVerdict } from '../../components/InputFields';
 
 type LoadedData =
   [
@@ -65,8 +66,9 @@ export const usePollData = (pollId: string) => {
   const [pollResults, setPollResults] = useState<PollResults>()
   const [votes, setVotes] = useState<ListOfVotes>({ ...noVotes });
   const [canClose, setCanClose] = useState(false);
-  const [canAclVote, setCanAclVote] = useState(false);
+  const [canAclVote, setCanAclVote] = useState<DecisionWithReason>(true);
 
+  const [isAllowAllACL, setIsAllowAllACL] = useState(false);
   const [isTokenHolderACL, setIsTokenHolderACL] = useState(false);
   const [aclTokenInfo, setAclTokenInfo] = useState<TokenInfo>();
 
@@ -93,7 +95,7 @@ export const usePollData = (pollId: string) => {
     // pollManagerACL
     gaslessVoting,
     pollACL,
-  } = useContracts(eth, poll?.proposal.params.acl)
+  } = useContracts(eth, poll?.proposal.params?.acl)
 
   useEffect(
     () => setCanVote(
@@ -102,7 +104,7 @@ export const usePollData = (pollId: string) => {
       winningChoice === undefined &&
       selectedChoice !== undefined &&
       existingVote === undefined &&
-      canAclVote != false
+      getVerdict(canAclVote)
     ),
     [eth.state.address, winningChoice, selectedChoice, existingVote, isClosing]
   );
@@ -370,8 +372,12 @@ export const usePollData = (pollId: string) => {
   )
 
   const loadProposal = useCallback(async () => {
-    if (!dao || !daoAddress || !pollACL || !gaslessVoting) {
+    if (!dao || !daoAddress || !gaslessVoting || !userAddress) {
       // console.log("not loading, because dependencies are not yet available")
+      return
+    }
+    if (!isDemo && userAddress === "0x0000000000000000000000000000000000000000") {
+      // console.log("No user address, returning")
       return
     }
     if (pollLoaded) {
@@ -387,6 +393,7 @@ export const usePollData = (pollId: string) => {
       setVoteCounts([])
       setWinningChoice(undefined)
       setVotes({...noVotes})
+      setIsAllowAllACL(true)
       setIsTokenHolderACL(false)
       setIsWhitelistACL(false)
       setIsXChainACL(false)
@@ -447,69 +454,134 @@ export const usePollData = (pollId: string) => {
       setVotes({...noVotes})
     }
 
-    setIsTokenHolderACL(params.acl == VITE_CONTRACT_ACL_TOKENHOLDER);
-    setIsWhitelistACL(params.acl == VITE_CONTRACT_ACL_VOTERALLOWLIST);
-    setIsXChainACL(params.acl == VITE_CONTRACT_ACL_STORAGEPROOF);
+    setIsAllowAllACL('allowAll' in ipfsParams.acl.options);
+    setIsTokenHolderACL('token' in ipfsParams.acl.options);
+    setIsWhitelistACL('allowList' in ipfsParams.acl.options);
+    setIsXChainACL('xchain' in ipfsParams.acl.options);
 
-    if (!('xchain' in ipfsParams.acl.options)) {
-      if ('token' in ipfsParams.acl.options) {
-        const tokenAddress = ipfsParams.acl.options.token;
-        const newAclProof = new Uint8Array();
-        setAclProof(newAclProof);
-        setCanAclVote(0n != (await pollACL.canVoteOnPoll(
-          daoAddress,
-          proposalId,
-          userAddress,
-          newAclProof,
-        )));
-        setAclTokenInfo(await ERC20TokenDetailsFromProvider(
-          tokenAddress,
-          eth.state.provider as unknown as JsonRpcProvider,
-        ));
-      } else if ('allowList' in ipfsParams.acl.options) {
-        const newAclProof = new Uint8Array();
-        setAclProof(newAclProof);
-        setCanAclVote(0n != (await pollACL.canVoteOnPoll(
-          daoAddress,
-          proposalId,
-          userAddress,
-          newAclProof,
-        )));
-      } else if ('allowAll' in ipfsParams.acl.options) {
-        const newAclProof = new Uint8Array();
-        setAclProof(newAclProof);
-        setCanAclVote(0n != (await pollACL.canVoteOnPoll(
-          daoAddress,
-          proposalId,
-          userAddress,
-          newAclProof,
-        )));
+  }, [dao, daoAddress, pollACL, gaslessVoting, userAddress, pollLoaded, eth.state.provider, xchainRPC, eth.state.signer, fetchStorageProof]);
+
+
+  const checkIfWeCanVote = async () => {
+    console.log("Checking if we can vote");
+    console.log("is allowAll ACL?", isAllowAllACL, "is TokenHolder ACL?", isTokenHolderACL, "is xChain ACL?", isXChainACL, "is WhiteList ACL?", isWhitelistACL,
+      "useAddress", userAddress, "daoAddress", daoAddress, "poll", poll)
+
+    if (!pollACL || !daoAddress || !poll) return
+
+
+    if (isAllowAllACL) {
+      const newAclProof = new Uint8Array();
+      setAclProof(newAclProof);
+      const result = 0n != await pollACL.canVoteOnPoll(
+        daoAddress,
+        proposalId,
+        userAddress,
+        newAclProof,
+      )
+      if (result) {
+        setCanAclVote(true)
+      } else {
+        setCanAclVote(denyWithReason("some unknown reason"))
       }
-    } else {
-      const xchain = (ipfsParams.acl.options as AclOptionsXchain).xchain;
-      const provider = xchainRPC(xchain.chainId);
-      setXChainOptions(ipfsParams.acl.options);
+
+    } else if (isWhitelistACL) {
+      const newAclProof = new Uint8Array();
+      setAclProof(newAclProof);
+      const result = 0n != await pollACL.canVoteOnPoll(
+        daoAddress,
+        proposalId,
+        userAddress,
+        newAclProof,
+      )
+      // console.log("whiteListAcl check:", result)
+      if (result) {
+        setCanAclVote(true)
+      } else {
+        setCanAclVote(denyWithReason("you are not on the list of allowed addresses"))
+      }
+    } else if (isTokenHolderACL) {
+      const tokenAddress = (poll.ipfsParams.acl.options as AclOptionsToken).token;
+      const tokenDetails = await getSapphireTokenDetails(tokenAddress)
+      setAclTokenInfo(tokenDetails)
+      // console.log("loaded token details", tokenDetails?.name)
+      const newAclProof = new Uint8Array();
+      setAclProof(newAclProof);
+      try {
+        const result = 0n != await pollACL.canVoteOnPoll(
+          daoAddress,
+          proposalId,
+          userAddress,
+          newAclProof,
+        )
+        // console.log("tokenHolderAcl check:", result)
+        if (result) {
+          setCanAclVote(true)
+        } else {
+          setCanAclVote(denyWithReason(`you don't hold any ${tokenDetails?.name} tokens`))
+        }
+      } catch {
+        setCanAclVote(denyWithReason(`you don't hold any ${tokenDetails?.name} tokens`))
+      }
+
+    } else if (isXChainACL) {
+      setXChainOptions(poll.ipfsParams.acl.options as AclOptionsXchain);
+      const { xchain: { chainId, blockHash, address: tokenAddress, slot } } = (poll.ipfsParams.acl.options as AclOptionsXchain)
+      const provider = xchainRPC(chainId);
       const signer_addr = await eth.state.signer?.getAddress();
 
       if (signer_addr) {
+        const tokenDetails = await getERC20TokenDetails({chainId, address: tokenAddress})
+        // console.log("Loaded xchain token data", tokenDetails.name)
+        // console.log("Creating proof with",
+        //   provider,
+        //   blockHash,
+        //   tokenAddress,
+        //   slot,
+        //   signer_addr,
+        // )
         const newAclProof = await fetchStorageProof(
           provider,
-          xchain.blockHash,
-          xchain.address,
-          xchain.slot,
+          blockHash,
+          tokenAddress,
+          slot,
           signer_addr,
         );
         setAclProof(newAclProof)
-        setCanAclVote(0n != (await pollACL.canVoteOnPoll(
+        // console.log("Proof is", newAclProof)
+        // console.log("Checking ACL with",
+        //   daoAddress, proposalId, userAddress, newAclProof
+        // )
+        const result = await pollACL.canVoteOnPoll(
           daoAddress,
           proposalId,
           userAddress,
           newAclProof,
-        )));
+        )
+        // console.log("xChainAcl check:", result, 0n != result)
+        if (0n != result) {
+          setCanAclVote(true)
+        } else {
+          setCanAclVote(denyWithReason(`you don't hold any ${tokenDetails.name} tokens on the appropriate chain`))
+        }
+      } else {
+        setCanAclVote(denyWithReason("there is an unknown ACL setting."))
       }
+    } else {
+      throw new Error("Unknown access policy")
     }
+  }
 
-  }, [dao, daoAddress, pollACL, gaslessVoting, userAddress, pollLoaded, eth.state.provider, xchainRPC, eth.state.signer, fetchStorageProof]);
+
+
+  useEffect(
+    () => {
+      if (poll && userAddress && pollACL && daoAddress) {
+        void checkIfWeCanVote()
+      }
+    },
+    [poll, isWhitelistACL, isTokenHolderACL, isXChainACL, userAddress, pollACL, daoAddress]
+  );
 
   useEffect(
     () => {
@@ -557,7 +629,7 @@ export const usePollData = (pollId: string) => {
     () => {
       void loadProposal()
     },
-    [dao, daoAddress, pollACL, gaslessVoting, userAddress, pollLoaded]
+    [dao, daoAddress, gaslessVoting, userAddress, pollLoaded]
   );
 
   useEffect(() => {
@@ -593,6 +665,7 @@ export const usePollData = (pollId: string) => {
     remainingTime,
     remainingTimeString,
 
+    canAclVote,
     canVote,
     gaslessEnabled,
     gaslessPossible,
