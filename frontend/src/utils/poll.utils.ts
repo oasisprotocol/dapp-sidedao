@@ -2,7 +2,7 @@ import { AbiCoder, getAddress, ParamType } from 'ethers';
 
 import {
   chain_info,
-  ERC20TokenDetailsFromProvider,
+  erc20TokenDetailsFromProvider,
   xchainRPC,
   AclOptions,
   isERC20TokenContract,
@@ -47,7 +47,7 @@ export const getSapphireTokenDetails = async (address: string) => {
   const chainId = 23294
   const rpc = xchainRPC(chainId);
   try {
-    return await ERC20TokenDetailsFromProvider(getAddress(address), rpc);
+    return await erc20TokenDetailsFromProvider(getAddress(address), rpc);
   } catch {
     return undefined
   }
@@ -145,7 +145,7 @@ export const isERC20Token = async (chainId: number, address: string) =>
 
 export const getERC20TokenDetails = async (chainId: number, address: string) => {
   const rpc = xchainRPC(chainId);
-  return await ERC20TokenDetailsFromProvider(getAddress(address), rpc);
+  return await erc20TokenDetailsFromProvider(getAddress(address), rpc);
 }
 
 export const checkXchainTokenHolder = async (chainId: number, tokenAddress: string, holderAddress: string, progressCallback?: (progress: string) => void) => {

@@ -20,7 +20,7 @@ import {
   getBlockHeaderRLP,
   guessStorageSlot,
   isERC20TokenContract,
-  ERC20TokenDetailsFromProvider,
+  erc20TokenDetailsFromProvider,
   xchain_ChainNamesToChainId,
   chain_info,
   xchainRPC,
@@ -124,7 +124,7 @@ const token_details = computedAsync(async () => {
   }
   const addr = toValue(token_addr);
   if (addr) {
-    return await ERC20TokenDetailsFromProvider(addr, eth.provider as unknown as JsonRpcProvider);
+    return await erc20TokenDetailsFromProvider(addr, eth.provider as unknown as JsonRpcProvider);
   }
 });
 

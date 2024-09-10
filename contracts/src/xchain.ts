@@ -392,7 +392,7 @@ const ERC20Abi = [
   "function totalSupply() public view returns (uint256)",
 ];
 
-export async function ERC20TokenDetailsFromProvider(addr:string, provider:JsonRpcProvider) : Promise<TokenInfo>
+export async function erc20TokenDetailsFromProvider(addr:string, provider:JsonRpcProvider) : Promise<TokenInfo>
 {
   const c = new Contract(addr, ERC20Abi, provider);
   const network = await provider.getNetwork();
@@ -444,7 +444,7 @@ export function getMapSlot(holderAddress: string, mappingPosition: number): stri
 
 export async function isERC20TokenContract(provider: JsonRpcProvider, address: string): Promise<boolean> {
   try {
-    await ERC20TokenDetailsFromProvider(address, provider);
+    await erc20TokenDetailsFromProvider(address, provider);
   } catch (e) {
     return false
   }
@@ -456,7 +456,7 @@ export async function guessStorageSlot(
   provider: JsonRpcProvider, account: string, holder: string, blockHash = 'latest',
   progressCallback?: (progress: string) => void | undefined
 ): Promise<{index:number,balance:bigint,balanceDecimal:string} | null> {
-  const tokenDetails = await ERC20TokenDetailsFromProvider(account, provider);
+  const tokenDetails = await erc20TokenDetailsFromProvider(account, provider);
   const abi = ["function balanceOf(address account) view returns (uint256)"];
   const c = new Contract(account, abi, provider);
   const balance = await c.balanceOf(holder) as bigint;
