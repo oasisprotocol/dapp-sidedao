@@ -18,14 +18,7 @@ import { decryptJSON, DemoNetwork } from '../../utils/crypto.demo';
 import { Pinata } from '../../utils/Pinata';
 import { useEthereum } from '../../hooks/useEthereum';
 import { DateUtils } from '../../utils/date.utils';
-import {
-  demoPoll, demoSettings,
-  VITE_CONTRACT_ACL_STORAGEPROOF,
-  VITE_CONTRACT_ACL_TOKENHOLDER,
-  VITE_CONTRACT_ACL_VOTERALLOWLIST,
-  VITE_CONTRACT_POLLMANAGER,
-  VITE_NETWORK_BIGINT,
-} from '../../constants/config';
+import { getDemoPoll, demoSettings, VITE_CONTRACT_POLLMANAGER, VITE_NETWORK_BIGINT } from '../../constants/config';
 import { useTime } from '../../hooks/useTime';
 import { tuneValue } from '../../utils/tuning';
 import { useGaslessStatus } from '../../components/PollCard/useGaslessStatus';
@@ -384,7 +377,7 @@ export const usePollData = (pollId: string) => {
     setPoll(undefined)
 
     if (isDemo) {
-      setPoll(demoPoll)
+      setPoll(getDemoPoll())
       setVoteCounts([])
       setWinningChoice(undefined)
       setVotes({...noVotes})

@@ -109,7 +109,7 @@ export {
 
 export const MIN_CLOSE_TIME_MINUTES = 3
 
-export const demoPoll: LoadedPoll = {
+export const demoPoll1: LoadedPoll = {
   id: "demo",
   proposal: {
     active: true,
@@ -124,6 +124,24 @@ export const demoPoll: LoadedPoll = {
     },
   },
 } as LoadedPoll
+
+export const demoPoll2: LoadedPoll = {
+  id: "demo",
+  proposal: {
+    active: true,
+  },
+  ipfsParams: {
+    creator: "demo",
+    name: "What is your greatest fear?",
+    description: "",
+    choices: ["Climate change", "Deadly pandemics", "AI apocalypse", "Dystopia and dictatorship"],
+    options: {
+      publishVotes: false,
+    },
+  },
+} as LoadedPoll
+
+export const getDemoPoll = (): LoadedPoll => randomchoice([demoPoll1, demoPoll2])
 
 export const demoSettings = {
   timeForVoting: 610,
