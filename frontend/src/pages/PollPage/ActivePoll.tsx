@@ -10,6 +10,8 @@ import { formatEther, parseEther } from 'ethers';
 import { ConnectWallet } from '../../components/ConnectWallet';
 import { Card } from '../../components/Card';
 import { SocialShares } from '../../components/SocialShares';
+import { getVerdict, getReason } from '../../components/InputFields';
+import { WarningCircleIcon } from '../../components/icons/WarningCircleIcon';
 
 export const ActivePoll: FC<PollData> = (
   {
@@ -21,6 +23,7 @@ export const ActivePoll: FC<PollData> = (
     selectedChoice,
     canSelect,
     setSelectedChoice,
+    canAclVote,
     canVote,
     gaslessEnabled,
     gaslessPossible,
@@ -108,8 +111,12 @@ export const ActivePoll: FC<PollData> = (
       { remainingTimeString && <h4>{remainingTimeString}</h4>}
       { publishVotes && <div>Votes will be made public when the poll is closed.</div> }
       { isPastDue && <h4>Voting results will be available when {isMine ? "you close" : "the owner formally closes"} the poll.</h4>}
+      { !getVerdict(canAclVote) && (<h4 className={"niceLine"}>
+        <WarningCircleIcon size={"large"}/>
+        You are not allowed to vote on this poll, since {getReason(canAclVote)}.
+      </h4>) }
       <div className={classes.buttons}>
-        { hasWallet && !isPastDue && (<div className={"niceLine"}>
+        { hasWallet && getVerdict(canAclVote) && !isPastDue && (<div className={"niceLine"}>
             {gaslessPossible ? <NoGasRequiredIcon /> : <GasRequiredIcon /> }
             <Button
               disabled={!canVote}
