@@ -11,11 +11,10 @@ import {
 import {
   chainsForXchain,
   checkXchainTokenHolder, createPoll as doCreatePoll, getAllowAllACLOptions, getAllowListAclOptions,
-  getSapphireTokenDetails, getTokenHolderAclOptions, getXchainAclOptions, getXchainBlock,
-  getXchainTokenDetails,
-  isValidAddress,
-  isERC20Token, getNftType,
-  parseEther,
+  getSapphireTokenDetails, getTokenHolderAclOptions, getXchainAclOptions, getLatestBlock,
+  getERC20TokenDetails, isValidAddress,
+  isERC20Token,
+  parseEther, getNftType,
 } from '../../utils/poll.utils';
 import { useEthereum } from '../../hooks/useEthereum';
 import { useContracts } from '../../hooks/useContracts';
@@ -221,21 +220,21 @@ export const useCreatePollForm = () => {
     name: "xchainTokenAddress",
     label: "Token Address",
     visible: accessControlMethod.value === "acl_xchain",
-    placeholder: "Token address on chain",
+    placeholder: "Token address on chain. (Currently on ERC-20 tokens are supported.)",
     required: [true, "Please specify the address on the other chain that is the key to this poll!"],
     validators: [
       value => isValidAddress(value) ? undefined : "This doesn't seem to be a valid address.",
       async (value, changed) => {
         if (!changed) return
-        if (await isERC20Token(chain.value, value)) return undefined
-        const nftType = await getNftType(chain.value, value)
+        if (await isERC20Token({chainName: chain.value, address: value})) return undefined
+        const nftType = await getNftType({chainName: chain.value, address: value})
         if (nftType) return `This seems to be an ${nftType} NFT, not an ERC-20 token. Support is coming, but we are not there yet.`
         return "The address is valid, but this doesn't seem to be an ERC-20 token."
       },
       async (value, changed, controls) => {
         if (!changed) return
         controls.updateStatus({message: "Fetching token details..."})
-        const details = await getXchainTokenDetails({ chainName: chain.value, address: value})
+        const details = await getERC20TokenDetails({ chainName: chain.value, address: value})
         if (!details) {
           return "Can't find token details!"
         }
@@ -273,7 +272,7 @@ export const useCreatePollForm = () => {
       value => isValidAddress(value) ? undefined : "This doesn't seem to be a valid address.",
       async (value, changed, controls) => {
         if (!changed) return
-        const slot = await checkXchainTokenHolder(chain.value, xchainTokenAddress.value, value, (progress) => {
+        const slot = await checkXchainTokenHolder({chainName: chain.value, tokenAddress: xchainTokenAddress.value, holderAddress: value}, (progress) => {
           controls.updateStatus({message: progress})
         })
         if (!slot) return "Can't confirm this token at this wallet."
@@ -283,7 +282,7 @@ export const useCreatePollForm = () => {
       async (_value, changed, controls) => {
         if (!changed) return
         controls.updateStatus({message: "Looking up reference block ..."})
-        const block = await getXchainBlock(chain.value)
+        const block = await getLatestBlock({chainName: chain.value})
         if (!block?.hash) return "Failed to fetch latest block."
         xchainBlockHash.setValue(block.hash)
         xchainBlockHeight.setValue(block.number.toString())

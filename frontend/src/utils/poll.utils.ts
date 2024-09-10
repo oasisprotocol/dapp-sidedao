@@ -97,9 +97,13 @@ export const getTokenHolderAclOptions = (tokenAddress: string): [string, AclOpti
   ];
 }
 
+type ChainIdentification = {
+  chainId?: number,
+  chainName?: string,
+}
+
 export const getXchainAclOptions = async (
-  props: {
-    chainName: string,
+  props: ChainIdentification & {
     contractAddress: string,
     slotNumber: number,
     blockHash: string,
@@ -107,8 +111,8 @@ export const getXchainAclOptions = async (
   updateStatus?: ((status: string | undefined) => void) | undefined,
 ): Promise<[string, AclOptions]> => {
   const showStatus = updateStatus ?? ((message?: string | undefined) => console.log(message))
-  const { chainName, contractAddress, slotNumber, blockHash } = props
-  const chainId = chains[chainName]
+  const { contractAddress, slotNumber, blockHash } = props
+  const chainId = identifyChain(props);
   const rpc = xchainRPC(chainId);
   showStatus("Getting block header RLP")
   const headerRlpBytes = await getBlockHeaderRLP(rpc, blockHash);
@@ -145,31 +149,26 @@ export const getXchainAclOptions = async (
   ];
 }
 
-export const isERC20Token = async (chainName: string, address: string) => {
-  const chainId = chains[chainName]
-  const rpc = xchainRPC(chainId);
-  return await isERC20TokenContract(rpc, address)
-}
+export const isERC20Token = async (props: ChainIdentification & { address: string }) =>
+  isERC20TokenContract(xchainRPC(identifyChain(props)), props.address)
 
-export const getNftType = async ( chainName: string, address: string ): Promise<string | undefined> => {
-  const chainId = chains[chainName]
-  const rpc = xchainRPC(chainId);
-  return getNftContractType(address, rpc)
-}
-
-
-export const getXchainTokenDetails = async (props: {chainId?: number, chainName?: string, address: string}) => {
-  const {chainId, chainName, address} = props
-  if (!chainId && !chainName) throw new Error("Must specify either chainId, or chainName")
+const identifyChain = (identification: ChainIdentification): number => {
+  const { chainId, chainName } = identification
+  if (!chainId && !chainName) throw new Error("Must specify either chainId, or chainName.")
+  if (chainId && chainName) throw new Error("Please don't specify BOTH chainId and chainName!")
   const wantedChainId = chainId ?? chains[chainName!]
   if (!wantedChainId) throw new Error(`Can't identify chain from id:${chainId}, name:${chainName}`)
-  const rpc = xchainRPC(wantedChainId);
-  return await ERC20TokenDetailsFromProvider(getAddress(address), rpc);
+  return wantedChainId
 }
 
-export const checkXchainTokenHolder = async (chainName: string, tokenAddress: string, holderAddress: string, progressCallback?: (progress: string) => void) => {
-  const chainId = chains[chainName]
-  const rpc = xchainRPC(chainId);
+export const getERC20TokenDetails = async (props: ChainIdentification & { address: string }) => {
+  const rpc = xchainRPC(identifyChain(props));
+  return await ERC20TokenDetailsFromProvider(getAddress(props.address), rpc);
+}
+
+export const checkXchainTokenHolder = async (props: ChainIdentification & { tokenAddress: string, holderAddress: string }, progressCallback?: (progress: string) => void) => {
+  const rpc = xchainRPC(identifyChain(props));
+  const { tokenAddress, holderAddress }= props
   try {
     return await guessStorageSlot(rpc, tokenAddress, holderAddress, "latest", progressCallback)
   } catch (_) {
@@ -177,11 +176,13 @@ export const checkXchainTokenHolder = async (chainName: string, tokenAddress: st
   }
 }
 
-export const getXchainBlock = async (chainName: string) => {
-  const chainId = chains[chainName]
-  const rpc = xchainRPC(chainId);
-  return rpc.getBlock("latest");
+export const getNftType = async ( props: ChainIdentification & { address: string }): Promise<string | undefined> => {
+  const rpc = xchainRPC(identifyChain(props));
+  return getNftContractType(props.address, rpc)
 }
+
+export const getLatestBlock = async (props: ChainIdentification) =>
+  await xchainRPC(identifyChain(props)).getBlock("latest");
 
 export const createPoll = async (
   pollManager: PollManager,
@@ -236,18 +237,23 @@ export const createPoll = async (
     acl: aclOptions.address,
   };
 
-  // console.log("params are", proposalParams)
+  console.log("params are", proposalParams)
+  console.log("ACL data is", aclData)
 
   updateStatus("Calling signer")
   const createProposalTx = await pollManager.create(proposalParams, aclData, {
     value: subsidizeAmount ?? 0n,
   });
-  // console.log('doCreatePoll: creating proposal tx', createProposalTx.hash);
+
+  console.log("TX created.", createProposalTx)
+
+  console.log('doCreatePoll: creating proposal tx', createProposalTx.hash);
 
   updateStatus("Sending transaction")
 
   const receipt = (await createProposalTx.wait())!;
   if (receipt.status !== 1) {
+    console.log("Receipt is", receipt)
     throw new Error('createProposal tx receipt reported failure.');
   }
   const proposalId = receipt.logs[0].data;
