@@ -1,7 +1,6 @@
 import { AbiCoder, getAddress, ParamType } from 'ethers';
 
 import {
-  xchain_ChainNamesToChainId,
   chain_info,
   ERC20TokenDetailsFromProvider,
   xchainRPC,
@@ -94,22 +93,21 @@ export const getTokenHolderAclOptions = (tokenAddress: string): [string, AclOpti
   ];
 }
 
-type ChainIdentification = {
-  chainId?: number,
-  chainName?: string,
-}
+type ChainId = number | string
+const parseChainId = (id: ChainId): number => (typeof id === "number") ? id : parseInt(id)
 
 export const getXchainAclOptions = async (
-  props: ChainIdentification & {
+  props: {
+    id: ChainId,
     contractAddress: string,
     slotNumber: number,
     blockHash: string,
   },
   updateStatus?: ((status: string | undefined) => void) | undefined,
 ): Promise<[string, AclOptions]> => {
+  const {id, contractAddress, slotNumber, blockHash} = props
   const showStatus = updateStatus ?? ((message?: string | undefined) => console.log(message))
-  const { contractAddress, slotNumber, blockHash } = props
-  const chainId = identifyChain(props);
+  const chainId = parseChainId(id);
   const rpc = xchainRPC(chainId);
   showStatus("Getting block header RLP")
   const headerRlpBytes = await getBlockHeaderRLP(rpc, blockHash);
@@ -146,26 +144,16 @@ export const getXchainAclOptions = async (
   ];
 }
 
-export const isERC20Token = async (props: ChainIdentification & { address: string }) =>
-  isERC20TokenContract(xchainRPC(identifyChain(props)), props.address)
+export const isERC20Token = async (id: ChainId, address: string) =>
+  isERC20TokenContract(xchainRPC(parseChainId(id)), address)
 
-const identifyChain = (identification: ChainIdentification): number => {
-  const { chainId, chainName } = identification
-  if (!chainId && !chainName) throw new Error("Must specify either chainId, or chainName.")
-  if (chainId && chainName) throw new Error("Please don't specify BOTH chainId and chainName!")
-  const wantedChainId = chainId ?? xchain_ChainNamesToChainId[chainName!]
-  if (!wantedChainId) throw new Error(`Can't identify chain from id:${chainId}, name:${chainName}`)
-  return wantedChainId
+export const getERC20TokenDetails = async (id: ChainId, address: string) => {
+  const rpc = xchainRPC(parseChainId(id));
+  return await ERC20TokenDetailsFromProvider(getAddress(address), rpc);
 }
 
-export const getERC20TokenDetails = async (props: ChainIdentification & { address: string }) => {
-  const rpc = xchainRPC(identifyChain(props));
-  return await ERC20TokenDetailsFromProvider(getAddress(props.address), rpc);
-}
-
-export const checkXchainTokenHolder = async (props: ChainIdentification & { tokenAddress: string, holderAddress: string }, progressCallback?: (progress: string) => void) => {
-  const rpc = xchainRPC(identifyChain(props));
-  const { tokenAddress, holderAddress }= props
+export const checkXchainTokenHolder = async (id: ChainId, tokenAddress: string, holderAddress: string, progressCallback?: (progress: string) => void) => {
+  const rpc = xchainRPC(parseChainId(id));
   try {
     return await guessStorageSlot(rpc, tokenAddress, holderAddress, "latest", progressCallback)
   } catch (_) {
@@ -173,13 +161,13 @@ export const checkXchainTokenHolder = async (props: ChainIdentification & { toke
   }
 }
 
-export const getNftType = async ( props: ChainIdentification & { address: string }): Promise<string | undefined> => {
-  const rpc = xchainRPC(identifyChain(props));
-  return getNftContractType(props.address, rpc)
+export const getNftType = async ( id: ChainId, address: string ): Promise<string | undefined> => {
+  const rpc = xchainRPC(parseChainId(id));
+  return getNftContractType(address, rpc)
 }
 
-export const getLatestBlock = async (props: ChainIdentification) =>
-  await xchainRPC(identifyChain(props)).getBlock("latest");
+export const getLatestBlock = async (props: ChainId) =>
+  await xchainRPC(parseChainId(props)).getBlock("latest");
 
 export const createPoll = async (
   pollManager: PollManager,

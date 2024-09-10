@@ -202,7 +202,7 @@ export const useCreatePollForm = () => {
   const chainChoices: Choice[] = useMemo(
     () => chainsForXchain
       .map(([id, name]) => ({
-        value: name,
+        value: id.toString(),
         label: `${name} (${id})`
       })),
     []
@@ -226,15 +226,15 @@ export const useCreatePollForm = () => {
       value => isValidAddress(value) ? undefined : "This doesn't seem to be a valid address.",
       async (value, changed) => {
         if (!changed) return
-        if (await isERC20Token({chainName: chain.value, address: value})) return undefined
-        const nftType = await getNftType({chainName: chain.value, address: value})
+        if (await isERC20Token(chain.value, value)) return undefined
+        const nftType = await getNftType(chain.value,value)
         if (nftType) return `This seems to be an ${nftType} NFT, not an ERC-20 token. Support is coming, but we are not there yet.`
         return "The address is valid, but this doesn't seem to be an ERC-20 token."
       },
       async (value, changed, controls) => {
         if (!changed) return
         controls.updateStatus({message: "Fetching token details..."})
-        const details = await getERC20TokenDetails({ chainName: chain.value, address: value})
+        const details = await getERC20TokenDetails(chain.value, value)
         if (!details) {
           return "Can't find token details!"
         }
@@ -272,7 +272,7 @@ export const useCreatePollForm = () => {
       value => isValidAddress(value) ? undefined : "This doesn't seem to be a valid address.",
       async (value, changed, controls) => {
         if (!changed) return
-        const slot = await checkXchainTokenHolder({chainName: chain.value, tokenAddress: xchainTokenAddress.value, holderAddress: value}, (progress) => {
+        const slot = await checkXchainTokenHolder(chain.value, xchainTokenAddress.value, value, (progress) => {
           controls.updateStatus({message: progress})
         })
         if (!slot) return "Can't confirm this token at this wallet."
@@ -282,7 +282,7 @@ export const useCreatePollForm = () => {
       async (_value, changed, controls) => {
         if (!changed) return
         controls.updateStatus({message: "Looking up reference block ..."})
-        const block = await getLatestBlock({chainName: chain.value})
+        const block = await getLatestBlock(chain.value)
         if (!block?.hash) return "Failed to fetch latest block."
         xchainBlockHash.setValue(block.hash)
         xchainBlockHeight.setValue(block.number.toString())
@@ -557,7 +557,7 @@ export const useCreatePollForm = () => {
         return getAllowListAclOptions(addressWhitelist.value)
       case 'acl_xchain':
         return await getXchainAclOptions({
-          chainName: chain.value,
+          id: chain.value,
           contractAddress: xchainTokenAddress.value,
           slotNumber: parseInt(xchainWalletSlotNumber.value),
           blockHash: xchainBlockHash.value,

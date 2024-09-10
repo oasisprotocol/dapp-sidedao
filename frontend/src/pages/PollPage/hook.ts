@@ -531,7 +531,7 @@ export const usePollData = (pollId: string) => {
       const signer_addr = await eth.state.signer?.getAddress();
 
       if (signer_addr) {
-        const tokenDetails = await getERC20TokenDetails({chainId, address: tokenAddress})
+        const tokenDetails = await getERC20TokenDetails(chainId, tokenAddress)
         // console.log("Loaded xchain token data", tokenDetails.name)
         // console.log("Creating proof with",
         //   provider,
