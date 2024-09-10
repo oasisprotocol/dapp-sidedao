@@ -199,10 +199,10 @@ export const useCreatePollForm = () => {
     showValidationSuccess: true,
   })
 
-  const chainChoices: Choice[] = useMemo(
+  const chainChoices: Choice<number>[] = useMemo(
     () => chainsForXchain
       .map(([id, name]) => ({
-        value: id.toString(),
+        value: id,
         label: `${name} (${id})`
       })),
     []
@@ -215,7 +215,7 @@ export const useCreatePollForm = () => {
     choices: chainChoices,
     onValueChange: () => {
       if (xchainTokenAddress.isValidated) {
-        xchainTokenAddress.validate({forceChange: true})
+        void xchainTokenAddress.validate({forceChange: true})
       }
     },
   })
@@ -561,7 +561,7 @@ export const useCreatePollForm = () => {
         return getAllowListAclOptions(addressWhitelist.value)
       case 'acl_xchain':
         return await getXchainAclOptions({
-          id: chain.value,
+          chainId: chain.value,
           contractAddress: xchainTokenAddress.value,
           slotNumber: parseInt(xchainWalletSlotNumber.value),
           blockHash: xchainBlockHash.value,

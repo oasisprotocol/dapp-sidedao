@@ -93,21 +93,17 @@ export const getTokenHolderAclOptions = (tokenAddress: string): [string, AclOpti
   ];
 }
 
-type ChainId = number | string
-const parseChainId = (id: ChainId): number => (typeof id === "number") ? id : parseInt(id)
-
 export const getXchainAclOptions = async (
   props: {
-    id: ChainId,
+    chainId: number,
     contractAddress: string,
     slotNumber: number,
     blockHash: string,
   },
   updateStatus?: ((status: string | undefined) => void) | undefined,
 ): Promise<[string, AclOptions]> => {
-  const {id, contractAddress, slotNumber, blockHash} = props
+  const {chainId, contractAddress, slotNumber, blockHash} = props
   const showStatus = updateStatus ?? ((message?: string | undefined) => console.log(message))
-  const chainId = parseChainId(id);
   const rpc = xchainRPC(chainId);
   showStatus("Getting block header RLP")
   const headerRlpBytes = await getBlockHeaderRLP(rpc, blockHash);
@@ -144,16 +140,16 @@ export const getXchainAclOptions = async (
   ];
 }
 
-export const isERC20Token = async (id: ChainId, address: string) =>
-  isERC20TokenContract(xchainRPC(parseChainId(id)), address)
+export const isERC20Token = async (chainId: number, address: string) =>
+  isERC20TokenContract(xchainRPC(chainId), address)
 
-export const getERC20TokenDetails = async (id: ChainId, address: string) => {
-  const rpc = xchainRPC(parseChainId(id));
+export const getERC20TokenDetails = async (chainId: number, address: string) => {
+  const rpc = xchainRPC(chainId);
   return await ERC20TokenDetailsFromProvider(getAddress(address), rpc);
 }
 
-export const checkXchainTokenHolder = async (id: ChainId, tokenAddress: string, holderAddress: string, progressCallback?: (progress: string) => void) => {
-  const rpc = xchainRPC(parseChainId(id));
+export const checkXchainTokenHolder = async (chainId: number, tokenAddress: string, holderAddress: string, progressCallback?: (progress: string) => void) => {
+  const rpc = xchainRPC(chainId)
   try {
     return await guessStorageSlot(rpc, tokenAddress, holderAddress, "latest", progressCallback)
   } catch (_) {
@@ -161,13 +157,13 @@ export const checkXchainTokenHolder = async (id: ChainId, tokenAddress: string, 
   }
 }
 
-export const getNftType = async ( id: ChainId, address: string ): Promise<string | undefined> => {
-  const rpc = xchainRPC(parseChainId(id));
+export const getNftType = async ( chainId: number, address: string ): Promise<string | undefined> => {
+  const rpc = xchainRPC(chainId);
   return getNftContractType(address, rpc)
 }
 
-export const getLatestBlock = async (props: ChainId) =>
-  await xchainRPC(parseChainId(props)).getBlock("latest");
+export const getLatestBlock = async ( chainId: number ) =>
+  await xchainRPC(chainId).getBlock("latest");
 
 export const createPoll = async (
   pollManager: PollManager,
