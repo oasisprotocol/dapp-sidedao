@@ -24,9 +24,6 @@ import { Pinata } from './Pinata';
 
 export { parseEther} from "ethers"
 
-// A mapping from chain name to chain IDs
-export const chains = xchain_ChainNamesToChainId
-
 export const chainsForXchain: [number, string][] = Object.keys(chain_info)
   .map(id => parseInt(id))
   .filter(chainId => !chain_info[chainId].cannotMakeStorageProofs)
@@ -156,7 +153,7 @@ const identifyChain = (identification: ChainIdentification): number => {
   const { chainId, chainName } = identification
   if (!chainId && !chainName) throw new Error("Must specify either chainId, or chainName.")
   if (chainId && chainName) throw new Error("Please don't specify BOTH chainId and chainName!")
-  const wantedChainId = chainId ?? chains[chainName!]
+  const wantedChainId = chainId ?? xchain_ChainNamesToChainId[chainName!]
   if (!wantedChainId) throw new Error(`Can't identify chain from id:${chainId}, name:${chainName}`)
   return wantedChainId
 }
