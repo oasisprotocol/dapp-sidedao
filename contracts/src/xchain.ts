@@ -385,15 +385,16 @@ export function xchainRPC(chainId:number)
     return new JsonRpcProvider(rpc_url);
 }
 
-export async function tokenDetailsFromProvider(addr:string, provider:JsonRpcProvider) : Promise<TokenInfo>
+const ERC20Abi = [
+  "function name() public view returns (string)",
+  "function symbol() public view returns (string)",
+  "function decimals() public view returns (uint8)",
+  "function totalSupply() public view returns (uint256)",
+];
+
+export async function ERC20TokenDetailsFromProvider(addr:string, provider:JsonRpcProvider) : Promise<TokenInfo>
 {
-  const abi = [
-    "function name() public view returns (string)",
-    "function symbol() public view returns (string)",
-    "function decimals() public view returns (uint8)",
-    "function totalSupply() public view returns (uint256)",
-  ];
-  const c = new Contract(addr, abi, provider);
+  const c = new Contract(addr, ERC20Abi, provider);
   const network = await provider.getNetwork();
   return {
     addr: addr,
@@ -405,6 +406,27 @@ export async function tokenDetailsFromProvider(addr:string, provider:JsonRpcProv
   }
 }
 
+const ERC165Abi = [
+  "function supportsInterface(bytes4) public view returns (bool)",
+];
+const ERC721InterfaceId: string = "0x80ac58cd";
+const ERC1155InterfaceId: string = "0xd9b67a26";
+
+export async function getNftContractType(addr:string, provider:JsonRpcProvider): Promise<string | undefined> {
+  try {
+    const c = new Contract(addr, ERC165Abi, provider);
+    const isERC721 = await c.supportsInterface(ERC721InterfaceId)
+    if (isERC721) return "ERC-721"
+    const isERC1155 = await c.supportsInterface(ERC1155InterfaceId)
+    if (isERC1155) return "ERC-1155"
+  } catch {
+    // Doesn't support ERC-165, so definitely not am ERC-721 or an ERC-1155 NFT.
+  }
+}
+
+export async function isNFTTokenContract(addr:string, provider:JsonRpcProvider): Promise<boolean> {
+  return !!await getNftContractType(addr, provider)
+}
 
 export async function getHolderBalance(token:string, holder:string, provider:JsonRpcProvider) : Promise<bigint>
 {
@@ -420,9 +442,9 @@ export function getMapSlot(holderAddress: string, mappingPosition: number): stri
   );
 }
 
-export async function isERCTokenContract(provider: JsonRpcProvider, address: string): Promise<boolean> {
+export async function isERC20TokenContract(provider: JsonRpcProvider, address: string): Promise<boolean> {
   try {
-    await tokenDetailsFromProvider(address, provider);
+    await ERC20TokenDetailsFromProvider(address, provider);
   } catch (e) {
     return false
   }
@@ -434,7 +456,7 @@ export async function guessStorageSlot(
   provider: JsonRpcProvider, account: string, holder: string, blockHash = 'latest',
   progressCallback?: (progress: string) => void | undefined
 ): Promise<{index:number,balance:bigint,balanceDecimal:string} | null> {
-  const tokenDetails = await tokenDetailsFromProvider(account, provider);
+  const tokenDetails = await ERC20TokenDetailsFromProvider(account, provider);
   const abi = ["function balanceOf(address account) view returns (uint256)"];
   const c = new Contract(account, abi, provider);
   const balance = await c.balanceOf(holder) as bigint;

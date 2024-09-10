@@ -3,13 +3,14 @@ import { AbiCoder, getAddress, ParamType } from 'ethers';
 import {
   xchain_ChainNamesToChainId,
   chain_info,
-  tokenDetailsFromProvider,
+  ERC20TokenDetailsFromProvider,
   xchainRPC,
   AclOptions,
-  isERCTokenContract,
+  isERC20TokenContract,
   guessStorageSlot,
   getBlockHeaderRLP,
   fetchAccountProof,
+  getNftContractType,
 } from '@oasisprotocol/side-dao-contracts';
 import {
   VITE_CONTRACT_ACL_ALLOWALL,
@@ -50,7 +51,7 @@ export const getSapphireTokenDetails = async (address: string) => {
   const chainId = 23294
   const rpc = xchainRPC(chainId);
   try {
-    return await tokenDetailsFromProvider(getAddress(address), rpc);
+    return await ERC20TokenDetailsFromProvider(getAddress(address), rpc);
   } catch {
     return undefined
   }
@@ -144,11 +145,18 @@ export const getXchainAclOptions = async (
   ];
 }
 
-export const isXchainToken = async (chainName: string, address: string) => {
+export const isERC20Token = async (chainName: string, address: string) => {
   const chainId = chains[chainName]
   const rpc = xchainRPC(chainId);
-  return await isERCTokenContract(rpc, address)
+  return await isERC20TokenContract(rpc, address)
 }
+
+export const getNftType = async ( chainName: string, address: string ): Promise<string | undefined> => {
+  const chainId = chains[chainName]
+  const rpc = xchainRPC(chainId);
+  return getNftContractType(address, rpc)
+}
+
 
 export const getXchainTokenDetails = async (props: {chainId?: number, chainName?: string, address: string}) => {
   const {chainId, chainName, address} = props
@@ -156,7 +164,7 @@ export const getXchainTokenDetails = async (props: {chainId?: number, chainName?
   const wantedChainId = chainId ?? chains[chainName!]
   if (!wantedChainId) throw new Error(`Can't identify chain from id:${chainId}, name:${chainName}`)
   const rpc = xchainRPC(wantedChainId);
-  return await tokenDetailsFromProvider(getAddress(address), rpc);
+  return await ERC20TokenDetailsFromProvider(getAddress(address), rpc);
 }
 
 export const checkXchainTokenHolder = async (chainName: string, tokenAddress: string, holderAddress: string, progressCallback?: (progress: string) => void) => {

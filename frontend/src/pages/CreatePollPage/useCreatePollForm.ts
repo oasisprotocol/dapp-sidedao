@@ -14,7 +14,7 @@ import {
   getSapphireTokenDetails, getTokenHolderAclOptions, getXchainAclOptions, getXchainBlock,
   getXchainTokenDetails,
   isValidAddress,
-  isXchainToken,
+  isERC20Token, getNftType,
   parseEther,
 } from '../../utils/poll.utils';
 import { useEthereum } from '../../hooks/useEthereum';
@@ -227,7 +227,10 @@ export const useCreatePollForm = () => {
       value => isValidAddress(value) ? undefined : "This doesn't seem to be a valid address.",
       async (value, changed) => {
         if (!changed) return
-        return await isXchainToken(chain.value, value) ? undefined : "The address is valid, but this doesn't seem to be a token."
+        if (await isERC20Token(chain.value, value)) return undefined
+        const nftType = await getNftType(chain.value, value)
+        if (nftType) return `This seems to be an ${nftType} NFT, not an ERC-20 token. Support is coming, but we are not there yet.`
+        return "The address is valid, but this doesn't seem to be an ERC-20 token."
       },
       async (value, changed, controls) => {
         if (!changed) return

@@ -17,7 +17,7 @@ import {
   IPollACL__factory,
   xchainRPC,
   fetchStorageProof,
-  tokenDetailsFromProvider,
+  ERC20TokenDetailsFromProvider,
 } from '@oasisprotocol/side-dao-contracts';
 import type {
   PollManager,
@@ -319,7 +319,7 @@ onMounted(async () => {
         userAddress,
         toValue(aclProof),
       ));
-    aclTokenInfo.value = await tokenDetailsFromProvider(
+    aclTokenInfo.value = await ERC20TokenDetailsFromProvider(
       tokenAddress,
       eth.provider as unknown as JsonRpcProvider,
     );

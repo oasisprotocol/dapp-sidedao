@@ -19,8 +19,8 @@ import {
   fetchAccountProof,
   getBlockHeaderRLP,
   guessStorageSlot,
-  isERCTokenContract,
-  tokenDetailsFromProvider,
+  isERC20TokenContract,
+  ERC20TokenDetailsFromProvider,
   xchain_ChainNamesToChainId,
   chain_info,
   xchainRPC,
@@ -124,7 +124,7 @@ const token_details = computedAsync(async () => {
   }
   const addr = toValue(token_addr);
   if (addr) {
-    return await tokenDetailsFromProvider(addr, eth.provider as unknown as JsonRpcProvider);
+    return await ERC20TokenDetailsFromProvider(addr, eth.provider as unknown as JsonRpcProvider);
   }
 });
 
@@ -163,7 +163,7 @@ watch(xchain_addr, async (xchain_addr) => {
   }
 
   try {
-    if (await isERCTokenContract(rpc, addr)) {
+    if (await isERC20TokenContract(rpc, addr)) {
       console.log('xchain_addr is Token');
       xchain_addr_valid.value = true;
       return;
