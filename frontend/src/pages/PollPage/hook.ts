@@ -4,7 +4,7 @@ import {
   ListOfVotes, Poll, PollManager, PollResults, RemainingTime,
   TokenInfo, AclOptionsXchain, LoadedPoll,
 } from '../../types';
-import { randomchoice, tokenDetailsFromProvider, fetchStorageProof, xchainRPC } from '@oasisprotocol/side-dao-contracts';
+import { randomchoice, ERC20TokenDetailsFromProvider, fetchStorageProof, xchainRPC } from '@oasisprotocol/side-dao-contracts';
 import {
   BytesLike,
   ethers,
@@ -463,7 +463,7 @@ export const usePollData = (pollId: string) => {
           userAddress,
           newAclProof,
         )));
-        setAclTokenInfo(await tokenDetailsFromProvider(
+        setAclTokenInfo(await ERC20TokenDetailsFromProvider(
           tokenAddress,
           eth.state.provider as unknown as JsonRpcProvider,
         ));
