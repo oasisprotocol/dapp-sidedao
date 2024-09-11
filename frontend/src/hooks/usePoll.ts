@@ -27,7 +27,7 @@ export const usePoll = (
   const [winningChoice, setWinningChoice] = useState<bigint | undefined>(undefined)
   const [votes, setVotes] = useState<ListOfVotes>({ ...noVotes })
 
-  const { now } = useTime()
+  const { now } = useTime(!!deadline)
 
   const {
     pollManager,

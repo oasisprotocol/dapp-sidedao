@@ -83,7 +83,6 @@ export const useCreatePollForm = () => {
   const [validationPending, setValidationPending] = useState(false)
 
   const navigate = useNavigate()
-  const { now } = useTime()
 
   const question = useTextField({
     name: 'question',
@@ -468,6 +467,8 @@ export const useCreatePollForm = () => {
     name: 'hasCloseDate',
     label: 'Fixed close date',
   })
+
+  const { now } = useTime(hasCloseDate.value)
 
   const pollCloseDate = useDateField({
     name: 'pollCloseDate',

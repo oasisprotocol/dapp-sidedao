@@ -48,7 +48,7 @@ export const usePollData = (pollId: string) => {
     canAclManage,
   } = usePoll(pollId, { withResults: true })
 
-  const { now } = useTime()
+  const { now } = useTime(!!deadline)
   const { pollManagerWithSigner: signerDao, gaslessVoting } = useContracts(eth, poll?.proposal.params?.acl)
 
   const remainingTime = useMemo(
