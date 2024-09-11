@@ -1,5 +1,8 @@
 import { useAppState } from './useAppState'
 
-export const useTime = (live: boolean) => ({
-  now: live ? useAppState().state.now : 0,
-})
+export const useTime = (live: boolean) => {
+  const { state } = useAppState()
+  return {
+    now: live ? state.now : 0,
+  }
+}
