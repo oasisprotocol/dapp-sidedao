@@ -35,12 +35,23 @@ const StatusInfo: FC<{
 
   if (remainingTime) {
     if (remainingTime.isPastDue) {
-      return (
-        <>
-          <h4>{remainingTimeString}</h4>
-          <h4>Voting results will be available when the owner formally closes the poll.</h4>
-        </>
-      )
+      if (isMine) {
+        return (
+          <>
+            <h4>{remainingTimeString}</h4>
+            <h4>Voting results will be available when you close the poll.</h4>
+            <Button disabled={!canClose} onClick={handleClose}
+                    pending={isClosing}>{isClosing ? 'Closing poll' : 'Close poll'}</Button>
+          </>
+        )
+      } else {
+        return (
+          <>
+            <h4>{remainingTimeString}</h4>
+            <h4>Voting results will be available when the owner formally closes the poll.</h4>
+          </>
+        )
+      }
     } else {
       return (
         <>
@@ -54,13 +65,14 @@ const StatusInfo: FC<{
       return (
         <>
           <h4>Voting results will be available when you close the poll.</h4>
-          <Button disabled={!canClose} onClick={handleClose} pending={isClosing}>{isClosing ? "Closing poll" : "Close poll"}</Button>
+          <Button disabled={!canClose} onClick={handleClose}
+                  pending={isClosing}>{isClosing ? 'Closing poll' : 'Close poll'}</Button>
         </>
       )
     } else {
       return (
         <h4>Voting results will be available when the owner closes the poll.</h4>
-      )
+      );
     }
   }
 }

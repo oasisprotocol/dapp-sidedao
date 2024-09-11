@@ -10,7 +10,7 @@ export function randomchoice<T>(array:T[]):T {
   return array[Math.floor(Math.random() * array.length)];
 }
 
-interface ChainDefinition {
+export interface ChainDefinition {
   name: string;
   chain: string;
   icon?: string;

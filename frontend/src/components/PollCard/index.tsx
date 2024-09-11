@@ -6,9 +6,10 @@ import classes from "./index.module.css"
 import { GasRequiredIcon } from '../icons/GasRequiredIcon';
 import { NoGasRequiredIcon } from '../icons/NoGasRequiredIcon';
 import { SpinnerIcon } from '../icons/SpinnerIcon';
-import { useGaslessStatus } from './useGaslessStatus';
+import { usePollGaslessStatus } from '../../hooks/usePollGaslessStatus';
 import { HourGlassIcon } from '../icons/HourGlassIcon';
 import { StringUtils } from '../../utils/string.utils';
+// import { useAclStatus } from './useAclStatus';
 
 
 const Arrow: FC<{className: string}> = ({className}) => (
@@ -34,12 +35,19 @@ export const PollCard: FC<{
 
   const {
     id: pollId,
-    params: { name, description, options: { closeTimestamp} },
-    proposal: { active }
+    params: {
+      name,
+      description,
+      options: { closeTimestamp},
+      // acl,
+    },
+    proposal: { active },
+    // ipfsParams,
   } = poll
 
   const proposalId = `0x${pollId}`;
-  const { gaslessPossible } = useGaslessStatus(proposalId)
+  const { gaslessPossible } = usePollGaslessStatus(proposalId)
+  // const {} = useAclStatus("0x" + poll, )
 
   const isPastDue = !!closeTimestamp && (new Date().getTime()/1000 > closeTimestamp)
 

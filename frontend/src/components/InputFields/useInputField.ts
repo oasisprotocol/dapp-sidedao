@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   AllProblems, ValidatorControls, CoupledData,
   Decision, expandCoupledData,
@@ -206,11 +206,26 @@ export function useInputField<DataType>(
   const [pristine, setPristine] = useState(true)
   const [value, setValue] = useState<DataType>(initialValue)
   const [problems, setProblems] = useState<ProblemAtLocation[]>([])
+  const allProblems = useMemo(
+    () => {
+      const problemTree: AllProblems = {}
+      problems.forEach(problem => {
+        const {location} = problem
+        let bucket = problemTree[location]
+        if (!bucket) bucket = problemTree[location] = []
+        const localProblem: ProblemAtLocation = { ...problem}
+        delete (localProblem as any).location
+        bucket.push(localProblem)
+      })
+      return problemTree
+    },
+    [problems]
+  )
+  const hasProblems = Object.keys(allProblems).some(key => allProblems[key].length)
   const [isValidated, setIsValidated] = useState(false)
   const [lastValidatedData, setLastValidatedData] = useState<DataType | undefined>()
   const [validationPending, setValidationPending] = useState(false)
-  const [allProblems, setAllProblems] = useState<AllProblems>({})
-  const hasProblems = Object.keys(allProblems).some(key => allProblems[key].length)
+
   const { isEmpty, isEqual } = dataTypeControl
 
   const visible = calculateVisible(props);
@@ -307,20 +322,6 @@ export function useInputField<DataType>(
   const clearAllProblems = () => {
     setProblems([])
   }
-
-  useEffect(
-    () => {
-      const problemTree: AllProblems = {}
-      problems.forEach(problem => {
-        const {location} = problem
-        let bucket = problemTree[location]
-        if (!bucket) bucket = problemTree[location] = []
-        const localProblem: ProblemAtLocation = { ...problem}
-        delete (localProblem as any).location
-        bucket.push(localProblem)
-      })
-      setAllProblems(problemTree)
-    }, [problems]);
 
   useEffect(
     () => {

@@ -10,6 +10,7 @@ import {
   getBlockHeaderRLP,
   fetchAccountProof,
   getNftContractType,
+  ChainDefinition,
 } from '@oasisprotocol/side-dao-contracts';
 import {
   VITE_CONTRACT_ACL_ALLOWALL,
@@ -20,6 +21,7 @@ import {
 import { Poll, PollManager } from "../types"
 import { encryptJSON } from './crypto.demo';
 import { Pinata } from './Pinata';
+import { EthereumContext } from '../providers/EthereumContext';
 
 export { parseEther} from "ethers"
 
@@ -148,6 +150,8 @@ export const getERC20TokenDetails = async (chainId: number, address: string) => 
   return await erc20TokenDetailsFromProvider(getAddress(address), rpc);
 }
 
+export const getChainDefinition = (chainId: number): ChainDefinition => chain_info[chainId]
+
 export const checkXchainTokenHolder = async (chainId: number, tokenAddress: string, holderAddress: string, progressCallback?: (progress: string) => void) => {
   const rpc = xchainRPC(chainId)
   try {
@@ -244,4 +248,20 @@ export const createPoll = async (
   // console.log('doCreatePoll: Proposal ID', proposalId);
 
   return proposalId;
+}
+
+export const closePoll = async (
+  eth: EthereumContext,
+  pollManager: PollManager,
+  proposalId: string,
+) => {
+  await eth.switchNetwork(); // ensure we're on the correct network first!
+  // console.log("Preparing close tx...")
+
+  const tx = await pollManager.close(proposalId);
+  // console.log('Close proposal tx', tx);
+
+  const receipt = await tx.wait();
+
+  if (receipt!.status != 1) throw new Error('close ballot tx failed');
 }

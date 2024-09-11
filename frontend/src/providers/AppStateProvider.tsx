@@ -8,6 +8,7 @@ const appStateProviderInitialState: AppStateProviderState = {
   appError: '',
   isMobileScreen: false,
   isDesktopScreen: false,
+  now: Date.now() / 1000,
 }
 
 export const AppStateContextProvider: FC<PropsWithChildren> = ({ children }) => {
@@ -42,6 +43,23 @@ export const AppStateContextProvider: FC<PropsWithChildren> = ({ children }) => 
       appError: '',
     }))
   }
+
+  const updateTime = () => {
+    setState(prevState => ({
+      ...prevState,
+      now: Date.now() / 1000
+    }))
+
+    setTimeout(
+      updateTime,
+      1000
+    )
+  }
+
+  useEffect(
+    updateTime,
+    []
+  )
 
   const providerState: AppStateProviderContext = {
     state,

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useContracts } from '../../hooks/useContracts';
-import { useEthereum } from '../../hooks/useEthereum';
+import { useContracts } from './useContracts';
+import { useEthereum } from './useEthereum';
 
-export const useGaslessStatus = (proposalId: string) => {
+export const usePollGaslessStatus = (proposalId: string | undefined) => {
 
   const eth = useEthereum()
   const {
@@ -10,19 +10,24 @@ export const useGaslessStatus = (proposalId: string) => {
     gaslessVoting,
   } = useContracts(eth)
 
+  const [version, setVersion] = useState(0);
   const [gvAddresses, setGvAddresses] = useState<string[]>([]);
   const [gvBalances, setGvBalances] = useState<bigint[]>([]);
   const [gvTotalBalance, setGvTotalBalance] = useState<bigint>(0n);
   const [gaslessEnabled, setGaslessEnabled] = useState(false)
-  const [gaslessPossible, setGaslessPossible] = useState<boolean | undefined>()
+
+  const isDemo = proposalId === "0xdemo"
 
   const checkGaslessStatus = async () => {
-    if (proposalId === "0xdemo") {
-      setGaslessPossible(true)
+
+    if (isDemo) {
       setGaslessEnabled(true)
       return
     }
-    const addressBalances = await gaslessVoting!.listAddresses(daoAddress!, proposalId);
+
+    if (!daoAddress || !gaslessVoting || !proposalId) return
+
+    const addressBalances = await gaslessVoting.listAddresses(daoAddress, proposalId);
     setGvAddresses(addressBalances.out_addrs);
     setGaslessEnabled(!!addressBalances.out_addrs.length)
     setGvBalances(addressBalances.out_balances);
@@ -34,29 +39,18 @@ export const useGaslessStatus = (proposalId: string) => {
   }
 
   useEffect(
-    () => {
-      if (daoAddress && gaslessVoting && proposalId) checkGaslessStatus()
-    },
-    [daoAddress, gaslessVoting, proposalId]
+    () => void checkGaslessStatus(),
+    [daoAddress, gaslessVoting, proposalId, version]
   );
 
-  useEffect(() => {
-    if (gvTotalBalance > 0n) {
-      setGaslessPossible(true)
-      // console.log(
-      //   'Gasless voting available',
-      //   formatEther(gvTotalBalance),
-      //   'ROSE balance, addresses:',
-      //   gvAddresses.join(', '),
-      // );
-    } else {
-      setGaslessPossible(false)
-    }
-  }, [gvTotalBalance, gvAddresses]);
+  const invalidateGaslessStatus = () => setVersion(version + 1)
+
+  const gaslessPossible = isDemo || gvTotalBalance > 0n
 
   return {
     gaslessEnabled, gaslessPossible,
     gvAddresses, gvBalances,
+    invalidateGaslessStatus,
   }
 
 }
