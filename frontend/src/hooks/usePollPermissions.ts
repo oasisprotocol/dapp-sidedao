@@ -40,38 +40,38 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined) => {
       setCanAclManage(false)
     }
 
-    if (!pollACL || !daoAddress || !poll?.ipfsParams) return
+    if (!pollACL || !daoAddress || !poll || !poll?.ipfsParams) return
 
     setCanAclManage(await pollACL.canManagePoll(daoAddress, proposalId, userAddress))
 
-    const isAllowAllACL = 'allowAll' in poll?.ipfsParams.acl.options
-    const isTokenHolderACL = 'token' in poll?.ipfsParams.acl.options
-    const isWhitelistACL = 'allowList' in poll?.ipfsParams.acl.options
-    const isXChainACL = 'xchain' in poll?.ipfsParams.acl.options
+    const isAllowAllACL = 'allowAll' in poll.ipfsParams.acl.options
+    const isTokenHolderACL = 'token' in poll.ipfsParams.acl.options
+    const isWhitelistACL = 'allowList' in poll.ipfsParams.acl.options
+    const isXChainACL = 'xchain' in poll.ipfsParams.acl.options
 
-    console.log('Checking if we can vote for', proposalId)
+    // console.log('Checking if we can vote for', proposalId)
 
-    console.log(
-      'is allowAll ACL?',
-      isAllowAllACL,
-      'is TokenHolder ACL?',
-      isTokenHolderACL,
-      'is xChain ACL?',
-      isXChainACL,
-      'is WhiteList ACL?',
-      isWhitelistACL,
-      'useAddress',
-      userAddress,
-      'daoAddress',
-      daoAddress,
-      'ipfsParams',
-      poll?.ipfsParams,
-    )
+    // console.log(
+    //   'is allowAll ACL?',
+    //   isAllowAllACL,
+    //   'is TokenHolder ACL?',
+    //   isTokenHolderACL,
+    //   'is xChain ACL?',
+    //   isXChainACL,
+    //   'is WhiteList ACL?',
+    //   isWhitelistACL,
+    //   'useAddress',
+    //   userAddress,
+    //   'daoAddress',
+    //   daoAddress,
+    //   'ipfsParams',
+    //   poll?.ipfsParams,
+    // )
 
     if (isAllowAllACL) {
       const newAclProof = new Uint8Array()
       setAclProof(newAclProof)
-      const result = 0n != (await pollACL.canVoteOnPoll(daoAddress, proposalId, userAddress, newAclProof))
+      const result = 0n !== (await pollACL.canVoteOnPoll(daoAddress, proposalId, userAddress, newAclProof))
       if (result) {
         setCanAclVote(true)
         setAclExplanation('')
@@ -81,7 +81,7 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined) => {
     } else if (isWhitelistACL) {
       const newAclProof = new Uint8Array()
       setAclProof(newAclProof)
-      const result = 0n != (await pollACL.canVoteOnPoll(daoAddress, proposalId, userAddress, newAclProof))
+      const result = 0n !== (await pollACL.canVoteOnPoll(daoAddress, proposalId, userAddress, newAclProof))
       // console.log("whiteListAcl check:", result)
       if (result) {
         setCanAclVote(true)
@@ -97,7 +97,7 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined) => {
       const newAclProof = new Uint8Array()
       setAclProof(newAclProof)
       try {
-        const result = 0n != (await pollACL.canVoteOnPoll(daoAddress, proposalId, userAddress, newAclProof))
+        const result = 0n !== (await pollACL.canVoteOnPoll(daoAddress, proposalId, userAddress, newAclProof))
         // console.log("tokenHolderAcl check:", result)
         if (result) {
           setCanAclVote(true)
@@ -119,35 +119,53 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined) => {
       const chainDefinition = getChainDefinition(chainId)
 
       if (userAddress) {
-        const tokenDetails = await getERC20TokenDetails(chainId, tokenAddress)
-        // console.log("Loaded xchain token data", tokenDetails.name)
-        // console.log("Creating proof with",
-        //   provider,
-        //   blockHash,
-        //   tokenAddress,
-        //   slot,
-        //   signer_addr,
-        // )
-        const newAclProof = await fetchStorageProof(provider, blockHash, tokenAddress, slot, userAddress)
-        setAclProof(newAclProof)
-        // console.log("Proof is", newAclProof)
-        // console.log("Checking ACL with",
-        //   daoAddress, proposalId, userAddress, newAclProof
-        // )
-        const result = await pollACL.canVoteOnPoll(daoAddress, proposalId, userAddress, newAclProof)
-        // console.log("xChainAcl check:", result, 0n != result)
-        if (0n != result) {
-          setCanAclVote(true)
+        try {
+          const tokenDetails = await getERC20TokenDetails(chainId, tokenAddress)
           setAclExplanation(
             `This poll is restricted to those who have hold ${tokenDetails.name} token on the ${chainDefinition.name} chain when the poll was created.`,
           )
-        } else {
-          setCanAclVote(
-            denyWithReason(`you don't hold any ${tokenDetails.name} tokens on the ${chainDefinition} chain`),
+          // console.log("Loaded xchain token data", tokenDetails.name)
+          // console.log("Creating proof with",
+          //   provider,
+          //   blockHash,
+          //   tokenAddress,
+          //   slot,
+          //   signer_addr,
+          // )
+          const newAclProof = await fetchStorageProof(provider, blockHash, tokenAddress, slot, userAddress)
+          setAclProof(newAclProof)
+          // console.log("Proof is", newAclProof)
+          // console.log("Checking ACL with",
+          //   daoAddress, proposalId, userAddress, newAclProof
+          // )
+          const result = await pollACL.canVoteOnPoll(daoAddress, proposalId, userAddress, newAclProof)
+          // console.log("xChainAcl check:", result, 0n != result)
+          if (0n !== result) {
+            setCanAclVote(true)
+          } else {
+            setCanAclVote(
+              denyWithReason(
+                `you don't hold any ${tokenDetails.name} tokens on the ${chainDefinition} chain`,
+              ),
+            )
+          }
+        } catch (e) {
+          const error = e as any
+          console.log(
+            'Error when testing permission to vote on',
+            proposalId,
+            ':',
+            error.error?.message ?? error.reason ?? error.code ?? error,
           )
+          // console.log(typeof error, Object.keys(error), error)
+          setCanAclVote(denyWithReason(`there was a technical problem verifying your permissions`))
         }
       } else {
-        setCanAclVote(denyWithReason('there is an unknown ACL setting.'))
+        setCanAclVote(
+          denyWithReason(
+            'this poll has some unknown access control settings. (Poll created by newer version of software?)',
+          ),
+        )
       }
     } else {
       throw new Error('Unknown access policy')
