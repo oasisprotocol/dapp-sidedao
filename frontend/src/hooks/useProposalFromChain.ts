@@ -22,7 +22,7 @@ export const useProposalFromChain = (proposalId: string) => {
     setError(undefined)
     if (isDemo) return
 
-    console.log('Attempting to load proposal', proposalId)
+    // console.log('Attempting to load proposal', proposalId)
 
     try {
       setIsLoading(true)

@@ -1,22 +1,21 @@
-import { Pinata } from '../../utils/Pinata'
-import { decryptJSON } from '../../utils/crypto.demo'
-import { getBytes } from 'ethers'
 import { useContracts } from '../../hooks/useContracts'
 import { useEffect, useState } from 'react'
-import { ExtendedPoll, PollManager } from '../../types'
+import { PollManager, Proposal } from '../../types'
 import { useEthereum } from '../../hooks/useEthereum'
 
 const FETCH_BATCH_SIZE = 100
 
+type RawProposal = PollManager.ProposalWithIdStructOutput
+
 interface FetchProposalResult {
   out_count: bigint
-  out_proposals: PollManager.ProposalWithIdStructOutput[]
+  out_proposals: RawProposal[]
 }
 
 async function fetchProposals(
   fetcher: (offset: number, batchSize: number) => Promise<FetchProposalResult>,
-): Promise<Record<string, ExtendedPoll>> {
-  const proposalsMap: Record<string, ExtendedPoll> = {}
+): Promise<Proposal[]> {
+  const proposalList: Proposal[] = []
 
   for (let offset = 0; ; offset += FETCH_BATCH_SIZE) {
     let result: FetchProposalResult
@@ -26,29 +25,18 @@ async function fetchProposals(
       console.error('failed to fetch proposals', e)
       break
     }
-    await Promise.all(
-      result.out_proposals.map(async ({ id, proposal }) => {
-        const { active, topChoice, params } = proposal
-        const { ipfsHash } = params
-        const pollId = id.slice(2)
-        try {
-          const ipfsParams = decryptJSON(
-            getBytes(proposal.params.ipfsSecret),
-            await Pinata.fetchData(ipfsHash),
-          )
-          proposalsMap[pollId] = { id: pollId, proposal: { id, active, topChoice, params }, ipfsParams }
-        } catch (e) {
-          return console.log('failed to fetch proposal params from IPFS for', id)
-        }
-      }),
-    )
+
+    result.out_proposals.forEach(({ id, proposal }) => {
+      const [active, topChoice, params] = proposal
+      proposalList.push({ id, active, topChoice, params })
+    })
 
     if (result.out_proposals.length < FETCH_BATCH_SIZE) {
-      return proposalsMap
+      return proposalList
     }
   }
 
-  return proposalsMap
+  return proposalList
 }
 
 export const useDashboardData = () => {
@@ -57,18 +45,17 @@ export const useDashboardData = () => {
 
   const { userAddress } = eth
 
-  const [activePolls, setActivePolls] = useState<Record<string, ExtendedPoll>>({})
-  const [pastPolls, setPastPolls] = useState<Record<string, ExtendedPoll>>({})
+  const [activeProposals, setActiveProposals] = useState<Proposal[]>([])
+  const [pastProposals, setPastProposals] = useState<Proposal[]>([])
   const [canCreatePoll, setCanCreatePoll] = useState(false)
   const [isLoadingActive, setIsLoadingActive] = useState(true)
   const [isLoadingPast, setIsLoadingPast] = useState(true)
-  const [myPolls, setMyPolls] = useState<ExtendedPoll[]>([])
-  const [otherPolls, setOtherPolls] = useState<ExtendedPoll[]>([])
+  const [allProposals, setAllProposals] = useState<Proposal[]>([])
 
   useEffect(() => {
     if (!dao) {
-      setActivePolls({})
-      setPastPolls({})
+      setActiveProposals([])
+      setPastProposals([])
       return
     }
     void fetchAllProposals()
@@ -96,71 +83,42 @@ export const useDashboardData = () => {
     const { number: blockTag } = (await eth.state.provider.getBlock('latest'))!
 
     await Promise.all([
-      fetchProposals((offset, batchSize) => dao!.getActiveProposals(offset, batchSize)).then(proposalsMap => {
-        setActivePolls({ ...proposalsMap })
+      fetchProposals((offset, batchSize) => dao!.getActiveProposals(offset, batchSize)).then(proposals => {
+        setActiveProposals(proposals)
         setIsLoadingActive(false)
       }),
-      fetchProposals((offset, batchSize) => {
-        return dao!.getPastProposals(offset, batchSize, {
-          blockTag,
-        })
-      }).then(async proposalsMap => {
-        setPastPolls({ ...proposalsMap })
-        // Filter polls without votes
-        await Promise.all(
-          Object.keys(pastPolls).map(async proposalId => {
-            const voteCount: bigint[] = await dao!.getVoteCounts('0x' + proposalId)
-            if (voteCount[Number(pastPolls[proposalId].proposal.topChoice)] === 0n) {
-              pastPolls[proposalId].empty = true
-            }
-          }),
-        )
-        setIsLoadingPast(false)
-      }),
+      fetchProposals((offset, batchSize) => dao!.getPastProposals(offset, batchSize, { blockTag })).then(
+        proposals => {
+          setPastProposals(proposals)
+          setIsLoadingPast(false)
+        },
+      ),
     ])
   }
 
   useEffect(() => {
-    const mine: ExtendedPoll[] = []
-    const others: ExtendedPoll[] = []
+    const all: Proposal[] = []
 
-    Object.entries(activePolls).forEach(([pollId, poll]) => {
-      const list = poll.ipfsParams.creator.toLowerCase() === userAddress?.toLowerCase() ? mine : others
-      list.push({
-        ...poll,
-        id: pollId,
-        proposal: {
-          ...poll.proposal,
-          active: true,
-        },
+    activeProposals.forEach(proposal => {
+      all.push({
+        ...proposal,
+        active: true,
       })
     })
-    Object.entries(pastPolls).forEach(([pollId, poll]) => {
-      const list = poll.ipfsParams.creator.toLowerCase() === userAddress?.toLowerCase() ? mine : others
-      list.push({
-        ...poll,
-        id: pollId,
-        proposal: {
-          ...poll.proposal,
-          active: false,
-        },
+
+    pastProposals.forEach(proposal => {
+      all.push({
+        ...proposal,
+        active: false,
       })
     })
-    setMyPolls(mine)
-    setOtherPolls(others)
-  }, [activePolls, pastPolls, userAddress])
-
-  const isLoadingPolls = isLoadingActive || isLoadingPast
+    setAllProposals(all)
+  }, [activeProposals, pastProposals, userAddress])
 
   return {
     userAddress,
     canCreatePoll,
-    isLoadingActive,
-    isLoadingPast,
-    activePolls,
-    pastPolls,
-    isLoadingPolls,
-    myPolls,
-    otherPolls,
+    isLoadingPolls: isLoadingActive || isLoadingPast,
+    allProposals,
   }
 }

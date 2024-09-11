@@ -22,7 +22,7 @@ const VoteIcon: FC = () => {
 const StatusInfo: FC<{
   remainingTime: RemainingTime | undefined
   remainingTimeString: string | undefined
-  isMine: boolean
+  isMine: boolean | undefined
   canClose: boolean
   closePoll: () => {}
   isClosing: boolean

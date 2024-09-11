@@ -1,4 +1,3 @@
-// import { useProposalFromChain } from './useProposalFromChain'
 import { ListOfVotes, ExtendedPoll, Poll, PollResults, Proposal } from '../types'
 import { useEffect, useMemo, useState } from 'react'
 import { useIPFSData } from './useIPFSData'
@@ -20,10 +19,9 @@ export const useExtendedPoll = (
   } = {},
 ) => {
   const eth = useEthereum()
+  const { userAddress } = eth
   const { pollManager } = useContracts(eth)
   const { withResults = false } = params
-
-  // const proposalId = `0x${pollId}`
 
   const proposalId = proposal?.id
   const isDemo = proposalId === '0xdemo'
@@ -35,29 +33,18 @@ export const useExtendedPoll = (
 
   const { now } = useTime(!!deadline)
 
-  // const {
-  //   pollManager,
-  //   isLoading: isProposalLoading,
-  //   error: proposalError,
-  //   invalidateProposal,
-  //   proposal,
-  // } = useProposalFromChain(proposalId)
-
   const { gaslessEnabled, gaslessPossible, gvAddresses, gvBalances, invalidateGaslessStatus } =
     usePollGaslessStatus(proposalId)
 
-  const {
-    isLoading: isIpfsLoading,
-    error: ipfsError,
-    data: ipfsData,
-  } = useIPFSData(proposal?.params?.ipfsHash)
+  const ipfsHash = proposal?.params?.ipfsHash
+
+  const { isLoading: isIpfsLoading, error: ipfsError, data: ipfsData } = useIPFSData(ipfsHash)
+
+  const ipfsSecret = proposal?.params?.ipfsSecret
 
   const ipfsParams = useMemo(
-    () =>
-      proposal && ipfsData
-        ? (decryptJSON(getBytes(proposal.params.ipfsSecret), ipfsData) as Poll)
-        : undefined,
-    [ipfsData, proposal?.params?.ipfsSecret],
+    () => (ipfsSecret && ipfsData ? (decryptJSON(getBytes(ipfsSecret), ipfsData) as Poll) : undefined),
+    [ipfsData, ipfsSecret],
   )
 
   useEffect(
@@ -151,6 +138,14 @@ export const useExtendedPoll = (
     }, 1000)
   }
 
+  const creator = poll?.ipfsParams.creator
+
+  const isMine = useMemo(() => {
+    if (isDemo) return false
+    if (!creator || !userAddress) return undefined
+    return creator.toLowerCase() === userAddress.toLowerCase()
+  }, [isDemo, creator, userAddress])
+
   return {
     proposalId,
     isDemo,
@@ -172,6 +167,7 @@ export const useExtendedPoll = (
     canAclVote,
     aclExplanation,
     aclProof,
+    isMine,
     canAclManage,
   }
 }

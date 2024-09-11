@@ -53,6 +53,7 @@ export const usePollData = (pollId: string) => {
     canAclVote,
     aclExplanation,
     aclProof,
+    isMine,
     canAclManage,
   } = useExtendedPoll(proposal, { withResults: true })
 
@@ -321,8 +322,6 @@ export const usePollData = (pollId: string) => {
       }
     }
   }, [hasClosed, poll])
-
-  const isMine = !isDemo && poll?.ipfsParams.creator?.toLowerCase() === userAddress.toLowerCase()
 
   return {
     userAddress,

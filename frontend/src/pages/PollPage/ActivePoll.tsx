@@ -125,7 +125,7 @@ export const ActivePoll: FC<PollData> = ({
       {!getVerdict(canAclVote) && (
         <h4 className={'niceLine'}>
           <WarningCircleIcon size={'large'} />
-          You are not allowed to vote on this poll, since {getReason(canAclVote)}.
+          You can't vote on this poll, since {getReason(canAclVote)}.
         </h4>
       )}
       <div className={classes.buttons}>
