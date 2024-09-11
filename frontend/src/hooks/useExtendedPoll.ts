@@ -1,5 +1,5 @@
-import { useProposalFromChain } from './useProposalFromChain'
-import { ListOfVotes, ExtendedPoll, Poll, PollResults } from '../types'
+// import { useProposalFromChain } from './useProposalFromChain'
+import { ListOfVotes, ExtendedPoll, Poll, PollResults, Proposal } from '../types'
 import { useEffect, useMemo, useState } from 'react'
 import { useIPFSData } from './useIPFSData'
 import { getBytes } from 'ethers'
@@ -8,19 +8,25 @@ import { demoSettings, getDemoPoll } from '../constants/config'
 import { useTime } from './useTime'
 import { usePollGaslessStatus } from './usePollGaslessStatus'
 import { usePollPermissions } from './usePollPermissions'
+import { useEthereum } from './useEthereum'
+import { useContracts } from './useContracts'
 
 const noVotes: ListOfVotes = { out_count: 0n, out_voters: [], out_choices: [] }
 
-export const usePoll = (
-  pollId: string,
+export const useExtendedPoll = (
+  proposal: Proposal | undefined,
   params: {
     withResults?: boolean
   } = {},
 ) => {
+  const eth = useEthereum()
+  const { pollManager } = useContracts(eth)
   const { withResults = false } = params
 
-  const proposalId = `0x${pollId}`
-  const isDemo = pollId === 'demo'
+  // const proposalId = `0x${pollId}`
+
+  const proposalId = proposal?.id
+  const isDemo = proposalId === '0xdemo'
   const [poll, setPoll] = useState<ExtendedPoll | undefined>()
   const [deadline, setDeadline] = useState<number | undefined>()
   const [voteCounts, setVoteCounts] = useState<bigint[]>([])
@@ -29,13 +35,13 @@ export const usePoll = (
 
   const { now } = useTime(!!deadline)
 
-  const {
-    pollManager,
-    isLoading: isProposalLoading,
-    error: proposalError,
-    invalidateProposal,
-    proposal,
-  } = useProposalFromChain(proposalId)
+  // const {
+  //   pollManager,
+  //   isLoading: isProposalLoading,
+  //   error: proposalError,
+  //   invalidateProposal,
+  //   proposal,
+  // } = useProposalFromChain(proposalId)
 
   const { gaslessEnabled, gaslessPossible, gvAddresses, gvBalances, invalidateGaslessStatus } =
     usePollGaslessStatus(proposalId)
@@ -67,7 +73,7 @@ export const usePoll = (
       }
       if (proposal && ipfsParams) {
         setPoll({
-          id: pollId,
+          id: proposal.id.substring(2),
           proposal,
           ipfsParams,
         })
@@ -83,12 +89,12 @@ export const usePoll = (
 
   const loadVotes = async () => {
     if (isDemo || !proposal || !pollManager || !ipfsParams || !withResults || proposal.active) return
-    const voteCounts = (await pollManager.getVoteCounts(proposalId)).slice(0, ipfsParams.choices.length)
+    const voteCounts = (await pollManager.getVoteCounts(proposal.id)).slice(0, ipfsParams.choices.length)
     setVoteCounts(voteCounts)
     setWinningChoice(proposal.topChoice)
 
     if (proposal.params.publishVotes) {
-      setVotes(await pollManager.getVotes(proposalId, 0, 10))
+      setVotes(await pollManager.getVotes(proposal.id, 0, 10))
     } else {
       setVotes({ ...noVotes })
     }
@@ -148,8 +154,8 @@ export const usePoll = (
   return {
     proposalId,
     isDemo,
-    isLoading: isProposalLoading || isIpfsLoading,
-    error: proposalError ?? ipfsError,
+    isLoading: isIpfsLoading,
+    error: ipfsError,
     poll,
     voteCounts,
     winningChoice,
@@ -157,7 +163,6 @@ export const usePoll = (
     pollResults,
     deadline,
     setDeadline,
-    invalidatePoll: invalidateProposal,
     closeDemoPoll,
     gaslessEnabled,
     gaslessPossible,

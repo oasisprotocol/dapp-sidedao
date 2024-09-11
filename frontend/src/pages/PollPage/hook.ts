@@ -10,7 +10,8 @@ import { demoSettings, VITE_CONTRACT_POLLMANAGER, VITE_NETWORK_BIGINT } from '..
 import { useTime } from '../../hooks/useTime'
 import { tuneValue } from '../../utils/tuning'
 import { getVerdict } from '../../components/InputFields'
-import { usePoll } from '../../hooks/usePoll'
+import { useExtendedPoll } from '../../hooks/useExtendedPoll'
+import { useProposalFromChain } from '../../hooks/useProposalFromChain'
 
 export const usePollData = (pollId: string) => {
   const eth = useEthereum()
@@ -23,8 +24,16 @@ export const usePollData = (pollId: string) => {
   const [selectedChoice, setSelectedChoice] = useState<bigint | undefined>()
   const [existingVote, setExistingVote] = useState<bigint | undefined>(undefined)
 
+  const proposalId = `0x${pollId}`
+
   const {
-    proposalId,
+    isLoading: isProposalLoading,
+    error: proposalError,
+    invalidateProposal,
+    proposal,
+  } = useProposalFromChain(proposalId)
+
+  const {
     isDemo,
     isLoading,
     error,
@@ -32,7 +41,6 @@ export const usePollData = (pollId: string) => {
     deadline,
     setDeadline,
     closeDemoPoll,
-    invalidatePoll,
     votes,
     voteCounts,
     winningChoice,
@@ -46,7 +54,7 @@ export const usePollData = (pollId: string) => {
     aclExplanation,
     aclProof,
     canAclManage,
-  } = usePoll(pollId, { withResults: true })
+  } = useExtendedPoll(proposal, { withResults: true })
 
   const { now } = useTime(!!deadline)
   const { pollManagerWithSigner: signerDao, gaslessVoting } = useContracts(eth, poll?.proposal.params?.acl)
@@ -305,7 +313,7 @@ export const usePollData = (pollId: string) => {
         // console.log("Apparently, we have closed a poll, but we still perceive it as active, so scheduling a reload...")
         setTimeout(() => {
           // console.log("Reloading now")
-          invalidatePoll()
+          invalidateProposal()
         }, 5 * 1000)
       } else {
         // console.log("We no longer perceive it as active, so we can stop reloading")
@@ -320,8 +328,8 @@ export const usePollData = (pollId: string) => {
     userAddress,
     hasWallet,
     hasWalletOnWrongNetwork,
-    isLoading,
-    error,
+    isLoading: isProposalLoading || isLoading,
+    error: proposalError ?? error,
     poll,
     active: !!poll?.proposal?.active,
 
