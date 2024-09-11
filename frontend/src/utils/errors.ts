@@ -19,7 +19,7 @@ export interface EIP1193Error extends Error {
 }
 
 export const handleKnownErrors = (error: Error): void => {
-  console.log("Looking at error", error)
+  console.log('Looking at error', error)
   const errorMessage = (error?.message ?? '').toLowerCase()
 
   switch (errorMessage) {
@@ -30,7 +30,7 @@ export const handleKnownErrors = (error: Error): void => {
 
 export const handleKnownContractCallExceptionErrors = <T = unknown>(
   callExceptionError: CallExceptionError,
-  defaultReturn: Promise<T>
+  defaultReturn: Promise<T>,
 ) => {
   const reason = callExceptionError?.reason ?? ''
 

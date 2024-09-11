@@ -1,12 +1,12 @@
-import { Layout } from '../../components/Layout';
-import { FC } from 'react';
-import { usePollData } from './hook';
-import { useParams } from 'react-router-dom';
-import { Alert } from '../../components/Alert';
-import { CompletedPoll } from './CompletedPoll';
-import { ActivePoll } from './ActivePoll';
+import { Layout } from '../../components/Layout'
+import { FC } from 'react'
+import { usePollData } from './hook'
+import { useParams } from 'react-router-dom'
+import { Alert } from '../../components/Alert'
+import { CompletedPoll } from './CompletedPoll'
+import { ActivePoll } from './ActivePoll'
 // import { EnforceWallet } from '../../App';
-import { ThanksForVote } from './ThanksForVoting';
+import { ThanksForVote } from './ThanksForVoting'
 
 const PollLoading: FC = () => {
   return (
@@ -19,18 +19,22 @@ const PollLoading: FC = () => {
 const WaitingForResults: FC = () => {
   return (
     <Layout variation="light">
-      <Alert headerText="Poll closed, please wait" type="loading" actions={<span>Waiting for results to land...</span>} />
+      <Alert
+        headerText="Poll closed, please wait"
+        type="loading"
+        actions={<span>Waiting for results to land...</span>}
+      />
     </Layout>
   )
 }
 
 export const PollPage: FC = () => {
-  const { pollId} = useParams()
+  const { pollId } = useParams()
   const pollData = usePollData(pollId!)
   const {
     isLoading,
     error,
-    poll : loadedPoll,
+    poll: loadedPoll,
     active,
     hasVoted,
     existingVote,
@@ -40,7 +44,11 @@ export const PollPage: FC = () => {
   // console.log("Error:", error, "poll?", !!loadedPoll)
   // console.log("Has voted?", hasVoted, "existingVote:", existingVote, "active?", active, "hasClosed:", hasClosed)
   if (error) {
-    return <Layout variation={"landing"}><Alert type='error' headerText={error} /></Layout>
+    return (
+      <Layout variation={'landing'}>
+        <Alert type="error" headerText={error} />
+      </Layout>
+    )
   }
 
   const poll = loadedPoll?.ipfsParams
@@ -55,13 +63,17 @@ export const PollPage: FC = () => {
   if (hasVoted && active) {
     if (existingVote !== undefined) {
       return (
-        <Layout variation={"dark"}>
+        <Layout variation={'dark'}>
           <ThanksForVote {...pollData} />
         </Layout>
       )
     } else {
-      console.log("Inconsistent state: hasVoted, but no existingVote")
-      return <Layout variation={"landing"}><Alert type='error' headerText={"Internal error"} /></Layout>
+      console.log('Inconsistent state: hasVoted, but no existingVote')
+      return (
+        <Layout variation={'landing'}>
+          <Alert type="error" headerText={'Internal error'} />
+        </Layout>
+      )
     }
   }
 
@@ -82,6 +94,5 @@ export const PollPage: FC = () => {
         <CompletedPoll {...pollData} />
       </Layout>
     )
-
   }
 }

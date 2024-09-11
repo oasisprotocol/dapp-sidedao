@@ -1,5 +1,5 @@
-import { FC } from 'react';
-import classes from "./index.module.css"
+import { FC } from 'react'
+import classes from './index.module.css'
 
 const ActiveDot: FC = () => (
   <svg width="12" height="13" viewBox="0 0 12 13" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -14,14 +14,14 @@ const PassiveDot: FC = () => (
 )
 
 export const DottedProgressIndicator: FC<{
-  steps: number,
-  currentStepIndex: number,
+  steps: number
+  currentStepIndex: number
 }> = ({ steps, currentStepIndex }) => {
   return (
     <div className={classes.container}>
-      { Array.from({length: steps}).map( (_i, index) =>
-        (index === currentStepIndex) ? <ActiveDot key={index}/> : <PassiveDot key={index}/>
-      ) }
+      {Array.from({ length: steps }).map((_i, index) =>
+        index === currentStepIndex ? <ActiveDot key={index} /> : <PassiveDot key={index} />,
+      )}
     </div>
   )
 }

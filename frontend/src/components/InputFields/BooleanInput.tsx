@@ -1,11 +1,11 @@
-import { ChangeEvent, FC, useCallback } from 'react';
-import { BooleanFieldControls } from './useBoolField';
-import classes from "./index.module.css";
-import { checkProblems } from './util';
-import { StringUtils } from '../../utils/string.utils';
-import { ProblemList } from './ProblemDisplay';
+import { ChangeEvent, FC, useCallback } from 'react'
+import { BooleanFieldControls } from './useBoolField'
+import classes from './index.module.css'
+import { checkProblems } from './util'
+import { StringUtils } from '../../utils/string.utils'
+import { ProblemList } from './ProblemDisplay'
 
-export const BooleanInput: FC<BooleanFieldControls> = (props) => {
+export const BooleanInput: FC<BooleanFieldControls> = props => {
   const {
     name,
     label,
@@ -21,7 +21,7 @@ export const BooleanInput: FC<BooleanFieldControls> = (props) => {
 
   const handleChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => setValue(event.target.checked),
-    [setValue]
+    [setValue],
   )
 
   const handleLabelClick = () => {
@@ -32,11 +32,11 @@ export const BooleanInput: FC<BooleanFieldControls> = (props) => {
 
   const rootProblems = allProblems.root || []
 
-  const { hasWarning, hasError} = checkProblems(rootProblems)
+  const { hasWarning, hasError } = checkProblems(rootProblems)
 
   const field = (
     <input
-      type={"checkbox"}
+      type={'checkbox'}
       name={name}
       checked={value}
       onChange={handleChange}
@@ -46,12 +46,17 @@ export const BooleanInput: FC<BooleanFieldControls> = (props) => {
   )
 
   const wrappedField = (
-    <div className={StringUtils.clsx(
-      classes.boolValue,
-      hasError ? classes.fieldWithError : hasWarning ? classes.fieldWithWarning : '',
-    )}>
-      <div className={"niceLine"} title={whyDisabled}>
-        {field} <span className={enabled ? classes.pointer : classes.disabled} onClick={handleLabelClick}>{label}</span>
+    <div
+      className={StringUtils.clsx(
+        classes.boolValue,
+        hasError ? classes.fieldWithError : hasWarning ? classes.fieldWithWarning : '',
+      )}
+    >
+      <div className={'niceLine'} title={whyDisabled}>
+        {field}{' '}
+        <span className={enabled ? classes.pointer : classes.disabled} onClick={handleLabelClick}>
+          {label}
+        </span>
       </div>
       <ProblemList problems={rootProblems} onRemove={clearProblem} />
     </div>
@@ -59,16 +64,14 @@ export const BooleanInput: FC<BooleanFieldControls> = (props) => {
 
   return (
     <div className={classes.fieldContainer}>
-      {description
-        ? (
-          <label>
-            <div className={classes.fieldDescription}>
-              {description}
-            </div>
-            {wrappedField}
-          </label>
-        ) : wrappedField
-      }
+      {description ? (
+        <label>
+          <div className={classes.fieldDescription}>{description}</div>
+          {wrappedField}
+        </label>
+      ) : (
+        wrappedField
+      )}
     </div>
   )
 }

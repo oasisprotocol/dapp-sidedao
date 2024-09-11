@@ -1,62 +1,66 @@
 .pollCard {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 
-    padding: 24px;
-    background: #FFFFFF;
-    border: 1px solid #01001F;
-    border-radius: 12px;
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #01001f;
+  border-radius: 12px;
 
-    color: #01001F;
+  color: #01001f;
 }
 
 .pollCardTop {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 
-    h4 {
-        font-family: 'Inter';
-        font-style: normal;
-        font-weight: 500;
-        font-size: 17px;
-        line-height: 24px;
-    }
-
+  h4 {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 500;
+    font-size: 17px;
+    line-height: 24px;
+  }
 }
 
 h4.activePollTitle {
-    font-weight: 700;
-    font-size: 18px;
+  font-weight: 700;
+  font-size: 18px;
 }
 
-.activePollArrow { color: #0500E1; }
+.activePollArrow {
+  color: #0500e1;
+}
 
-.passivePollArrow { color: #676D74; }
+.passivePollArrow {
+  color: #676d74;
+}
 
 .pollCardBottom {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 }
 
-.pollStatusActive, .pollStatusCompleted {
-    padding: 4px 8px;
-    border-radius: 8px;
-    font-family: 'Inter';
-    font-style: normal;
-    font-weight: 700;
-    font-size: 11px;
-    line-height: 16px;
+.pollStatusActive,
+.pollStatusCompleted {
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-size: 11px;
+  line-height: 16px;
 }
 
 .pollStatusActive {
-    background: #E6E5FF;
-    color: #0500E1;
+  background: #e6e5ff;
+  color: #0500e1;
 }
 
 .pollStatusCompleted {
-    background: #E7E7E9;
-    color: #414749;
+  background: #e7e7e9;
+  color: #414749;
 }

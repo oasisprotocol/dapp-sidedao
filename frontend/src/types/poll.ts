@@ -1,14 +1,18 @@
 import type { PollManager, Poll } from '@oasisprotocol/side-dao-contracts'
 export type {
-  Poll, AclOptions, PollManager, GaslessVoting,
-  IPollACL, IPollManagerACL,
+  Poll,
+  AclOptions,
+  PollManager,
+  GaslessVoting,
+  IPollACL,
+  IPollManagerACL,
   TokenInfo,
-  AclOptionsXchain
+  AclOptionsXchain,
 } from '@oasisprotocol/side-dao-contracts'
 
-export type FullProposal = PollManager.ProposalWithIdStructOutput & { params: Poll } & { empty: Boolean };
+export type FullProposal = PollManager.ProposalWithIdStructOutput & { params: Poll } & { empty: Boolean }
 
-export type LoadedPoll = PollManager.ProposalWithIdStructOutput & { ipfsParams: Poll; };
+export type LoadedPoll = PollManager.ProposalWithIdStructOutput & { ipfsParams: Poll }
 
 export type RemainingTime = {
   isPastDue: boolean
@@ -20,19 +24,22 @@ export type RemainingTime = {
 }
 
 export type ListOfVotes = {
-  out_count: bigint;
-  out_voters: string[];
-  out_choices: PollManager.ChoiceStructOutput[];
-};
+  out_count: bigint
+  out_voters: string[]
+  out_choices: PollManager.ChoiceStructOutput[]
+}
 
 export type PollResults = {
-  totalVotes: bigint,
-  choices: Record<string, {
-    choice: string,
-    votes: bigint,
-    rate: number,
-    winner: boolean
-  }>
-  winner: string,
+  totalVotes: bigint
+  choices: Record<
+    string,
+    {
+      choice: string
+      votes: bigint
+      rate: number
+      winner: boolean
+    }
+  >
+  winner: string
   votes?: ListOfVotes | undefined
 }

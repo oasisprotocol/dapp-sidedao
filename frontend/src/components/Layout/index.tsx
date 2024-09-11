@@ -1,4 +1,4 @@
-import { FC, PropsWithChildren, ReactNode } from 'react';
+import { FC, PropsWithChildren, ReactNode } from 'react'
 import classes from './index.module.css'
 import { LogoIcon } from '../icons/LogoIcon'
 import { ConnectWallet } from '../ConnectWallet'
@@ -6,30 +6,32 @@ import { useAppState } from '../../hooks/useAppState'
 import { StringUtils } from '../../utils/string.utils'
 import { useInView } from 'react-intersection-observer'
 import { LayoutBase } from '../LayoutBase'
-import { Button } from '../Button';
-import { Alert } from '../Alert';
-import { Link, useLocation } from 'react-router-dom';
+import { Button } from '../Button'
+import { Alert } from '../Alert'
+import { Link, useLocation } from 'react-router-dom'
 
-type LayoutVariation = "landing" | "dashboard" | "light" | "dark"
+type LayoutVariation = 'landing' | 'dashboard' | 'light' | 'dark'
 
 const layoutClasses: Partial<Record<LayoutVariation, string>> = {
   landing: 'landing-layout',
-  dashboard: "dashboard-layout",
-  dark: "dark-layout",
-  light: "light-layout",
+  dashboard: 'dashboard-layout',
+  dark: 'dark-layout',
+  light: 'light-layout',
 }
 
 const logoColor: Record<LayoutVariation, string> = {
-  landing: "var(--navy-blue)",
-  dark: "white",
-  dashboard: "var(--navy-blue)",
-  light: "var(--navy-blue)",
+  landing: 'var(--navy-blue)',
+  dark: 'white',
+  dashboard: 'var(--navy-blue)',
+  light: 'var(--navy-blue)',
 }
 
-export const Layout: FC<PropsWithChildren & {
-  variation: LayoutVariation
-  extraWidget?: ReactNode | undefined
-}> = ({variation,children, extraWidget}) => {
+export const Layout: FC<
+  PropsWithChildren & {
+    variation: LayoutVariation
+    extraWidget?: ReactNode | undefined
+  }
+> = ({ variation, children, extraWidget }) => {
   const {
     state: {
       // isInitialLoading,
@@ -45,7 +47,7 @@ export const Layout: FC<PropsWithChildren & {
     initialInView: true,
   })
 
-  const isDemo = useLocation().pathname.endsWith("/demo")
+  const isDemo = useLocation().pathname.endsWith('/demo')
   const connectButton = isDemo ? undefined : <ConnectWallet mobileSticky={isMobileScreen && !inView} />
 
   return (
@@ -61,16 +63,17 @@ export const Layout: FC<PropsWithChildren & {
           <Link to={'/'}>
             <LogoIcon className={classes.logo} color={logoColor[variation]} />
           </Link>
-          { extraWidget ? (
-            <div className={"niceLineWide"}>
-              { extraWidget }
-              { connectButton }
+          {extraWidget ? (
+            <div className={'niceLineWide'}>
+              {extraWidget}
+              {connectButton}
             </div>
-          ) : connectButton
-          }
+          ) : (
+            connectButton
+          )}
         </header>
         <section>
-        {appError && (
+          {appError && (
             <Alert
               type="error"
               actions={

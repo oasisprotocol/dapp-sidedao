@@ -1,134 +1,131 @@
 .darkCard {
-    background: #E6E5FF;
+  background: #e6e5ff;
 }
 
 .choice {
-    position: relative;
-    display: flex;
-    align-items: center;
-    flex-direction: row;
-    justify-content: center;
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  justify-content: center;
 
-    width: 100%;
-    height: 48px;
+  width: 100%;
+  height: 48px;
 
-    padding: 0em 2em;
+  padding: 0em 2em;
 
-    background: #E6E5FF;
-    border-radius: 8px;
+  background: #e6e5ff;
+  border-radius: 8px;
 
-    font-family: 'Inter';
-    font-style: normal;
-    font-weight: 700;
-    font-size: 15px;
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-size: 15px;
 }
 
 .choiceWithResults {
-    justify-content: space-between;
+  justify-content: space-between;
 }
 
 .darkChoice {
-    background: white;
-    border: 1px solid #010038;
-    /*border-radius: 8px;*/
+  background: white;
+  border: 1px solid #010038;
+  /*border-radius: 8px;*/
 }
 
 .above {
-    z-index: 10;
+  z-index: 10;
 }
 
 .winner {
-    border: 3px solid #a2a0ff;
+  border: 3px solid #a2a0ff;
 }
 
 .submitted {
-    border: 1px solid #010038;
-    justify-content: center;
-    gap: 10px;
+  border: 1px solid #010038;
+  justify-content: center;
+  gap: 10px;
 }
 
 .percentage {
-    font-family: 'Inter';
-    font-style: normal;
-    font-weight: 700;
-    font-size: 15px;
-    line-height: 24px;
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 24px;
 }
 
 .sizeBar {
-    position: absolute;
-    height: 100%;
-    border-radius: 8px 0px 0px 8px;
-    left: 0px;
-    background: #bdbce6;
+  position: absolute;
+  height: 100%;
+  border-radius: 8px 0px 0px 8px;
+  left: 0px;
+  background: #bdbce6;
 }
 
 .selectedChoice {
-    border: 3px solid #010038;
-    background: #D2D1FF;
+  border: 3px solid #010038;
+  background: #d2d1ff;
 }
 
 .activeChoice {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .activeChoice:hover {
-    background: #D2D1FF;
-    box-shadow: 0 7px 7px 0 rgba(0, 0, 0, 0.17);
-
+  background: #d2d1ff;
+  box-shadow: 0 7px 7px 0 rgba(0, 0, 0, 0.17);
 }
 
 .countdownContainer {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 32px;
-    color: #01001F;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  color: #01001f;
 }
 
 .countdownCell {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .countdownNumber {
-    width: 64px;
-    height: 45px;
-    text-align: center;
+  width: 64px;
+  height: 45px;
+  text-align: center;
 
-    font-family: 'Inter';
-    font-style: normal;
-    font-weight: 700;
-    font-size: 32px;
-    line-height: 140%;
-
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 140%;
 }
 
 .countdownUnit {
-    font-family: 'Inter';
-    font-style: normal;
-    font-weight: 400;
-    font-size: 11px;
-    line-height: 16px;
-    text-align: center;
-
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 11px;
+  line-height: 16px;
+  text-align: center;
 }
 
 .buttons {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    /*justify-content: space-between;*/
-    justify-content: center;
-    gap: 32px
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  /*justify-content: space-between;*/
+  justify-content: center;
+  gap: 32px;
 }
 
 .needWallet {
-    padding: 12px 24px;
+  padding: 12px 24px;
 
-    background: #D2D1FF;
-    border-radius: 8px;
+  background: #d2d1ff;
+  border-radius: 8px;
 }

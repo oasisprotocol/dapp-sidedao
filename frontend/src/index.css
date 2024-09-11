@@ -104,12 +104,11 @@ h3 {
 }
 
 .dashboard-layout {
-  background: linear-gradient(180deg, #E6E5FF 0%, #D2D1FF 100%);
-
+  background: linear-gradient(180deg, #e6e5ff 0%, #d2d1ff 100%);
 }
 
 .dark-layout {
-  background: #130FFF;
+  background: #130fff;
   color: white;
 }
 
@@ -118,12 +117,13 @@ h3 {
   color: var(--navy-blue);
 }
 
-.niceLine, .niceLineWide {
+.niceLine,
+.niceLineWide {
   display: flex;
   flex-direction: row;
   align-content: center;
   align-items: center;
-  gap: 8px
+  gap: 8px;
 }
 
 .niceLineWide {

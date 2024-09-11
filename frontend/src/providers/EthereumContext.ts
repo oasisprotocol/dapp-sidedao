@@ -1,6 +1,6 @@
-import { JsonRpcProvider, JsonRpcSigner } from 'ethers';
-import { createContext } from 'react';
-import { DemoConnectionStatus, DemoNetwork } from '../utils/crypto.demo';
+import { JsonRpcProvider, JsonRpcSigner } from 'ethers'
+import { createContext } from 'react'
+import { DemoConnectionStatus, DemoNetwork } from '../utils/crypto.demo'
 
 export interface EthereumState {
   signer: JsonRpcSigner | undefined

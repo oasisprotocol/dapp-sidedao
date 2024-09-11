@@ -8,6 +8,7 @@
     "checkTs": "tsc --noEmit",
     "dev": "vite",
     "build": "tsc && node ./internals/scripts/build.mjs",
+    "prettify": "prettier src --write",
     "preview": "vite preview",
     "visualize:bundle": "npx vite-bundle-visualizer"
   },
@@ -40,6 +41,7 @@
     "@types/react": "^18.2.56",
     "@types/react-dom": "^18.2.19",
     "@vitejs/plugin-react-swc": "^3.5.0",
+    "prettier": "^3.3.3",
     "rollup-plugin-visualizer": "^5.12.0",
     "typescript": "^5.2.2",
     "vite": "^5.1.4",

@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { EthereumContext } from '../providers/EthereumContext';
+import { EthereumContext } from '../providers/EthereumContext'
 
 export const useEthereum = () => {
   const value = useContext(EthereumContext)

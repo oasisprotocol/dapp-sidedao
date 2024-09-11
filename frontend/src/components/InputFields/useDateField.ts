@@ -1,8 +1,8 @@
-import { InputFieldControls, InputFieldProps, useInputField } from './useInputField';
-import { CoupledData, DateMessageTemplate, expandCoupledData, getAsArray, getDateMessage } from './util';
+import { InputFieldControls, InputFieldProps, useInputField } from './useInputField'
+import { CoupledData, DateMessageTemplate, expandCoupledData, getAsArray, getDateMessage } from './util'
 
-type DateFieldProps = Omit<InputFieldProps<Date>, "initialValue"> & {
-  initialValue?: Date;
+type DateFieldProps = Omit<InputFieldProps<Date>, 'initialValue'> & {
+  initialValue?: Date
 
   /**
    * Minimum date
@@ -26,53 +26,46 @@ type DateFieldProps = Omit<InputFieldProps<Date>, "initialValue"> & {
 }
 
 export type DateFieldControls = InputFieldControls<Date> & {
-  minDate: Date | undefined,
-  maxDate: Date | undefined,
+  minDate: Date | undefined
+  maxDate: Date | undefined
 }
 
 export function useDateField(props: DateFieldProps): DateFieldControls {
-  const {
-    initialValue = new Date(),
-    validatorsGenerator,
-    validators,
-  } = props
+  const { initialValue = new Date(), validatorsGenerator, validators } = props
 
-  const [minDate, tooEarlyMessage] = expandCoupledData(
-    props.minDate,
-    [undefined, minDate => `Please use a date after ${minDate.toLocaleString()}`]
-  )
+  const [minDate, tooEarlyMessage] = expandCoupledData(props.minDate, [
+    undefined,
+    minDate => `Please use a date after ${minDate.toLocaleString()}`,
+  ])
 
-  const [maxDate, tooLateMessage] = expandCoupledData(
-    props.maxDate,
-    [undefined, maxDate => `Please use a date before ${maxDate.toLocaleString()}`]
-  )
+  const [maxDate, tooLateMessage] = expandCoupledData(props.maxDate, [
+    undefined,
+    maxDate => `Please use a date before ${maxDate.toLocaleString()}`,
+  ])
 
   const controls = useInputField<Date>(
-    "date",
+    'date',
     {
       ...props,
       initialValue,
       validators: undefined,
       validatorsGenerator: value => [
-
         // Check minimum date
-        minDate ? (() => (value.getTime() < minDate.getTime())
-            ? getDateMessage(tooEarlyMessage, minDate)
-            : undefined
-        ) : undefined,
+        minDate
+          ? () => (value.getTime() < minDate.getTime() ? getDateMessage(tooEarlyMessage, minDate) : undefined)
+          : undefined,
 
         // Check maximum date
-        maxDate ? (() => (value.getTime() > maxDate.getTime())
-            ? getDateMessage(tooLateMessage, maxDate)
-            : undefined
-        ) : undefined,
+        maxDate
+          ? () => (value.getTime() > maxDate.getTime() ? getDateMessage(tooLateMessage, maxDate) : undefined)
+          : undefined,
 
         // Any custom validators
-        ...getAsArray(validatorsGenerator ? validatorsGenerator(value) : validators)
-      ]
+        ...getAsArray(validatorsGenerator ? validatorsGenerator(value) : validators),
+      ],
     },
     {
-      isEmpty: (value) => value === undefined,
+      isEmpty: value => value === undefined,
       isEqual: (a, b) => !!a && !!b && a.getTime() === b.getTime(),
     },
   )
@@ -84,6 +77,6 @@ export function useDateField(props: DateFieldProps): DateFieldControls {
     setValue: value => {
       controls.clearAllProblems()
       controls.setValue(value)
-    }
+    },
   }
 }

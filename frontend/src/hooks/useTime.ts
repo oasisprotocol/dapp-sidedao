@@ -1,3 +1,3 @@
-import { useAppState } from './useAppState';
+import { useAppState } from './useAppState'
 
-export const useTime = () => ({ now: useAppState().state.now  })
+export const useTime = () => ({ now: useAppState().state.now })

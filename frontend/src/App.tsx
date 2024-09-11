@@ -1,20 +1,19 @@
-import { FC, ReactNode } from 'react';
-import { createHashRouter, Outlet, RouterProvider } from 'react-router-dom';
+import { FC, ReactNode } from 'react'
+import { createHashRouter, Outlet, RouterProvider } from 'react-router-dom'
 import { EIP1193ContextProvider } from './providers/EIP1193Provider'
 import { Web3ContextProvider } from './providers/Web3Provider'
 import { AppStateContextProvider } from './providers/AppStateProvider'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { RouterErrorBoundary } from './components/RouterErrorBoundary'
-import { EthereumContextProvider } from './providers/EthereumProvider';
-import { PollPage } from './pages/PollPage';
-import { LandingPage } from './pages/LandingPage';
-import { useWeb3 } from './hooks/useWeb3';
-import { DashboardPage } from './pages/DashboardPage';
-import { CreatePollPage } from './pages/CreatePollPage';
+import { EthereumContextProvider } from './providers/EthereumProvider'
+import { PollPage } from './pages/PollPage'
+import { LandingPage } from './pages/LandingPage'
+import { useWeb3 } from './hooks/useWeb3'
+import { DashboardPage } from './pages/DashboardPage'
+import { CreatePollPage } from './pages/CreatePollPage'
 
-export const EnforceWallet: FC<{content: ReactNode}> = ({content}) => useWeb3().state.isConnected
-  ? content
-  : <LandingPage />
+export const EnforceWallet: FC<{ content: ReactNode }> = ({ content }) =>
+  useWeb3().state.isConnected ? content : <LandingPage />
 
 const router = createHashRouter([
   {
@@ -24,16 +23,16 @@ const router = createHashRouter([
     children: [
       {
         path: '',
-        element: <EnforceWallet content={<DashboardPage />} />
+        element: <EnforceWallet content={<DashboardPage />} />,
       },
       {
         path: 'polls/:pollId',
         element: <PollPage />,
       },
       {
-        path: "create",
-        element: <EnforceWallet content={<CreatePollPage />} />
-      }
+        path: 'create',
+        element: <EnforceWallet content={<CreatePollPage />} />,
+      },
     ],
   },
 ])

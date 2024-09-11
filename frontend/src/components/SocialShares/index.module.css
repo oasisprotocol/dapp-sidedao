@@ -1,19 +1,18 @@
-
 .socialIcons {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    gap: 32px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 32px;
 }
 
 .socialIcon {
-    width: 48px;
-    height: 48px;
-    border-radius: 8px;
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
 
-    background: #E6E5FF;
+  background: #e6e5ff;
 
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
