@@ -10,9 +10,19 @@ export type {
   AclOptionsXchain,
 } from '@oasisprotocol/side-dao-contracts'
 
-export type FullProposal = PollManager.ProposalWithIdStructOutput & { params: Poll } & { empty: Boolean }
+export type Proposal = {
+  id: string
+  active: boolean
+  topChoice: bigint
+  params: PollManager.ProposalParamsStructOutput
+}
 
-export type LoadedPoll = PollManager.ProposalWithIdStructOutput & { ipfsParams: Poll }
+export type ExtendedPoll = {
+  id: string
+  proposal: Proposal
+  ipfsParams: Poll
+  empty?: boolean
+}
 
 export type RemainingTime = {
   isPastDue: boolean

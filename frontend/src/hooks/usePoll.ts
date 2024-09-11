@@ -1,5 +1,5 @@
 import { useProposalFromChain } from './useProposalFromChain'
-import { ListOfVotes, LoadedPoll, Poll, PollResults } from '../types'
+import { ListOfVotes, ExtendedPoll, Poll, PollResults } from '../types'
 import { useEffect, useMemo, useState } from 'react'
 import { useIPFSData } from './useIPFSData'
 import { getBytes } from 'ethers'
@@ -21,7 +21,7 @@ export const usePoll = (
 
   const proposalId = `0x${pollId}`
   const isDemo = pollId === 'demo'
-  const [poll, setPoll] = useState<LoadedPoll | undefined>()
+  const [poll, setPoll] = useState<ExtendedPoll | undefined>()
   const [deadline, setDeadline] = useState<number | undefined>()
   const [voteCounts, setVoteCounts] = useState<bigint[]>([])
   const [winningChoice, setWinningChoice] = useState<bigint | undefined>(undefined)
@@ -67,9 +67,10 @@ export const usePoll = (
       }
       if (proposal && ipfsParams) {
         setPoll({
+          id: pollId,
           proposal,
           ipfsParams,
-        } as unknown as LoadedPoll)
+        })
         setDeadline(ipfsParams.options.closeTimestamp)
       } else {
         setPoll(undefined)

@@ -11,9 +11,9 @@ import {
 } from '@oasisprotocol/side-dao-contracts'
 import { BytesLike } from 'ethers'
 import { getChainDefinition, getERC20TokenDetails, getSapphireTokenDetails } from '../utils/poll.utils'
-import { LoadedPoll } from '../types'
+import { ExtendedPoll } from '../types'
 
-export const usePollPermissions = (poll: LoadedPoll | undefined) => {
+export const usePollPermissions = (poll: ExtendedPoll | undefined) => {
   const proposalId = (poll?.proposal as any)?.id as string
   const aclAddress = poll?.proposal.params?.acl
 

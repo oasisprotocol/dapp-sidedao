@@ -1,5 +1,5 @@
 // EIP-3085: wallet_addEthereumChain RPC Method
-import { LoadedPoll } from '../types'
+import { ExtendedPoll } from '../types'
 import { randomchoice } from '@oasisprotocol/side-dao-contracts'
 
 interface AddEthereumChainParameter {
@@ -108,7 +108,7 @@ export {
 
 export const MIN_CLOSE_TIME_MINUTES = 3
 
-export const demoPoll1: LoadedPoll = {
+export const demoPoll1 = {
   id: 'demo',
   proposal: {
     active: true,
@@ -122,9 +122,9 @@ export const demoPoll1: LoadedPoll = {
       publishVotes: false,
     },
   },
-} as LoadedPoll
+} as ExtendedPoll
 
-export const demoPoll2: LoadedPoll = {
+export const demoPoll2 = {
   id: 'demo',
   proposal: {
     active: true,
@@ -138,9 +138,9 @@ export const demoPoll2: LoadedPoll = {
       publishVotes: false,
     },
   },
-} as LoadedPoll
+} as ExtendedPoll
 
-export const getDemoPoll = (): LoadedPoll => randomchoice([demoPoll1, demoPoll2])
+export const getDemoPoll = (): ExtendedPoll => randomchoice([demoPoll1, demoPoll2])
 
 export const demoSettings = {
   timeForVoting: 610,

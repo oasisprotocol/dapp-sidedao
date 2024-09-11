@@ -31,18 +31,7 @@ const WaitingForResults: FC = () => {
 export const PollPage: FC = () => {
   const { pollId } = useParams()
   const pollData = usePollData(pollId!)
-  const {
-    isLoading,
-    error,
-    poll: loadedPoll,
-    active,
-    hasVoted,
-    existingVote,
-    hasClosed,
-    pollResults,
-  } = pollData
-  // console.log("Error:", error, "poll?", !!loadedPoll)
-  // console.log("Has voted?", hasVoted, "existingVote:", existingVote, "active?", active, "hasClosed:", hasClosed)
+  const { isLoading, error, poll, active, hasVoted, existingVote, hasClosed, pollResults } = pollData
   if (error) {
     return (
       <Layout variation={'landing'}>
@@ -51,13 +40,11 @@ export const PollPage: FC = () => {
     )
   }
 
-  const poll = loadedPoll?.ipfsParams
-
   // Closed poll, now waiting for results
   if (hasClosed) return <WaitingForResults />
 
   // Currently loading stuff
-  if (isLoading || !poll) return <PollLoading />
+  if (isLoading || !poll?.ipfsParams) return <PollLoading />
 
   // You have voted. Thanks!
   if (hasVoted && active) {

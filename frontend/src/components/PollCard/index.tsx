@@ -1,4 +1,4 @@
-import { FullProposal } from '../../types'
+import { ExtendedPoll } from '../../types'
 import { FC } from 'react'
 import { micromark } from 'micromark'
 import { Link } from 'react-router-dom'
@@ -9,7 +9,6 @@ import { SpinnerIcon } from '../icons/SpinnerIcon'
 import { usePollGaslessStatus } from '../../hooks/usePollGaslessStatus'
 import { HourGlassIcon } from '../icons/HourGlassIcon'
 import { StringUtils } from '../../utils/string.utils'
-// import { useAclStatus } from './useAclStatus';
 
 const Arrow: FC<{ className: string }> = ({ className }) => (
   <svg
@@ -43,21 +42,19 @@ const PollStatusIndicator: FC<{ active: boolean; isPastDue: boolean }> = ({ acti
 }
 
 export const PollCard: FC<{
-  poll: FullProposal
+  poll: ExtendedPoll
 }> = ({ poll }) => {
   const {
     id: pollId,
-    params: {
+    proposal: { id: proposalId, active },
+    ipfsParams: {
       name,
       description,
       options: { closeTimestamp },
       // acl,
     },
-    proposal: { active },
-    // ipfsParams,
   } = poll
 
-  const proposalId = `0x${pollId}`
   const { gaslessPossible } = usePollGaslessStatus(proposalId)
   // const {} = useAclStatus("0x" + poll, )
 

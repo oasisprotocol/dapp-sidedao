@@ -1,5 +1,5 @@
 import { FC, useCallback } from 'react'
-import { useDashboardData } from './hook'
+import { useDashboardData } from './useDashboardData'
 import { Alert } from '../../components/Alert'
 import { PollCard } from '../../components/PollCard'
 import { Layout } from '../../components/Layout'

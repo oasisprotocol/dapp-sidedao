@@ -3,7 +3,7 @@ import { decryptJSON } from '../../utils/crypto.demo'
 import { getBytes } from 'ethers'
 import { useContracts } from '../../hooks/useContracts'
 import { useEffect, useState } from 'react'
-import { FullProposal, PollManager } from '../../types'
+import { ExtendedPoll, PollManager } from '../../types'
 import { useEthereum } from '../../hooks/useEthereum'
 
 const FETCH_BATCH_SIZE = 100
@@ -15,8 +15,8 @@ interface FetchProposalResult {
 
 async function fetchProposals(
   fetcher: (offset: number, batchSize: number) => Promise<FetchProposalResult>,
-): Promise<Record<string, FullProposal>> {
-  const proposalsMap: Record<string, FullProposal> = {}
+): Promise<Record<string, ExtendedPoll>> {
+  const proposalsMap: Record<string, ExtendedPoll> = {}
 
   for (let offset = 0; ; offset += FETCH_BATCH_SIZE) {
     let result: FetchProposalResult
@@ -28,12 +28,15 @@ async function fetchProposals(
     }
     await Promise.all(
       result.out_proposals.map(async ({ id, proposal }) => {
-        const ipfsHash = proposal.params.ipfsHash
-        id = id.slice(2)
-
+        const { active, topChoice, params } = proposal
+        const { ipfsHash } = params
+        const pollId = id.slice(2)
         try {
-          const params = decryptJSON(getBytes(proposal.params.ipfsSecret), await Pinata.fetchData(ipfsHash))
-          proposalsMap[id] = { id, params, proposal } as FullProposal
+          const ipfsParams = decryptJSON(
+            getBytes(proposal.params.ipfsSecret),
+            await Pinata.fetchData(ipfsHash),
+          )
+          proposalsMap[pollId] = { id: pollId, proposal: { id, active, topChoice, params }, ipfsParams }
         } catch (e) {
           return console.log('failed to fetch proposal params from IPFS for', id)
         }
@@ -54,13 +57,13 @@ export const useDashboardData = () => {
 
   const { userAddress } = eth
 
-  const [activePolls, setActivePolls] = useState<Record<string, FullProposal>>({})
-  const [pastPolls, setPastPolls] = useState<Record<string, FullProposal>>({})
+  const [activePolls, setActivePolls] = useState<Record<string, ExtendedPoll>>({})
+  const [pastPolls, setPastPolls] = useState<Record<string, ExtendedPoll>>({})
   const [canCreatePoll, setCanCreatePoll] = useState(false)
   const [isLoadingActive, setIsLoadingActive] = useState(true)
   const [isLoadingPast, setIsLoadingPast] = useState(true)
-  const [myPolls, setMyPolls] = useState<FullProposal[]>([])
-  const [otherPolls, setOtherPolls] = useState<FullProposal[]>([])
+  const [myPolls, setMyPolls] = useState<ExtendedPoll[]>([])
+  const [otherPolls, setOtherPolls] = useState<ExtendedPoll[]>([])
 
   useEffect(() => {
     if (!dao) {
@@ -118,11 +121,11 @@ export const useDashboardData = () => {
   }
 
   useEffect(() => {
-    const mine: FullProposal[] = []
-    const others: FullProposal[] = []
+    const mine: ExtendedPoll[] = []
+    const others: ExtendedPoll[] = []
 
     Object.entries(activePolls).forEach(([pollId, poll]) => {
-      const list = poll.params.creator.toLowerCase() === userAddress?.toLowerCase() ? mine : others
+      const list = poll.ipfsParams.creator.toLowerCase() === userAddress?.toLowerCase() ? mine : others
       list.push({
         ...poll,
         id: pollId,
@@ -133,7 +136,7 @@ export const useDashboardData = () => {
       })
     })
     Object.entries(pastPolls).forEach(([pollId, poll]) => {
-      const list = poll.params.creator.toLowerCase() === userAddress?.toLowerCase() ? mine : others
+      const list = poll.ipfsParams.creator.toLowerCase() === userAddress?.toLowerCase() ? mine : others
       list.push({
         ...poll,
         id: pollId,

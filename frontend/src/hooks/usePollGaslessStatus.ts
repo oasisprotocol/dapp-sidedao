@@ -9,7 +9,7 @@ export const usePollGaslessStatus = (proposalId: string | undefined) => {
   const [version, setVersion] = useState(0)
   const [gvAddresses, setGvAddresses] = useState<string[]>([])
   const [gvBalances, setGvBalances] = useState<bigint[]>([])
-  const [gvTotalBalance, setGvTotalBalance] = useState<bigint>(0n)
+  const [gvTotalBalance, setGvTotalBalance] = useState<bigint | undefined>()
   const [gaslessEnabled, setGaslessEnabled] = useState(false)
 
   const isDemo = proposalId === '0xdemo'
@@ -22,13 +22,18 @@ export const usePollGaslessStatus = (proposalId: string | undefined) => {
 
     if (!daoAddress || !gaslessVoting || !proposalId) return
 
-    const addressBalances = await gaslessVoting.listAddresses(daoAddress, proposalId)
-    setGvAddresses(addressBalances.out_addrs)
-    setGaslessEnabled(!!addressBalances.out_addrs.length)
-    setGvBalances(addressBalances.out_balances)
-    if (addressBalances.out_balances.length > 0) {
-      setGvTotalBalance(addressBalances.out_balances.reduce((a, b) => a + b))
-    } else {
+    try {
+      const addressBalances = await gaslessVoting.listAddresses(daoAddress, proposalId)
+      setGvAddresses(addressBalances.out_addrs)
+      setGaslessEnabled(!!addressBalances.out_addrs.length)
+      setGvBalances(addressBalances.out_balances)
+      if (addressBalances.out_balances.length > 0) {
+        setGvTotalBalance(addressBalances.out_balances.reduce((a, b) => a + b))
+      } else {
+        setGvTotalBalance(0n)
+      }
+    } catch (error) {
+      console.log('Error when testing gasless status:', error)
       setGvTotalBalance(0n)
     }
   }
@@ -37,7 +42,7 @@ export const usePollGaslessStatus = (proposalId: string | undefined) => {
 
   const invalidateGaslessStatus = () => setVersion(version + 1)
 
-  const gaslessPossible = isDemo || gvTotalBalance > 0n
+  const gaslessPossible = isDemo ? true : gvTotalBalance === undefined ? undefined : gvTotalBalance > 0n
 
   return {
     gaslessEnabled,

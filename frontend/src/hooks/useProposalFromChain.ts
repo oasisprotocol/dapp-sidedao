@@ -1,29 +1,15 @@
 import { useEffect, useState } from 'react'
-import { PollManager } from '../types'
+import { Proposal } from '../types'
 import { useEthereum } from './useEthereum'
 import { useContracts } from './useContracts'
 import { ZeroAddress } from 'ethers'
-
-type LoadedData =
-  // [
-  //   string,
-  //   boolean,
-  //   bigint,
-  //   PollManager.ProposalParamsStructOutput
-  // ] &
-  {
-    id: string
-    active: boolean
-    topChoice: bigint
-    params: PollManager.ProposalParamsStructOutput
-  }
 
 export const useProposalFromChain = (proposalId: string) => {
   const eth = useEthereum()
   const { pollManager } = useContracts(eth)
 
   const [isLoading, setIsLoading] = useState(false)
-  const [proposal, setProposal] = useState<LoadedData>()
+  const [proposal, setProposal] = useState<Proposal>()
   const [error, setError] = useState<string | undefined>()
   const [version, setVersion] = useState(0)
 
