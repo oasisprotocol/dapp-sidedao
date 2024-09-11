@@ -52,8 +52,7 @@ export const useProposalFromChain = (proposalId: string) => {
           active,
           topChoice,
           params,
-          // ...data
-        } as any)
+        })
       }
     } catch (error) {
       console.log('Error while loading proposal: ', error)

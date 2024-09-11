@@ -159,6 +159,5 @@ export const useDashboardData = () => {
     isLoadingPolls,
     myPolls,
     otherPolls,
-    fetchAllProposals,
   }
 }
