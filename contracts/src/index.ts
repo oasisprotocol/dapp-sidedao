@@ -5,4 +5,5 @@ export type { PollManager, GaslessVoting } from "./contracts/contracts";
 export type { DefaultReturnType } from "./contracts/common"
 export * from './xchain.js';
 export * from './types.js';
+export * from './chains.js';
 export * from './eip712.js';
