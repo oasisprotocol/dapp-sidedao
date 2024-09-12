@@ -1,8 +1,9 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { Block, BlockParams, getNumber, JsonRpcProvider, keccak256, toQuantity,
-         ZeroAddress } from "ethers";
-
+import { Block, BlockParams, decodeRlp, encodeRlp, getBytes, getNumber,
+         JsonRpcProvider, keccak256, toBigInt, toQuantity, ZeroAddress
+       } from "ethers";
+import { Trie } from '@ethereumjs/trie'
 import { AccountCache, HeaderCache } from "../src/contracts";
 import {
     chain_info,
@@ -19,6 +20,33 @@ async function fetchBlock(rpc:JsonRpcProvider, blockNumber:number) : Promise<[Bl
     const rawBlockData = await rpc.send('eth_getBlockByNumber', [toQuantity(blockNumber), true]);
     const b = new Block(rawBlockData, rpc);
     return [b, rawBlockData as BlockParamsExtra];
+}
+
+async function verifyProof(
+    rpc:JsonRpcProvider,
+    accountCache:AccountCache,
+    block:BlockParamsExtra,
+    testAccount:string
+) {
+    console.log(`  - fetching proof (blockhash:${block.hash} block:${block.number} account:${testAccount})`);
+    const proof = await fetchAccountProof(rpc, block.hash!, testAccount);
+
+    // Can @ethereumjs code verify the returned merkle proof?
+    const rawProof = (decodeRlp(proof) as string[]).map(encodeRlp).map((_) => getBytes(_));
+    const proofTree = await Trie.createFromProof(rawProof, {useKeyHashing: true});
+    expect(await proofTree.checkRoot(getBytes(block.stateRoot))).eq(true);
+    const accountData = decodeRlp( (await proofTree.get(getBytes(testAccount)))! ) as string[];
+
+    // And that the on-chain contracts can verify the merkle proof
+    const onChainAccountData = await accountCache.verifyAccount(block.stateRoot, testAccount, proof);
+
+    // Verify our local decoding & on-chain decoding matches
+    expect(toBigInt(accountData[0])).eq(onChainAccountData[0]);
+    expect(toBigInt(accountData[1])).eq(onChainAccountData[1]);
+    expect(accountData[2]).eq(onChainAccountData[2]);
+    expect(accountData[3]).eq(onChainAccountData[3]);
+
+    return onChainAccountData;
 }
 
 describe("Cross-chain", function () {
@@ -95,7 +123,7 @@ describe("Cross-chain", function () {
                 // Find a block with transactions
                 if( b.transactions.length == 0 ) {
                     blockNumber -= 1;
-                    console.log(`  - skipping (chainId:${chainId} chain:${chain.name} height:${blockNumber})`)
+                    console.log(`  - skipping, no transactions (chainId:${chainId} chain:${chain.name} height:${blockNumber})`)
                     continue
                 }
 
@@ -136,16 +164,14 @@ describe("Cross-chain", function () {
 
             // Fetch proofs for the chosen account, ensuring eth_getProof works
             // Ensure that on-chain contract can verify the account proof
-            console.log(`  - fetching proof (blockhash:${block.hash} block:${blockNumber} account:${testAccount})`);
-            const proof = await fetchAccountProof(rpc, block.hash!, testAccount);
-            const proofInfo = await accountCache.verifyAccount(blockRawData.stateRoot, testAccount, proof);
+            const proofInfo = await verifyProof(rpc, accountCache, blockRawData, testAccount);
             expect(proofInfo.balance).eq(testAccountBalance);
 
             // Then, to verify archive node status...
             // Figure out number of seconds in between blocks (on average)
             const nBlockGap = 5;
             const prevBlockNumber = blockNumber - nBlockGap;
-            const [prevBlock, prevBlockRawBlockData] = await fetchBlock(rpc, prevBlockNumber);
+            const [prevBlock,] = await fetchBlock(rpc, prevBlockNumber);
 
             // Then go back more than 512 blocks, or 1 day, whichever is greater
             // This ensures the data being retrieved is archived
@@ -153,18 +179,13 @@ describe("Cross-chain", function () {
             const secondsPerBlockAvg = (block.timestamp - prevBlock.timestamp) / nBlockGap;
             const yesterdayTimestamp = block.timestamp - (60 * 60 * 24);
             const yesterdayBlockNumber = Math.min(blockNumber - Math.round((yesterdayTimestamp - block.timestamp) / secondsPerBlockAvg), blockNumber - nBlocksConsideredArchived);
-            const yesterdayBlock = await rpc.getBlock(yesterdayBlockNumber);
+            const [yesterdayBlock, rawYesterdayBlockData] = await fetchBlock(rpc, yesterdayBlockNumber);
             if( ! yesterdayBlock ) {
                 throw new Error(`Failed to retrieve yesterdays block: ${yesterdayBlockNumber}`);
             }
 
-            console.log(`  - fetching yesterday proof (blockhash:${yesterdayBlock.hash} block:${yesterdayBlockNumber} account:${testAccount})`);
-            const yesterdayProof = await fetchAccountProof(rpc, yesterdayBlock?.hash!, testAccount);
-            console.log('Yesterday proof is', yesterdayProof);
-            const yesterdayProofInfo = await accountCache.verifyAccount(prevBlockRawBlockData.stateRoot, testAccount, yesterdayProof);
-            //console.log('Yesterday proof', yesterdayProof);
-
-            // Then fetch proofs for the same block, ensuring eth_getProof works for historic data
+            // Then verify we can retrieve proofs for historic data, and verify on-chain
+            await verifyProof(rpc, accountCache, rawYesterdayBlockData, testAccount);
         }
     });
 });

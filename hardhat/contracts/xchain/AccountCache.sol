@@ -52,7 +52,10 @@ contract AccountCache {
         public pure
         returns (Account memory account)
     {
-        bytes memory accountDetailsBytes = MerklePatriciaVerifier.getValueFromProof(stateRoot, keccak256(abi.encodePacked(accountAddress)), rlpAccountProof);
+        bytes memory accountDetailsBytes = MerklePatriciaVerifier.getValueFromProof(
+            stateRoot,
+            keccak256(abi.encodePacked(accountAddress)),
+            rlpAccountProof);
 
         RLP.Item[] memory accountDetails = RLP.toList(RLP.toItem(accountDetailsBytes));
 

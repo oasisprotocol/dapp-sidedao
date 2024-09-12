@@ -285,6 +285,9 @@ importers:
         specifier: ^6.10.0
         version: 6.10.0
     devDependencies:
+      '@ethereumjs/trie':
+        specifier: ^6.1.1
+        version: 6.2.1
       '@nomicfoundation/hardhat-ethers':
         specifier: ^3.0.5
         version: 3.0.7(ethers@6.10.0)(hardhat@2.22.9)
