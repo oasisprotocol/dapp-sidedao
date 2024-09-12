@@ -182,7 +182,7 @@ export const ActivePoll: FC<PollData> = ({
           </div>
         </div>
       )}
-      <SocialShares label={'Share poll on'} className="socialOnDark" />
+      <SocialShares label={'Share poll on'} className="socialOnDark" name={name} introText={'Vote here!'} />
     </Card>
   )
 }
