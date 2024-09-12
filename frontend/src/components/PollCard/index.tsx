@@ -46,8 +46,8 @@ export const PollCard: FC<{
   proposal: Proposal
   registerOwnership: (id: string, mine: boolean) => void
 }> = ({ proposal, registerOwnership }) => {
-  const { poll, proposalId, gaslessPossible, isMine, aclExplanation, canAclVote, aclError } =
-    useExtendedPoll(proposal)
+  const { poll, proposalId, gaslessPossible, permissions } = useExtendedPoll(proposal)
+  const { isMine } = permissions
 
   useEffect(() => {
     if (proposalId && isMine !== undefined) registerOwnership(proposalId, isMine)
@@ -74,12 +74,7 @@ export const PollCard: FC<{
         <div className={classes.pollCardTop}>
           <h4 className={active ? classes.activePollTitle : undefined}>
             {name}
-            <PollAccessIndicatorWrapper
-              aclError={aclError}
-              aclExplanation={aclExplanation}
-              canAclVote={canAclVote}
-              isActive={active}
-            />
+            <PollAccessIndicatorWrapper permissions={permissions} isActive={active} />
           </h4>
           <Arrow className={active ? classes.activePollArrow : classes.passivePollArrow} />
         </div>

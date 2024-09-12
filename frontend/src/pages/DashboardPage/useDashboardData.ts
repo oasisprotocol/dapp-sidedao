@@ -133,7 +133,7 @@ export const useDashboardData = () => {
     // console.log('Updating lists')
     const newMine: Proposal[] = []
     const newOthers: Proposal[] = []
-    allProposals.forEach(proposal => {
+    allProposals.slice(0, 2).forEach(proposal => {
       const isThisMine = ownership.get(proposal.id)
       if (isThisMine !== true) newOthers.push(proposal)
       if (isThisMine !== false) newMine.push(proposal)

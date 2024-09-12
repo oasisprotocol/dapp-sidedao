@@ -50,12 +50,7 @@ export const usePollData = (pollId: string) => {
     gvAddresses,
     gvBalances,
     invalidateGaslessStatus,
-    canAclVote,
-    aclExplanation,
-    aclError,
-    aclProof,
-    isMine,
-    canAclManage,
+    permissions,
   } = useExtendedPoll(proposal, { withResults: true })
 
   const { now } = useTime(!!deadline)
@@ -84,12 +79,12 @@ export const usePollData = (pollId: string) => {
     winningChoice === undefined &&
     selectedChoice !== undefined &&
     existingVote === undefined &&
-    getVerdict(canAclVote)
+    getVerdict(permissions.canVote)
 
   const hasWallet = isDemo || (isHomeChain && userAddress !== ZeroAddress)
   const hasWalletOnWrongNetwork = !isDemo && !isHomeChain && userAddress !== ZeroAddress
 
-  const canClose = canAclManage && (!deadline || isPastDue)
+  const canClose = permissions.canManage && (!deadline || isPastDue)
 
   // console.log("canAclManage?", canAclManage, "deadline:", deadline, "isPastDue?", isPastDue, "canClose?", canClose)
 
@@ -194,7 +189,7 @@ export const usePollData = (pollId: string) => {
         submitNonce,
         feeData.gasPrice!,
         request,
-        aclProof,
+        permissions.proof,
         rsv,
       )
 
@@ -243,7 +238,7 @@ export const usePollData = (pollId: string) => {
     if (submitAndPay) {
       console.log('doVote: casting vote using normal tx')
       await eth.switchNetwork(DemoNetwork.FromConfig)
-      const tx = await signerDao.vote(proposalId, choice, aclProof)
+      const tx = await signerDao.vote(proposalId, choice, permissions.proof)
       const receipt = await tx.wait()
 
       if (receipt!.status != 1) throw new Error('cast vote tx failed')
@@ -259,7 +254,7 @@ export const usePollData = (pollId: string) => {
     eth.state.signer,
     eth.state.provider,
     gvAddresses,
-    aclProof,
+    permissions.proof,
   ])
 
   async function vote(): Promise<void> {
@@ -340,9 +335,7 @@ export const usePollData = (pollId: string) => {
     remainingTime,
     remainingTimeString,
 
-    canAclVote,
-    aclExplanation,
-    aclError,
+    permissions,
     canVote,
     gaslessEnabled,
     gaslessPossible,
@@ -355,7 +348,6 @@ export const usePollData = (pollId: string) => {
     existingVote,
     topUp,
 
-    isMine,
     canClose,
     closePoll,
     isClosing,

@@ -4,7 +4,8 @@ import { ClosedPollIcon } from '../icons/ClosedPollIcon'
 import { SpinnerIcon } from '../icons/SpinnerIcon'
 import { BrokenPollAccessIcon } from '../icons/BrokenPollAccessIcon'
 import { getVerdict } from '../InputFields'
-import { useExtendedPoll } from '../../hooks/useExtendedPoll'
+import { PollPermissions } from '../../utils/poll.utils'
+import { MyPollIcon } from '../icons/MyPollIcon'
 
 export const PollAccessIndicator: FC<{
   open: boolean
@@ -14,7 +15,8 @@ export const PollAccessIndicator: FC<{
   explanation: string | undefined
   hasAccess: boolean
   completed: boolean
-}> = ({ open, broken, closed, pending, explanation, hasAccess, completed }) => {
+  mine: boolean | undefined
+}> = ({ open, broken, closed, pending, explanation, hasAccess, completed, mine }) => {
   return (
     <>
       {open && <OpenPollIcon completed={completed} height={20} />}
@@ -28,20 +30,23 @@ export const PollAccessIndicator: FC<{
       )}
       {pending && <SpinnerIcon spinning height={32} title={'Checking access'} />}
       {broken && <BrokenPollAccessIcon />}
+      {mine && <MyPollIcon />}
     </>
   )
 }
 
-export const PollAccessIndicatorWrapper: FC<
-  Pick<ReturnType<typeof useExtendedPoll>, 'aclExplanation' | 'aclError' | 'canAclVote' | 'isActive'>
-> = ({ aclError, aclExplanation, canAclVote, isActive }) => (
+export const PollAccessIndicatorWrapper: FC<{ permissions: PollPermissions; isActive: boolean }> = ({
+  permissions: { explanation, error, canVote, isMine },
+  isActive,
+}) => (
   <PollAccessIndicator
-    open={aclExplanation === ''}
-    broken={!!aclError}
-    closed={!!aclExplanation && !aclError}
-    explanation={aclExplanation}
-    hasAccess={getVerdict(canAclVote)}
+    open={explanation === ''}
+    broken={!!error}
+    closed={!!explanation && !error}
+    explanation={explanation}
+    hasAccess={getVerdict(canVote)}
     completed={!isActive}
-    pending={aclExplanation === undefined}
+    pending={explanation === undefined}
+    mine={isMine}
   />
 )

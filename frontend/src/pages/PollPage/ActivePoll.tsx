@@ -2,7 +2,6 @@ import { FC, useCallback } from 'react'
 import classes from './index.module.css'
 import { Button } from '../../components/Button'
 import { PollData } from './hook'
-import { MyPollIcon } from '../../components/icons/MyPollIcon'
 import { GasRequiredIcon } from '../../components/icons/GasRequiredIcon'
 import { NoGasRequiredIcon } from '../../components/icons/NoGasRequiredIcon'
 import { abbrAddr } from '../../utils/crypto.demo'
@@ -23,17 +22,14 @@ export const ActivePoll: FC<PollData> = ({
   selectedChoice,
   canSelect,
   setSelectedChoice,
-  canAclVote,
-  aclExplanation,
-  aclError,
-  canVote,
   gaslessEnabled,
   gaslessPossible,
   gvAddresses,
   gvBalances,
   vote,
+  canVote,
   isVoting,
-  isMine,
+  permissions,
   canClose,
   isClosing,
   closePoll,
@@ -46,7 +42,6 @@ export const ActivePoll: FC<PollData> = ({
     name,
     description,
     choices,
-    creator,
     options: { publishVotes },
   } = poll!.ipfsParams
 
@@ -84,19 +79,15 @@ export const ActivePoll: FC<PollData> = ({
 
   const isPastDue = !!remainingTime?.isPastDue
 
+  const { isMine, canVote: canAclVote } = permissions
+
   // console.log("selected:", selectedChoice, "can select?", canSelect, "can Vote?", canVote, "voting?", isVoting)
   return (
     <Card className={classes.darkCard}>
       <h2>
         <div className={'niceLine'}>
           {name}
-          <PollAccessIndicatorWrapper
-            aclExplanation={aclExplanation}
-            isActive={true}
-            canAclVote={canAclVote}
-            aclError={aclError}
-          />
-          {isMine && <MyPollIcon creator={creator} />}
+          <PollAccessIndicatorWrapper permissions={permissions} isActive={true} />
         </div>
       </h2>
       <h4>{description}</h4>
