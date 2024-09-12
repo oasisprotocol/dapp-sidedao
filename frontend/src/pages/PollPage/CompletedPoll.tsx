@@ -15,11 +15,7 @@ export const CompletedPoll: FC<PollData> = ({
   aclError,
   canAclVote,
 }) => {
-  const {
-    name,
-    // description,
-    creator,
-  } = poll!.ipfsParams!
+  const { name, description, creator } = poll!.ipfsParams!
   const { choices, votes } = pollResults!
 
   return (
@@ -37,7 +33,7 @@ export const CompletedPoll: FC<PollData> = ({
           {isMine && <MyPollIcon creator={creator} />}
         </div>
       </h4>
-      {/*<h4>{description}</h4>*/}
+      {!!description && <h4>{description}</h4>}
       <>
         {Object.entries(choices).map(([index, entry]) => (
           <div
