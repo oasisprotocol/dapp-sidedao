@@ -2,6 +2,7 @@ import { useContracts } from '../../hooks/useContracts'
 import { useEffect, useState } from 'react'
 import { PollManager, Proposal } from '../../types'
 import { useEthereum } from '../../hooks/useEthereum'
+import { useBooleanField, useTextField } from '../../components/InputFields'
 
 const FETCH_BATCH_SIZE = 100
 
@@ -126,6 +127,32 @@ export const useDashboardData = () => {
     }
   }
 
+  const hideInaccessible = useBooleanField({
+    name: 'hideInaccessible',
+    label: "Hide polls I don't have access to",
+    initialValue: true,
+  })
+
+  const [searchPatterns, setSearchPatterns] = useState<string[]>([])
+
+  const pollSearchPatternInput = useTextField({
+    name: 'pollSearchPattern',
+    // label: 'Search for poll',
+    placeholder: 'Start typing here to search for poll',
+    onValueChange: input => {
+      const patterns = input
+        .trim()
+        .split(' ')
+        .filter(p => p.length)
+      if (patterns.length === 1 && patterns[0].length < 3) {
+        setSearchPatterns([])
+      } else {
+        setSearchPatterns(patterns)
+      }
+    },
+    autoFocus: true,
+  })
+
   const [myProposals, setMyProposals] = useState<Proposal[]>([])
   const [otherProposals, setOtherProposals] = useState<Proposal[]>([])
 
@@ -152,5 +179,8 @@ export const useDashboardData = () => {
     myProposals,
     otherProposals,
     registerOwnership,
+    hideInaccessible,
+    pollSearchPatternInput,
+    searchPatterns,
   }
 }

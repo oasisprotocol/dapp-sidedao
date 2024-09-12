@@ -6,10 +6,19 @@ import { Layout } from '../../components/Layout'
 import classes from './index.module.css'
 import { Button } from '../../components/Button'
 import { useNavigate } from 'react-router-dom'
+import { BooleanInput, TextInput } from '../../components/InputFields'
 
 export const DashboardPage: FC = () => {
   const navigate = useNavigate()
-  const { isLoadingPolls, myProposals, otherProposals, registerOwnership } = useDashboardData()
+  const {
+    isLoadingPolls,
+    myProposals,
+    otherProposals,
+    registerOwnership,
+    hideInaccessible,
+    pollSearchPatternInput,
+    searchPatterns,
+  } = useDashboardData()
   const handleCreate = useCallback(() => navigate('/create'), [navigate])
 
   const createButton = (
@@ -22,22 +31,35 @@ export const DashboardPage: FC = () => {
     <Layout variation="dashboard" extraWidget={createButton}>
       <div className={classes.dashboardMain}>
         <div className={classes.dashboardMyColumn}>
+          <TextInput {...pollSearchPatternInput} />
           <div className={classes.dashboardLabel}>My polls</div>
           {isLoadingPolls ? (
             <Alert headerText="Please wait" type="loading" actions={<span>Fetching polls...</span>} />
           ) : (
             myProposals.map(proposal => (
-              <PollCard key={proposal.id} proposal={proposal} registerOwnership={registerOwnership} />
+              <PollCard
+                key={proposal.id}
+                proposal={proposal}
+                registerOwnership={registerOwnership}
+                searchPatterns={searchPatterns}
+              />
             ))
           )}
         </div>
         <div className={classes.dashboardOtherColumn}>
+          <BooleanInput {...hideInaccessible} />
           <div className={classes.dashboardLabel}>Explore polls</div>
           {isLoadingPolls ? (
             <Alert headerText="Please wait" type="loading" actions={<span>Fetching polls...</span>} />
           ) : (
             otherProposals.map(proposal => (
-              <PollCard key={proposal.id} proposal={proposal} registerOwnership={registerOwnership} />
+              <PollCard
+                key={proposal.id}
+                proposal={proposal}
+                registerOwnership={registerOwnership}
+                hideInaccessible={hideInaccessible.value}
+                searchPatterns={searchPatterns}
+              />
             ))
           )}
         </div>
