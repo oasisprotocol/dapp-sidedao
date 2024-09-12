@@ -24,6 +24,7 @@ export const TextInput: FC<TextFieldControls> = ({
   visible,
   enabled,
   whyDisabled,
+  autoFocus,
 }) => {
   const handleChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => setValue(event.target.value),
@@ -41,6 +42,7 @@ export const TextInput: FC<TextFieldControls> = ({
       className={classes.textValue}
       disabled={!enabled}
       title={whyDisabled}
+      autoFocus={autoFocus}
     />
   )
 
