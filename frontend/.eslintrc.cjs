@@ -6,7 +6,7 @@ const config = {
     'eslint:recommended', // https://eslint.org/docs/rules/
     'plugin:react/recommended', // https://github.com/jsx-eslint/eslint-plugin-react#list-of-supported-rules
     'plugin:@typescript-eslint/recommended', // https://typescript-eslint.io/rules/
-    'react-app', // https://github.com/facebook/create-react-app/blob/main/packages/eslint-config-react-app/index.js
+    // 'react-app', // https://github.com/facebook/create-react-app/blob/main/packages/eslint-config-react-app/index.js
     'plugin:prettier/recommended', // See .prettierrc
   ],
   parser: '@typescript-eslint/parser',
