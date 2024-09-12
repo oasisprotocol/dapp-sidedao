@@ -65,7 +65,7 @@ export const CompletedPoll: FC<PollData> = ({
           </>
         </div>
       )}
-      <SocialShares label={'Share results on'} />
+      <SocialShares label={'Share results on'} name={name} introText={'See the results here:'} />
     </Card>
   )
 }

@@ -117,7 +117,7 @@ export const ThanksForVote: FC<PollData> = ({
         <VoteIcon />
         {choices[Number(myVote)]}
       </div>
-      <SocialShares label={'Share vote on'} />
+      <SocialShares label={'Share vote on'} name={name} introText={'I just voted on this poll:'} />
       <StatusInfo
         remainingTime={remainingTime}
         remainingTimeString={remainingTimeString}
