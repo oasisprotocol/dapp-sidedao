@@ -1,5 +1,5 @@
 
-interface ChainDefinition {
+export interface ChainDefinition {
     name: string;
     chain: string;
     icon?: string;
