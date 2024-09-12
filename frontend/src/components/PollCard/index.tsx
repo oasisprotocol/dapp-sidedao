@@ -9,7 +9,6 @@ import { SpinnerIcon } from '../icons/SpinnerIcon'
 import { HourGlassIcon } from '../icons/HourGlassIcon'
 import { StringUtils } from '../../utils/string.utils'
 import { useExtendedPoll } from '../../hooks/useExtendedPoll'
-import { useCardContext } from '../../pages/DashboardPage/CardContext'
 import { PollAccessIndicatorWrapper } from './PollAccessIndicator'
 
 const Arrow: FC<{ className: string }> = ({ className }) => (
@@ -45,9 +44,8 @@ const PollStatusIndicator: FC<{ active: boolean; isPastDue: boolean }> = ({ acti
 
 export const PollCard: FC<{
   proposal: Proposal
-}> = ({ proposal }) => {
-  const { registerOwnership } = useCardContext()
-
+  registerOwnership: (id: string, mine: boolean) => void
+}> = ({ proposal, registerOwnership }) => {
   const { poll, proposalId, gaslessPossible, isMine, aclExplanation, canAclVote, aclError } =
     useExtendedPoll(proposal)
 

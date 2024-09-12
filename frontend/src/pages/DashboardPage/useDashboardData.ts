@@ -12,6 +12,8 @@ interface FetchProposalResult {
   out_proposals: RawProposal[]
 }
 
+const ownership = new Map<string, boolean>()
+
 async function fetchProposals(
   fetcher: (offset: number, batchSize: number) => Promise<FetchProposalResult>,
 ): Promise<Proposal[]> {
@@ -115,10 +117,38 @@ export const useDashboardData = () => {
     setAllProposals(all)
   }, [activeProposals, pastProposals, userAddress])
 
+  const [version, setVersion] = useState(0)
+
+  const registerOwnership = (pollId: string, mine: boolean) => {
+    if (!ownership.has(pollId) || ownership.get(pollId) !== mine) {
+      ownership.set(pollId, mine)
+      setVersion(version + 1)
+    }
+  }
+
+  const [myProposals, setMyProposals] = useState<Proposal[]>([])
+  const [otherProposals, setOtherProposals] = useState<Proposal[]>([])
+
+  useEffect(() => {
+    // console.log('Updating lists')
+    const newMine: Proposal[] = []
+    const newOthers: Proposal[] = []
+    allProposals.forEach(proposal => {
+      const isThisMine = ownership.get(proposal.id)
+      if (isThisMine !== true) newOthers.push(proposal)
+      if (isThisMine !== false) newMine.push(proposal)
+    })
+    setMyProposals(newMine)
+    setOtherProposals(newOthers)
+    // console.log('Found:', newMine.length, newOthers.length, 'out of', allProposals.length)
+  }, [version, allProposals])
+
   return {
     userAddress,
     canCreatePoll,
     isLoadingPolls: isLoadingActive || isLoadingPast,
-    allProposals,
+    myProposals,
+    otherProposals,
+    registerOwnership,
   }
 }

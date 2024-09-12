@@ -6,41 +6,10 @@ import { Layout } from '../../components/Layout'
 import classes from './index.module.css'
 import { Button } from '../../components/Button'
 import { useNavigate } from 'react-router-dom'
-import { CardContextProvider, useCardContext } from './CardContext'
-
-const PollCards: FC = () => {
-  const { state } = useCardContext()
-  const { knownMine, knownOther } = state
-  const { allProposals, isLoadingPolls } = useDashboardData()
-  return (
-    <>
-      <div className={classes.dashboardMyColumn}>
-        <div className={classes.dashboardLabel}>My polls</div>
-        {isLoadingPolls ? (
-          <Alert headerText="Please wait" type="loading" actions={<span>Fetching polls...</span>} />
-        ) : (
-          allProposals
-            .filter(proposal => !knownOther.includes(proposal.id))
-            .map(proposal => <PollCard key={proposal.id} proposal={proposal} />)
-        )}
-      </div>
-      <div className={classes.dashboardOtherColumn}>
-        <div className={classes.dashboardLabel}>Explore polls</div>
-        {isLoadingPolls ? (
-          <Alert headerText="Please wait" type="loading" actions={<span>Fetching polls...</span>} />
-        ) : (
-          allProposals
-            .filter(proposal => !knownMine.includes(proposal.id))
-            .map(proposal => <PollCard key={proposal.id} proposal={proposal} />)
-        )}
-      </div>
-    </>
-  )
-}
 
 export const DashboardPage: FC = () => {
   const navigate = useNavigate()
-
+  const { isLoadingPolls, myProposals, otherProposals, registerOwnership } = useDashboardData()
   const handleCreate = useCallback(() => navigate('/create'), [navigate])
 
   const createButton = (
@@ -52,9 +21,26 @@ export const DashboardPage: FC = () => {
   return (
     <Layout variation="dashboard" extraWidget={createButton}>
       <div className={classes.dashboardMain}>
-        <CardContextProvider>
-          <PollCards />
-        </CardContextProvider>
+        <div className={classes.dashboardMyColumn}>
+          <div className={classes.dashboardLabel}>My polls</div>
+          {isLoadingPolls ? (
+            <Alert headerText="Please wait" type="loading" actions={<span>Fetching polls...</span>} />
+          ) : (
+            myProposals.map(proposal => (
+              <PollCard key={proposal.id} proposal={proposal} registerOwnership={registerOwnership} />
+            ))
+          )}
+        </div>
+        <div className={classes.dashboardOtherColumn}>
+          <div className={classes.dashboardLabel}>Explore polls</div>
+          {isLoadingPolls ? (
+            <Alert headerText="Please wait" type="loading" actions={<span>Fetching polls...</span>} />
+          ) : (
+            otherProposals.map(proposal => (
+              <PollCard key={proposal.id} proposal={proposal} registerOwnership={registerOwnership} />
+            ))
+          )}
+        </div>
       </div>
     </Layout>
   )
