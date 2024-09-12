@@ -31,3 +31,4 @@ dist-ssr
 stats.html
 .env.*.local
 .env.development
+stats.html
