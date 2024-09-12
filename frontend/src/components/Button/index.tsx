@@ -1,7 +1,7 @@
 import classes from './index.module.css'
 import { FC, MouseEventHandler, PropsWithChildren } from 'react'
 import { StringUtils } from '../../utils/string.utils'
-import { SpinnerIcon } from '../icons/SpinnerIcon';
+import { SpinnerIcon } from '../icons/SpinnerIcon'
 
 export type ButtonSize = 'small' | 'medium'
 export type ButtonColor = 'primary' | 'secondary' | 'success'
@@ -46,7 +46,7 @@ export const Button: FC<Props> = ({
   fullWidth,
   onClick,
   type,
-  pending
+  pending,
 }) => (
   <>
     <button
@@ -57,14 +57,14 @@ export const Button: FC<Props> = ({
         fullWidth ? classes.fullWidth : undefined,
         colorMap[color],
         sizeMap[size],
-        variantMap[variant]
+        variantMap[variant],
       )}
       onClick={onClick}
       disabled={disabled || pending}
       type={type}
     >
       {children}
-      { pending && <SpinnerIcon width={24} height={24} spinning={true}/> }
+      {pending && <SpinnerIcon width={24} height={24} spinning={true} />}
     </button>
   </>
 )

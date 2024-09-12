@@ -4,7 +4,7 @@ import { useWeb3 } from '../../hooks/useWeb3'
 import { StringUtils } from '../../utils/string.utils'
 import classes from './index.module.css'
 import { useAppState } from '../../hooks/useAppState'
-import { AddressShower } from '../Addresses';
+import { AddressShower } from '../Addresses'
 
 interface Props {
   className?: string

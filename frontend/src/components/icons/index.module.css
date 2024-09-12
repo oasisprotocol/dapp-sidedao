@@ -1,29 +1,29 @@
 .gasRequired {
-    svg {
-    }
+  svg {
+  }
 }
 
 .myPollIndicator {
-    display: initial;
-    margin-left: 8px;
+  display: initial;
+  margin-left: 8px;
 }
 
 .rotating {
-    /*display: flex;*/
-    /*justify-content: center;*/
-    /*align-items: center;*/
-    /*width: 48px;*/
-    /*height: 48px;*/
-    /*svg {*/
-        animation: rotating 3s linear infinite;
-    /*}*/
+  /*display: flex;*/
+  /*justify-content: center;*/
+  /*align-items: center;*/
+  /*width: 48px;*/
+  /*height: 48px;*/
+  /*svg {*/
+  animation: rotating 3s linear infinite;
+  /*}*/
 }
 
 @keyframes rotating {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }

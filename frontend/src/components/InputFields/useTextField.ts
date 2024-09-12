@@ -1,13 +1,7 @@
-import { InputFieldControls, InputFieldProps, useInputField } from './useInputField';
-import {
-  CoupledData,
-  expandCoupledData,
-  getAsArray,
-  getNumberMessage,
-  NumberMessageTemplate,
-} from './util';
+import { InputFieldControls, InputFieldProps, useInputField } from './useInputField'
+import { CoupledData, expandCoupledData, getAsArray, getNumberMessage, NumberMessageTemplate } from './util'
 
-type TextFieldProps = Omit<InputFieldProps<string>, "initialValue"> & {
+type TextFieldProps = Omit<InputFieldProps<string>, 'initialValue'> & {
   initialValue?: string
 
   /**
@@ -41,60 +35,58 @@ type TextFieldProps = Omit<InputFieldProps<string>, "initialValue"> & {
   maxLength?: CoupledData<number, NumberMessageTemplate>
 }
 
-export type TextFieldControls = InputFieldControls<string> & {
-
-}
+export type TextFieldControls = InputFieldControls<string> & {}
 
 export function useTextField(props: TextFieldProps): TextFieldControls {
-  const {
-    initialValue = "",
-    validatorsGenerator,
-    validators,
-  } = props
+  const { initialValue = '', validatorsGenerator, validators } = props
 
-  const [minLength, tooShortMessage] = expandCoupledData(
-    props.minLength,
-    [1, minLength => `Please specify at least ${minLength} characters!`]
-  )
+  const [minLength, tooShortMessage] = expandCoupledData(props.minLength, [
+    1,
+    minLength => `Please specify at least ${minLength} characters!`,
+  ])
 
-  const [maxLength, tooLongMessage] = expandCoupledData(
-    props.maxLength,
-    [1000, maxLength => `Please specify at most ${maxLength} characters!`]
-  )
-
+  const [maxLength, tooLongMessage] = expandCoupledData(props.maxLength, [
+    1000,
+    maxLength => `Please specify at most ${maxLength} characters!`,
+  ])
 
   const controls = useInputField<string>(
-    "text",
+    'text',
     {
       ...props,
       initialValue,
       validators: undefined,
       validatorsGenerator: value => [
         // Check minimum length
-        minLength ? (() => ((value !== "") && (value.length < minLength!))
-            ? `${getNumberMessage(tooShortMessage, minLength)} (Currently: ${value.length})`
-            : undefined
-        ) : undefined,
+        minLength
+          ? () =>
+              value !== '' && value.length < minLength!
+                ? `${getNumberMessage(tooShortMessage, minLength)} (Currently: ${value.length})`
+                : undefined
+          : undefined,
 
         // Check maximum length
-        maxLength ? (() => ((value !== "") && (value.length > maxLength!))
-            ? `${getNumberMessage(tooLongMessage, maxLength)} (Currently: ${value.length})`
-            : undefined
-        ) : undefined,
+        maxLength
+          ? () =>
+              value !== '' && value.length > maxLength!
+                ? `${getNumberMessage(tooLongMessage, maxLength)} (Currently: ${value.length})`
+                : undefined
+          : undefined,
 
         // Any custom validators
-        ...getAsArray(validatorsGenerator ? validatorsGenerator(value) : validators)
+        ...getAsArray(validatorsGenerator ? validatorsGenerator(value) : validators),
       ],
-    }, {
+    },
+    {
       isEmpty: text => !text,
       isEqual: (a, b) => a === b,
-    }
+    },
   )
   return {
     ...controls,
-    setValue: (value) => {
+    setValue: value => {
       controls.clearAllProblems()
       controls.setValue(value)
-    }
+    },
   }
 }

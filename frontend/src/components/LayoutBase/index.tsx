@@ -1,6 +1,6 @@
 import { FC, PropsWithChildren } from 'react'
 import classes from './index.module.css'
-import { StringUtils } from '../../utils/string.utils';
+import { StringUtils } from '../../utils/string.utils'
 // import {
 //   GITHUB_REPOSITORY_URL,
 //   VITE_REACT_APP_BUILD_DATETIME,

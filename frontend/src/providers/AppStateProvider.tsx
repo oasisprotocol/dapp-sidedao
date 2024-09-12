@@ -3,16 +3,15 @@ import { AppStateContext, AppStateProviderContext, AppStateProviderState } from 
 import { useMediaQuery } from 'react-responsive'
 import { toErrorString } from '../utils/errors'
 
-
 const appStateProviderInitialState: AppStateProviderState = {
   appError: '',
   isMobileScreen: false,
   isDesktopScreen: false,
+  now: Date.now() / 1000,
 }
 
 export const AppStateContextProvider: FC<PropsWithChildren> = ({ children }) => {
   const isDesktopScreen = useMediaQuery({ query: '(min-width: 1000px)' })
-
 
   const [state, setState] = useState<AppStateProviderState>({
     ...appStateProviderInitialState,
@@ -25,7 +24,6 @@ export const AppStateContextProvider: FC<PropsWithChildren> = ({ children }) => 
       isMobileScreen: !isDesktopScreen,
     }))
   }, [isDesktopScreen])
-
 
   const setAppError = (error: Error | object | string) => {
     if (error === undefined || error === null) return
@@ -42,6 +40,17 @@ export const AppStateContextProvider: FC<PropsWithChildren> = ({ children }) => 
       appError: '',
     }))
   }
+
+  const updateTime = () => {
+    setState(prevState => ({
+      ...prevState,
+      now: Date.now() / 1000,
+    }))
+
+    setTimeout(updateTime, 1000)
+  }
+
+  useEffect(updateTime, [])
 
   const providerState: AppStateProviderContext = {
     state,

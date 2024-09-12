@@ -3,28 +3,22 @@ import {
   GaslessVoting__factory,
   IPollManagerACL__factory,
   IPollACL__factory,
-} from '@oasisprotocol/side-dao-contracts';
-import type {
-  PollManager,
-  GaslessVoting,
-  IPollACL,
-  IPollManagerACL,
-} from  "../types"
-import { EthereumContext } from '../providers/EthereumContext';
-import { useEffect, useState } from 'react';
+} from '@oasisprotocol/side-dao-contracts'
+import type { PollManager, GaslessVoting, IPollACL, IPollManagerACL } from '../types'
+import { EthereumContext } from '../providers/EthereumContext'
+import { useEffect, useState } from 'react'
 import {
   VITE_CONTRACT_GASLESSVOTING,
   VITE_CONTRACT_POLLMANAGER,
   VITE_CONTRACT_POLLMANAGER_ACL,
-} from '../constants/config';
+} from '../constants/config'
 
 export const useContracts = (eth: EthereumContext, aclAddress?: string | undefined) => {
-
-  const [pollManager, setPollManager] = useState<PollManager | undefined>();
+  const [pollManager, setPollManager] = useState<PollManager | undefined>()
   const [pollManagerAddress, setPollManagerAddress] = useState<string | undefined>()
-  const [pollManagerWithSigner, setPollManagerWithSigner] = useState<PollManager | undefined>();
-  const [pollACL, setPollACL] = useState<IPollACL | undefined>();
-  const [pollManagerACL, setPollManagerACL] = useState<IPollManagerACL | undefined>();
+  const [pollManagerWithSigner, setPollManagerWithSigner] = useState<PollManager | undefined>()
+  const [pollACL, setPollACL] = useState<IPollACL | undefined>()
+  const [pollManagerACL, setPollManagerACL] = useState<IPollManagerACL | undefined>()
   const [gaslessVoting, setGaslessVoting] = useState<GaslessVoting>()
 
   useEffect(() => {
@@ -34,18 +28,17 @@ export const useContracts = (eth: EthereumContext, aclAddress?: string | undefin
       setGaslessVoting(undefined)
       return
     }
-    const pollManagerAddr = VITE_CONTRACT_POLLMANAGER;
+    const pollManagerAddr = VITE_CONTRACT_POLLMANAGER
     // console.log('PollManager at', pollManagerAddr);
     setPollManager(PollManager__factory.connect(pollManagerAddr, eth.state.provider))
 
-    const pollManagerAclAddr = VITE_CONTRACT_POLLMANAGER_ACL;
+    const pollManagerAclAddr = VITE_CONTRACT_POLLMANAGER_ACL
     // console.log('IPollManagerACL at', pollManagerAclAddr);
     setPollManagerACL(IPollManagerACL__factory.connect(pollManagerAclAddr, eth.state.provider))
 
-    const gaslessVotingAddr = VITE_CONTRACT_GASLESSVOTING;
+    const gaslessVotingAddr = VITE_CONTRACT_GASLESSVOTING
     // console.log('GaslessVoting at', gaslessVotingAddr);
     setGaslessVoting(GaslessVoting__factory.connect(gaslessVotingAddr, eth.state.provider))
-
   }, [eth.state.provider])
 
   useEffect(() => {
@@ -61,23 +54,19 @@ export const useContracts = (eth: EthereumContext, aclAddress?: string | undefin
       setPollManagerWithSigner(undefined)
       return
     }
-    const pollManagerAddr = VITE_CONTRACT_POLLMANAGER;
+    const pollManagerAddr = VITE_CONTRACT_POLLMANAGER
     // console.log('PollManager at', pollManagerAddr);
-    setPollManagerWithSigner(PollManager__factory.connect(pollManagerAddr, eth.state.signer));
+    setPollManagerWithSigner(PollManager__factory.connect(pollManagerAddr, eth.state.signer))
   }, [eth.state.signer])
 
-
-  useEffect( () => {
+  useEffect(() => {
     if (!eth.state.provider || !aclAddress) {
       setPollACL(undefined)
       return
     }
     // console.log('IPollACL at', aclAddress);
     setPollACL(IPollACL__factory.connect(aclAddress, eth.state.provider))
-
-  }, [aclAddress, eth.state.provider]);
-
-
+  }, [aclAddress, eth.state.provider])
 
   return {
     pollManager,
@@ -87,7 +76,4 @@ export const useContracts = (eth: EthereumContext, aclAddress?: string | undefin
     pollManagerACL,
     gaslessVoting,
   }
-
-
 }
-

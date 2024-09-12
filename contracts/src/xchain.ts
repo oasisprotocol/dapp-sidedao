@@ -11,7 +11,6 @@ export function randomchoice<T>(array:T[]):T {
   return array[Math.floor(Math.random() * array.length)];
 }
 
-
 function _getNameAndChainidMap() {
   const res: Record<string,number> = {};
   for( const x in chain_info ) {

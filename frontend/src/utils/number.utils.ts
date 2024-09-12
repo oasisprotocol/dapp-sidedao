@@ -1,5 +1,3 @@
-
-
 const numPercentageFormat = new Intl.NumberFormat(undefined, {
   style: 'percent',
   minimumFractionDigits: 0,

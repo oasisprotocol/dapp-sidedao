@@ -1,18 +1,10 @@
-import { FC, PropsWithChildren, useCallback,
-  useState } from 'react'
+import { FC, PropsWithChildren, useCallback, useState } from 'react'
 import * as sapphire from '@oasisprotocol/sapphire-paratime'
-import {
-  CHAINS,
-  VITE_NETWORK_BIGINT, VITE_NETWORK_NUMBER,
-} from '../constants/config';
-import {
-  UnknownNetworkError,
-} from '../utils/errors'
+import { CHAINS, VITE_NETWORK_BIGINT, VITE_NETWORK_NUMBER } from '../constants/config'
+import { UnknownNetworkError } from '../utils/errors'
 import { Web3Context, Web3ProviderContext, Web3ProviderState } from './Web3Context'
 import { useEIP1193 } from '../hooks/useEIP1193'
-import {
-  BrowserProvider,
-} from 'ethers'
+import { BrowserProvider } from 'ethers'
 
 const web3ProviderInitialState: Web3ProviderState = {
   isConnected: false,
@@ -58,7 +50,7 @@ export const Web3ContextProvider: FC<PropsWithChildren> = ({ children }) => {
 
   const _setNetworkSpecificVars = (
     chainId: bigint,
-    sapphireEthProvider = state.sapphireEthProvider!
+    sapphireEthProvider = state.sapphireEthProvider!,
   ): void => {
     if (!sapphireEthProvider) {
       throw new Error('[Web3Context] Sapphire provider is required!')
@@ -78,24 +70,27 @@ export const Web3ContextProvider: FC<PropsWithChildren> = ({ children }) => {
     }))
   }
 
-  const _chainChanged = useCallback((chainId: string) => {
-    // TODO: Integrate seamlessly, so that page reload is not needed
+  const _chainChanged = useCallback(
+    (chainId: string) => {
+      // TODO: Integrate seamlessly, so that page reload is not needed
 
-    if (parseInt(chainId) === VITE_NETWORK_NUMBER) {
-      console.log("Switched to home network")
-    } else {
-      console.log("Apparently, we have switched to a different network")
-      setState(prevState => ({
-        ...prevState,
-        isConnected: false,
-        isUnknownNetwork: true,
-      }))
-    }
+      if (parseInt(chainId) === VITE_NETWORK_NUMBER) {
+        console.log('Switched to home network')
+      } else {
+        console.log('Apparently, we have switched to a different network')
+        setState(prevState => ({
+          ...prevState,
+          isConnected: false,
+          isUnknownNetwork: true,
+        }))
+      }
 
-    if (state.isConnected) {
-      window.location.reload()
-    }
-  }, [state.isConnected])
+      if (state.isConnected) {
+        window.location.reload()
+      }
+    },
+    [state.isConnected],
+  )
 
   const _connect = useCallback(() => _connectionChanged(true), [])
   const _disconnect = useCallback(() => _connectionChanged(false), [])

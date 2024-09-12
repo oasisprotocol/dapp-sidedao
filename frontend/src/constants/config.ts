@@ -1,7 +1,6 @@
-
 // EIP-3085: wallet_addEthereumChain RPC Method
-import { LoadedPoll } from '../types';
-import { randomchoice } from '@oasisprotocol/side-dao-contracts';
+import { ExtendedPoll } from '../types'
+import { randomchoice } from '@oasisprotocol/side-dao-contracts'
 
 interface AddEthereumChainParameter {
   chainId: string
@@ -54,11 +53,10 @@ export const CHAINS: Map<bigint, AddEthereumChainParameter> = new Map([
         symbol: 'ROSE',
         decimals: 18,
       },
-      rpcUrls: [ 'http://localhost:8545/', 'ws://localhost:8546'],
+      rpcUrls: ['http://localhost:8545/', 'ws://localhost:8546'],
       blockExplorerUrls: null,
     },
   ],
-
 ])
 
 export const NETWORK_NAMES: Record<string, string> = {
@@ -110,39 +108,39 @@ export {
 
 export const MIN_CLOSE_TIME_MINUTES = 3
 
-export const demoPoll1: LoadedPoll = {
-  id: "demo",
+export const demoPoll1 = {
+  id: 'demo',
   proposal: {
     active: true,
   },
   ipfsParams: {
-    creator: "demo",
-    name: "What is your favorite form of investment?",
-    description: "",
-    choices: ["US dollar", "Physical gold", "Crypto"],
+    creator: 'demo',
+    name: 'What is your favorite form of investment?',
+    description: '',
+    choices: ['US dollar', 'Physical gold', 'Crypto'],
     options: {
       publishVotes: false,
     },
   },
-} as LoadedPoll
+} as ExtendedPoll
 
-export const demoPoll2: LoadedPoll = {
-  id: "demo",
+export const demoPoll2 = {
+  id: 'demo',
   proposal: {
     active: true,
   },
   ipfsParams: {
-    creator: "demo",
-    name: "What is your greatest fear?",
-    description: "",
-    choices: ["Climate change", "Deadly pandemics", "AI apocalypse", "Dystopia and dictatorship"],
+    creator: 'demo',
+    name: 'What is your greatest fear?',
+    description: '',
+    choices: ['Climate change', 'Deadly pandemics', 'AI apocalypse', 'Dystopia and dictatorship'],
     options: {
       publishVotes: false,
     },
   },
-} as LoadedPoll
+} as ExtendedPoll
 
-export const getDemoPoll = (): LoadedPoll => randomchoice([demoPoll1, demoPoll2])
+export const getDemoPoll = (): ExtendedPoll => randomchoice([demoPoll1, demoPoll2])
 
 export const demoSettings = {
   timeForVoting: 610,

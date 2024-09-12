@@ -1,24 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useAppState } from './useAppState'
 
-export const useTime = () => {
-
-  const [now, setNow] = useState(0);
-
-  const updateTime = () => {
-    setNow(Date.now() / 1000)
-    setTimeout(
-      updateTime,
-      1000
-    )
-  }
-
-  useEffect(
-    updateTime,
-    []
-  )
-
+export const useTime = (live: boolean) => {
+  const { state } = useAppState()
   return {
-    now
+    now: live ? state.now : 0,
   }
-
 }

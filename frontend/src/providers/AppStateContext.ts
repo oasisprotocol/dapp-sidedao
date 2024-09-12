@@ -4,6 +4,7 @@ export interface AppStateProviderState {
   appError: string
   isDesktopScreen: boolean
   isMobileScreen: boolean
+  now: number
 }
 
 export interface AppStateProviderContext {

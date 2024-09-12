@@ -1,7 +1,7 @@
 import { FC, useEffect, useState } from 'react'
 import { useWeb3 } from '../../hooks/useWeb3'
 import { METAMASK_HOME_PAGE_URL } from '../../constants/config'
-import { Button, ButtonSize } from '../Button';
+import { Button, ButtonSize } from '../Button'
 import { toErrorString, UnknownNetworkError } from '../../utils/errors'
 import { ConnectedAccount } from '../ConnectedAccount'
 import { useAppState } from '../../hooks/useAppState'
@@ -47,7 +47,7 @@ export const ConnectWallet: FC<Props> = ({ mobileSticky, avoidButtonClasses = fa
         // Already handled by provider layer
       } else {
         console.log(ex)
-        alert((ex as Error).message ?? "Failed to connect")
+        alert((ex as Error).message ?? 'Failed to connect')
       }
     } finally {
       setIsLoading(false)
@@ -61,7 +61,7 @@ export const ConnectWallet: FC<Props> = ({ mobileSticky, avoidButtonClasses = fa
       await handleConnectWallet()
     } catch (ex) {
       console.log(ex)
-      alert((ex as Error).message ?? "Failed to connect")
+      alert((ex as Error).message ?? 'Failed to connect')
     } finally {
       setIsLoading(false)
     }
@@ -100,9 +100,7 @@ export const ConnectWallet: FC<Props> = ({ mobileSticky, avoidButtonClasses = fa
           disabled={isLoading}
           onClick={handleConnectWallet}
         >
-          <label className={classes.connectWalletBtnLabel}>
-            Connect wallet
-          </label>
+          <label className={classes.connectWalletBtnLabel}>Connect wallet</label>
         </Button>
       )}
       {isConnected && account && (

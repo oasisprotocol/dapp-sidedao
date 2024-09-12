@@ -1,6 +1,6 @@
 .card {
   /*position: absolute;*/
-  top: calc(50% - 496px/2);
+  top: calc(50% - 496px / 2);
   /*left: calc(50% - 640px/2);*/
 
   display: flex;
@@ -17,9 +17,9 @@
   /*border-radius: 12px;*/
   border-radius: 16px;
   background: white;
-  border: 1px solid #01001F;
+  border: 1px solid #01001f;
   /*box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);*/
-  color: #01001F;
+  color: #01001f;
 
   h2 {
     font-family: 'Inter';

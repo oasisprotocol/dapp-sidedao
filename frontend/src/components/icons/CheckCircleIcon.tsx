@@ -7,6 +7,6 @@ import { IconProps } from '../../types'
 
 export const CheckCircleIcon: FC<IconProps> = props => (
   <Icon {...props}>
-    <CheckCircleSvg color={"green"}/>
+    <CheckCircleSvg color={'green'} />
   </Icon>
 )

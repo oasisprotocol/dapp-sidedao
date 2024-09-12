@@ -1,203 +1,165 @@
-import { useContracts } from '../../hooks/useContracts';
-import { useCallback, useEffect, useState } from 'react';
-import {
-  ListOfVotes, Poll, PollManager, PollResults, RemainingTime,
-  TokenInfo, AclOptionsXchain, LoadedPoll,
-} from '../../types';
-import { randomchoice, fetchStorageProof, xchainRPC, AclOptionsToken } from '@oasisprotocol/side-dao-contracts';
-import {
-  BytesLike,
-  ethers,
-  getBytes,
-  Transaction,
-  TransactionReceipt,
-  ZeroAddress,
-} from 'ethers';
-import { decryptJSON, DemoNetwork } from '../../utils/crypto.demo';
-import { Pinata } from '../../utils/Pinata';
-import { useEthereum } from '../../hooks/useEthereum';
-import { DateUtils } from '../../utils/date.utils';
-import {
-  getDemoPoll,
-  demoSettings,
-  VITE_CONTRACT_POLLMANAGER,
-  VITE_NETWORK_BIGINT,
-
-} from '../../constants/config';
-import { useTime } from '../../hooks/useTime';
-import { tuneValue } from '../../utils/tuning';
-import { useGaslessStatus } from '../../components/PollCard/useGaslessStatus';
-import { getSapphireTokenDetails, getERC20TokenDetails } from '../../utils/poll.utils';
-import { DecisionWithReason, denyWithReason, getVerdict } from '../../components/InputFields';
-
-type LoadedData =
-  [
-    boolean,
-    bigint,
-    PollManager.ProposalParamsStructOutput
-  ] & {
-  active: boolean;
-  topChoice: bigint;
-  params: PollManager.ProposalParamsStructOutput;
-}
-
-const noVotes: ListOfVotes = { out_count: 0n, out_voters: [], out_choices: [] }
+import { useContracts } from '../../hooks/useContracts'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { randomchoice } from '@oasisprotocol/side-dao-contracts'
+import { ethers, Transaction, TransactionReceipt, ZeroAddress } from 'ethers'
+import { DemoNetwork } from '../../utils/crypto.demo'
+import { useEthereum } from '../../hooks/useEthereum'
+import { DateUtils } from '../../utils/date.utils'
+import { closePoll as doClosePoll } from '../../utils/poll.utils'
+import { demoSettings, VITE_CONTRACT_POLLMANAGER, VITE_NETWORK_BIGINT } from '../../constants/config'
+import { useTime } from '../../hooks/useTime'
+import { tuneValue } from '../../utils/tuning'
+import { getVerdict } from '../../components/InputFields'
+import { useExtendedPoll } from '../../hooks/useExtendedPoll'
+import { useProposalFromChain } from '../../hooks/useProposalFromChain'
 
 export const usePollData = (pollId: string) => {
   const eth = useEthereum()
   const { userAddress, isHomeChain } = eth
 
+  const [isVoting, setIsVoting] = useState(false)
+  const [hasVoted, setHasVoted] = useState(false)
+  const [isClosing, setIsClosing] = useState(false)
+  const [hasClosed, setHasClosed] = useState(false)
+  const [selectedChoice, setSelectedChoice] = useState<bigint | undefined>()
+  const [existingVote, setExistingVote] = useState<bigint | undefined>(undefined)
 
-  const proposalId = `0x${pollId}`;
-  const isDemo = pollId === "demo"
+  const proposalId = `0x${pollId}`
 
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isVoting, setIsVoting] = useState(false);
-  const [hasVoted, setHasVoted] = useState(false);
-  const [isClosing, setIsClosing] = useState(false);
-  const [hasClosed, setHasClosed] = useState(false);
-  const [pollLoaded, setPollLoaded] = useState(true)
-  const [poll, setPoll] = useState<LoadedPoll>();
-  const [winningChoice, setWinningChoice] = useState<bigint | undefined>(undefined);
-  const [selectedChoice, setSelectedChoice] = useState<bigint | undefined>();
-  const [existingVote, setExistingVote] = useState<bigint | undefined>(undefined);
-  const [voteCounts, setVoteCounts] = useState<bigint[]>([]);
-  const [pollResults, setPollResults] = useState<PollResults>()
-  const [votes, setVotes] = useState<ListOfVotes>({ ...noVotes });
-  const [canClose, setCanClose] = useState(false);
-  const [canAclVote, setCanAclVote] = useState<DecisionWithReason>(true);
-
-  const [isAllowAllACL, setIsAllowAllACL] = useState(false);
-  const [isTokenHolderACL, setIsTokenHolderACL] = useState(false);
-  const [aclTokenInfo, setAclTokenInfo] = useState<TokenInfo>();
-
-  const [isXChainACL, setIsXChainACL] = useState(false);
-  const [xchainOptions, setXChainOptions] = useState<AclOptionsXchain | undefined>();
-  const [aclProof, setAclProof] = useState<BytesLike>('');
-  const [isWhitelistACL, setIsWhitelistACL] = useState(false);
-
-  const [canVote, setCanVote] = useState(false)
-
-  const [canSelect, setCanSelect] = useState(false)
-  const [deadline, setDeadline] = useState<number | undefined>()
-  const [remainingTime, setRemainingTime] = useState<RemainingTime>()
-  const [remainingTimeString, setRemainingTimeString] = useState<string | undefined>()
-  const [isMine, setIsMine] = useState(false)
-  const [hasWallet, setHasWallet] = useState(false)
-  const [hasWalletOnWrongNetwork, setHasWalletOnWrongNetwork] = useState(false)
-  const { gaslessEnabled, gaslessPossible, gvAddresses, gvBalances } = useGaslessStatus(proposalId)
-  const { now } = useTime()
   const {
-    pollManager: dao,
-    pollManagerAddress: daoAddress,
-    pollManagerWithSigner: signerDao,
-    // pollManagerACL
-    gaslessVoting,
-    pollACL,
-  } = useContracts(eth, poll?.proposal.params?.acl)
+    isLoading: isProposalLoading,
+    error: proposalError,
+    invalidateProposal,
+    proposal,
+  } = useProposalFromChain(proposalId)
 
-  useEffect(
-    () => setCanVote(
-      (!!eth.state.address || isDemo) &&
-      !isClosing &&
-      winningChoice === undefined &&
-      selectedChoice !== undefined &&
-      existingVote === undefined &&
-      getVerdict(canAclVote)
-    ),
-    [eth.state.address, winningChoice, selectedChoice, existingVote, isClosing]
-  );
+  const {
+    isDemo,
+    isLoading,
+    error,
+    poll,
+    deadline,
+    setDeadline,
+    closeDemoPoll,
+    votes,
+    voteCounts,
+    winningChoice,
+    pollResults,
+    gaslessEnabled,
+    gaslessPossible,
+    gvAddresses,
+    gvBalances,
+    invalidateGaslessStatus,
+    canAclVote,
+    aclExplanation,
+    aclError,
+    aclProof,
+    isMine,
+    canAclManage,
+  } = useExtendedPoll(proposal, { withResults: true })
 
-  useEffect(
-    () => setCanSelect(
-      !remainingTime?.isPastDue &&
-      (winningChoice === undefined) && (
-        (eth.state.address === undefined) ||
-        (existingVote === undefined)
-      )),
-    [winningChoice, eth.state.address, existingVote, remainingTime?.isPastDue]
-  );
+  const { now } = useTime(!!deadline)
+  const { pollManagerWithSigner: signerDao, gaslessVoting } = useContracts(eth, poll?.proposal.params?.acl)
 
-  useEffect(
-    () => {
-      if (isDemo) return
-      if (pollACL && hasWallet && daoAddress) {
-        pollACL.canManagePoll(daoAddress, proposalId, userAddress).then(canManage => {
-          const hasCloseTime: boolean = !!poll?.proposal.params.closeTimestamp
-          const isPastDue = !!remainingTime?.isPastDue
-          const result = canManage && (!hasCloseTime || isPastDue)
-          // console.log("canManage?", canManage, "hasCloseTime?", hasCloseTime, "isPastDue?", isPastDue, "result?", result)
-          setCanClose(result)
-        })
-      } else {
-        setCanClose(false)
-      }
-    },
-    [pollACL, daoAddress, proposalId, userAddress, hasWallet]
+  const remainingTime = useMemo(
+    () => (deadline ? DateUtils.calculateRemainingTimeFrom(deadline, now) : undefined),
+    [deadline, now],
   )
 
-  const closePoll = useCallback(async (): Promise<void> => {
+  const remainingTimeString = useMemo(
+    () => DateUtils.getTextDescriptionOfTime(remainingTime),
+    [remainingTime],
+  )
+
+  const isPastDue = !!remainingTime?.isPastDue
+
+  const canSelect =
+    !remainingTime?.isPastDue &&
+    winningChoice === undefined &&
+    (eth.state.address === undefined || existingVote === undefined)
+
+  const canVote =
+    (!!eth.state.address || isDemo) &&
+    !isClosing &&
+    winningChoice === undefined &&
+    selectedChoice !== undefined &&
+    existingVote === undefined &&
+    getVerdict(canAclVote)
+
+  const hasWallet = isDemo || (isHomeChain && userAddress !== ZeroAddress)
+  const hasWalletOnWrongNetwork = !isDemo && !isHomeChain && userAddress !== ZeroAddress
+
+  const canClose = canAclManage && (!deadline || isPastDue)
+
+  // console.log("canAclManage?", canAclManage, "deadline:", deadline, "isPastDue?", isPastDue, "canClose?", canClose)
+
+  const closePoll = async () => {
+    if (!signerDao) throw new Error("Can't close poll with no poll manager.")
     setIsClosing(true)
-    await eth.switchNetwork(); // ensure we're on the correct network first!
-    // console.log("Preparing close tx...")
     try {
-      const tx = await signerDao!.close(proposalId);
-    // console.log('Close proposal tx', tx);
-
-      const receipt = await tx.wait();
-
-      if (receipt!.status != 1) throw new Error('close ballot tx failed');
-      else {
-        setHasClosed(true)
-      }
+      await doClosePoll(eth, signerDao, proposalId)
+      setHasClosed(true)
     } catch (e) {
-      console.log("TX close problem", e)
+      console.log('Error closing poll:', e)
     } finally {
       setIsClosing(false)
     }
-  }, [eth, proposalId, signerDao])
+  }
+
+  const moveDemoAfterVoting = () => {
+    const remainingSeconds = remainingTime?.totalSeconds
+    if (
+      !!deadline &&
+      !!remainingSeconds &&
+      remainingSeconds > demoSettings.jumpToSecondsBeforeClosing + demoSettings.timeContractionSeconds
+    ) {
+      // Let's quickly get rid of the remaining time.
+      tuneValue({
+        startValue: deadline,
+        transitionTime: demoSettings.timeContractionSeconds,
+        endValue:
+          Date.now() / 1000 + demoSettings.jumpToSecondsBeforeClosing + demoSettings.timeContractionSeconds,
+        stepInMs: 100,
+        setValue: setDeadline,
+        easing: true,
+      })
+    }
+  }
 
   const doVote = useCallback(async (): Promise<void> => {
-    if (selectedChoice === undefined) throw new Error('no choice selected');
+    if (selectedChoice === undefined) throw new Error('no choice selected')
 
-    const choice = selectedChoice;
+    const choice = selectedChoice
 
     if (isDemo) {
-      if (!confirm("Are you sure you want to submit your vote? (Normally you should see a MetaMask popup at this point, but this demo doesn't require any wallet, so this will have to do...)")) return
+      if (
+        !confirm(
+          "Are you sure you want to submit your vote? (Normally you should see a MetaMask popup at this point, but this demo doesn't require any wallet, so this will have to do...)",
+        )
+      )
+        return
       setExistingVote(choice)
       setHasVoted(true)
-      const remainingSeconds = remainingTime?.totalSeconds
-      if (!!deadline && !!remainingSeconds && remainingSeconds > demoSettings.jumpToSecondsBeforeClosing + demoSettings.timeContractionSeconds) {
-        // Let's quickly get rid of the remaining time.
-        tuneValue({
-          startValue: deadline,
-          transitionTime: demoSettings.timeContractionSeconds,
-          endValue: Date.now() / 1000 + demoSettings.jumpToSecondsBeforeClosing + demoSettings.timeContractionSeconds,
-          stepInMs: 100,
-          setValue: setDeadline,
-          easing: true,
-        })
-      }
+      moveDemoAfterVoting()
       return
     }
 
-    if (!gaslessVoting) throw new Error('No Gasless Voting!');
-    if (!signerDao) throw new Error('No Signer Dao');
+    if (!gaslessVoting) throw new Error('No Gasless Voting!')
+    if (!signerDao) throw new Error('No Signer Dao')
 
-    let submitAndPay = true;
+    let submitAndPay = true
 
     if (gaslessPossible) {
       if (!eth.state.signer) {
-        throw new Error('No signer!');
+        throw new Error('No signer!')
       }
 
       const request = {
         dao: VITE_CONTRACT_POLLMANAGER,
-        voter: await eth.state.signer.getAddress(),
+        voter: userAddress,
         proposalId: proposalId,
         choiceId: choice,
-      };
+      }
 
       // Sign voting request
       const signature = await eth.state.signer.signTypedData(
@@ -216,17 +178,17 @@ export const usePollData = (pollId: string) => {
           ],
         },
         request,
-      );
-      const rsv = ethers.Signature.from(signature);
+      )
+      const rsv = ethers.Signature.from(signature)
 
       // Get nonce and random address
-      const submitAddr = randomchoice(gvAddresses);
-      const submitNonce = await eth.state.provider.getTransactionCount(submitAddr);
-      console.log(`Gasless voting, chose address:${submitAddr} (nonce: ${submitNonce})`);
+      const submitAddr = randomchoice(gvAddresses)
+      const submitNonce = await eth.state.provider.getTransactionCount(submitAddr)
+      console.log(`Gasless voting, chose address:${submitAddr} (nonce: ${submitNonce})`)
 
       // Submit voting request to get signed transaction
-      const feeData = await eth.state.provider.getFeeData();
-      console.log('doVote.gasless: constructing tx', 'gasPrice', feeData.gasPrice);
+      const feeData = await eth.state.provider.getFeeData()
+      console.log('doVote.gasless: constructing tx', 'gasPrice', feeData.gasPrice)
       const tx = await gaslessVoting.makeVoteTransaction(
         submitAddr,
         submitNonce,
@@ -234,24 +196,24 @@ export const usePollData = (pollId: string) => {
         request,
         aclProof,
         rsv,
-      );
+      )
 
       // Submit pre-signed signed transaction
-      let plain_resp;
-      let receipt: TransactionReceipt | null = null;
+      let plain_resp
+      let receipt: TransactionReceipt | null = null
       try {
-        const txDecoded = Transaction.from(tx);
-        const txDecodedGas = await eth.state.provider.estimateGas(txDecoded);
-        console.log('TxDecodedGas', txDecodedGas);
-        plain_resp = await eth.state.provider.broadcastTransaction(tx);
-        console.log('doVote.gasless: waiting for tx', plain_resp.hash);
-        receipt = await eth.state.provider.waitForTransaction(plain_resp.hash);
+        const txDecoded = Transaction.from(tx)
+        const txDecodedGas = await eth.state.provider.estimateGas(txDecoded)
+        console.log('TxDecodedGas', txDecodedGas)
+        plain_resp = await eth.state.provider.broadcastTransaction(tx)
+        console.log('doVote.gasless: waiting for tx', plain_resp.hash)
+        receipt = await eth.state.provider.waitForTransaction(plain_resp.hash)
       } catch (e: any) {
         if ((e.message as string).includes('insufficient balance to pay fees')) {
-          submitAndPay = true;
-          console.log('Insufficient balance!');
+          submitAndPay = true
+          console.log('Insufficient balance!')
         } else {
-          throw e;
+          throw e
         }
       }
 
@@ -259,356 +221,93 @@ export const usePollData = (pollId: string) => {
       if (receipt === null || receipt.status != 1) {
         // TODO: how can we tell if it failed due to out of gas?
         // Give them the option to re-submit their vote
-        let tx_hash: string = '';
+        let tx_hash: string = ''
         if (receipt) {
-          tx_hash = `\n\nFailed tx: ${receipt.hash}`;
+          tx_hash = `\n\nFailed tx: ${receipt.hash}`
         }
-        console.log('Receipt is', receipt);
+        console.log('Receipt is', receipt)
         const result = confirm(
           `Error submitting from subsidy account, submit from your own account? ${tx_hash}`,
-        );
+        )
         if (result) {
-          submitAndPay = true;
+          submitAndPay = true
         } else {
-          throw new Error(`gasless voting failed: ${receipt}`);
+          throw new Error(`gasless voting failed: ${receipt}`)
         }
       } else {
-        console.log('doVote.gasless: success');
-        submitAndPay = false;
+        console.log('doVote.gasless: success')
+        submitAndPay = false
       }
     }
 
     if (submitAndPay) {
-      console.log('doVote: casting vote using normal tx');
-      await eth.switchNetwork(DemoNetwork.FromConfig);
-      const tx = await signerDao.vote(proposalId, choice, aclProof);
-      const receipt = await tx.wait();
+      console.log('doVote: casting vote using normal tx')
+      await eth.switchNetwork(DemoNetwork.FromConfig)
+      const tx = await signerDao.vote(proposalId, choice, aclProof)
+      const receipt = await tx.wait()
 
-      if (receipt!.status != 1) throw new Error('cast vote tx failed');
+      if (receipt!.status != 1) throw new Error('cast vote tx failed')
     }
 
-    setExistingVote(choice);
+    setExistingVote(choice)
     setHasVoted(true)
-  }, [selectedChoice, gaslessVoting, signerDao, gaslessPossible, eth.state.signer, eth.state.provider, gvAddresses, aclProof])
+  }, [
+    selectedChoice,
+    gaslessVoting,
+    signerDao,
+    gaslessPossible,
+    eth.state.signer,
+    eth.state.provider,
+    gvAddresses,
+    aclProof,
+  ])
 
   async function vote(): Promise<void> {
     try {
-      setError("")
       setIsVoting(true)
-      await doVote();
+      await doVote()
     } catch (e) {
-      let errorString = e + ""
-      if (errorString.startsWith("Error: user rejected action")) {
-        errorString = "The signer refused to sign this vote."
+      let errorString = e + ''
+      if (errorString.startsWith('Error: user rejected action')) {
+        errorString = 'The signer refused to sign this vote.'
       }
       window.alert(`Failed to submit vote: ${errorString}`)
-      console.log(e);
+      console.log(e)
     } finally {
       setIsVoting(false)
     }
   }
 
-  const topUp = useCallback(async (addr: string, amount: bigint) => {
+  const topUp = async (addr: string, amount: bigint) => {
     await eth.state.signer?.sendTransaction({
       to: addr,
       value: amount,
       data: '0x',
-    });
-    console.log("Top up finished, reloading...");
-    setPollLoaded(false)
-  }, [eth.state.signer, setPollLoaded])
+    })
+    console.log('Top up finished, reloading...')
+    invalidateGaslessStatus()
+  }
 
   useEffect(
-    ( ) => setPollLoaded(false),
-    [pollId]
-  );
-
-  useEffect(() => {
-    if (isDemo) {
-      setDeadline(now + demoSettings.timeForVoting)
-    } else {
-      setDeadline(poll?.ipfsParams.options.closeTimestamp)
-    }
-  }, [poll])
-
-  useEffect(
+    // Close the demo time if nothing more is going to happen
     () => {
-      const remaining = deadline ? DateUtils.calculateRemainingTimeFrom(deadline, now) : undefined;
-      setRemainingTime(remaining)
-      setRemainingTimeString(DateUtils.getTextDescriptionOfTime(remaining))
       if (
         isDemo &&
         poll?.proposal.active &&
-        remaining?.isPastDue &&
-        remaining.totalSeconds < (demoSettings.waitSecondsBeforeFormallyClosing + 5) &&
-        remaining.totalSeconds >= demoSettings.waitSecondsBeforeFormallyClosing
+        remainingTime?.isPastDue &&
+        remainingTime.totalSeconds < demoSettings.waitSecondsBeforeFormallyClosing + 5 &&
+        remainingTime.totalSeconds >= demoSettings.waitSecondsBeforeFormallyClosing
       ) {
-        // Let's formally close the poll
-        setPoll({
-          ...poll,
-          proposal: {
-            ...poll.proposal,
-            active: false,
-            topChoice: 0n,
-          }
-        } as any)
-        // Get some random vote numbers
-        const voteNumbers = poll.ipfsParams.choices.map(() => Math.round(Math.random()*100))
-        const voteBigInts = voteNumbers.map(BigInt)
-        // Let's pick a winner
-        const winningIndexNumber = voteNumbers.indexOf(Math.max(...voteNumbers))
-        const winningIndexBigInt = BigInt(winningIndexNumber)
-        // Simulate loading the results
-        setTimeout(
-          () => {
-            setVoteCounts(voteBigInts)
-            setWinningChoice(winningIndexBigInt)
-            setSelectedChoice(winningIndexBigInt)
-          }, 1000
-        )
+        closeDemoPoll()
       }
     },
     [deadline, now],
   )
 
-  const loadProposal = useCallback(async () => {
-    if (!dao || !daoAddress || !gaslessVoting || !userAddress) {
-      // console.log("not loading, because dependencies are not yet available")
-      return
-    }
-    if (!isDemo && userAddress === "0x0000000000000000000000000000000000000000") {
-      // console.log("No user address, returning")
-      return
-    }
-    if (pollLoaded) {
-      // console.log("not loading, because already loaded")
-      return
-    }
-    // console.log("Attempting to load", proposalId)
+  // if (!isDemo && userAddress === "0x0000000000000000000000000000000000000000") {
 
-    setPoll(undefined)
-
-    if (isDemo) {
-      setPoll(getDemoPoll())
-      setVoteCounts([])
-      setWinningChoice(undefined)
-      setVotes({...noVotes})
-      setIsAllowAllACL(true)
-      setIsTokenHolderACL(false)
-      setIsWhitelistACL(false)
-      setIsXChainACL(false)
-      setCanAclVote(true)
-      setHasWallet(true)
-      setHasWalletOnWrongNetwork(false)
-      setCanClose(false)
-      return
-    }
-
-    let loadedData: LoadedData
-    try {
-      setIsLoading(true)
-      loadedData = await dao.PROPOSALS(proposalId);
-      setError("")
-    } catch(ex) {
-      setError("Failed to load poll. Are you sure the link is correct?")
-      setPoll(undefined)
-      return
-    } finally {
-      setPollLoaded(true)
-      setIsLoading(false)
-    }
-    // console.log("Loaded data is", loadedData)
-    const { active, params, topChoice } = loadedData;
-    if (params.acl === ZeroAddress) {
-      console.log(`Empty params! No ACL, Poll ${proposalId} not found!`);
-      // router.push({ path: `/NotFound/poll/${props.id}`, replace: true });
-      // TODO: should go to 404
-      return;
-    }
-
-    const proposal = { id: proposalId, active, topChoice, params };
-    const ipfsData = await Pinata.fetchData(params.ipfsHash);
-    const ipfsParams: Poll = decryptJSON(getBytes(proposal.params.ipfsSecret), ipfsData);
-    const loadedPoll =
-      {
-        proposal,
-        ipfsParams
-      } as unknown as LoadedPoll
-
-    setPoll(loadedPoll);
-    if (!proposal.active) {
-
-      const voteCounts = (await dao.getVoteCounts(proposalId)).slice(0, ipfsParams.choices.length)
-      setVoteCounts(voteCounts)
-      setSelectedChoice(proposal.topChoice);
-      setWinningChoice(proposal.topChoice);
-
-      if (proposal.params.publishVotes) {
-        setVotes(await dao.getVotes(proposalId, 0, 10));
-      } else {
-        setVotes({...noVotes})
-      }
-    } else {
-      setVoteCounts([])
-      setWinningChoice(undefined)
-      setVotes({...noVotes})
-    }
-
-    setIsAllowAllACL('allowAll' in ipfsParams.acl.options);
-    setIsTokenHolderACL('token' in ipfsParams.acl.options);
-    setIsWhitelistACL('allowList' in ipfsParams.acl.options);
-    setIsXChainACL('xchain' in ipfsParams.acl.options);
-
-  }, [dao, daoAddress, pollACL, gaslessVoting, userAddress, pollLoaded, eth.state.provider, xchainRPC, eth.state.signer, fetchStorageProof]);
-
-
-  const checkIfWeCanVote = async () => {
-    console.log("Checking if we can vote");
-    console.log("is allowAll ACL?", isAllowAllACL, "is TokenHolder ACL?", isTokenHolderACL, "is xChain ACL?", isXChainACL, "is WhiteList ACL?", isWhitelistACL,
-      "useAddress", userAddress, "daoAddress", daoAddress, "poll", poll)
-
-    if (!pollACL || !daoAddress || !poll) return
-
-
-    if (isAllowAllACL) {
-      const newAclProof = new Uint8Array();
-      setAclProof(newAclProof);
-      const result = 0n != await pollACL.canVoteOnPoll(
-        daoAddress,
-        proposalId,
-        userAddress,
-        newAclProof,
-      )
-      if (result) {
-        setCanAclVote(true)
-      } else {
-        setCanAclVote(denyWithReason("some unknown reason"))
-      }
-
-    } else if (isWhitelistACL) {
-      const newAclProof = new Uint8Array();
-      setAclProof(newAclProof);
-      const result = 0n != await pollACL.canVoteOnPoll(
-        daoAddress,
-        proposalId,
-        userAddress,
-        newAclProof,
-      )
-      // console.log("whiteListAcl check:", result)
-      if (result) {
-        setCanAclVote(true)
-      } else {
-        setCanAclVote(denyWithReason("you are not on the list of allowed addresses"))
-      }
-    } else if (isTokenHolderACL) {
-      const tokenAddress = (poll.ipfsParams.acl.options as AclOptionsToken).token;
-      const tokenDetails = await getSapphireTokenDetails(tokenAddress)
-      setAclTokenInfo(tokenDetails)
-      // console.log("loaded token details", tokenDetails?.name)
-      const newAclProof = new Uint8Array();
-      setAclProof(newAclProof);
-      try {
-        const result = 0n != await pollACL.canVoteOnPoll(
-          daoAddress,
-          proposalId,
-          userAddress,
-          newAclProof,
-        )
-        // console.log("tokenHolderAcl check:", result)
-        if (result) {
-          setCanAclVote(true)
-        } else {
-          setCanAclVote(denyWithReason(`you don't hold any ${tokenDetails?.name} tokens`))
-        }
-      } catch {
-        setCanAclVote(denyWithReason(`you don't hold any ${tokenDetails?.name} tokens`))
-      }
-
-    } else if (isXChainACL) {
-      setXChainOptions(poll.ipfsParams.acl.options as AclOptionsXchain);
-      const { xchain: { chainId, blockHash, address: tokenAddress, slot } } = (poll.ipfsParams.acl.options as AclOptionsXchain)
-      const provider = xchainRPC(chainId);
-      const signer_addr = await eth.state.signer?.getAddress();
-
-      if (signer_addr) {
-        const tokenDetails = await getERC20TokenDetails(chainId, tokenAddress)
-        // console.log("Loaded xchain token data", tokenDetails.name)
-        // console.log("Creating proof with",
-        //   provider,
-        //   blockHash,
-        //   tokenAddress,
-        //   slot,
-        //   signer_addr,
-        // )
-        const newAclProof = await fetchStorageProof(
-          provider,
-          blockHash,
-          tokenAddress,
-          slot,
-          signer_addr,
-        );
-        setAclProof(newAclProof)
-        // console.log("Proof is", newAclProof)
-        // console.log("Checking ACL with",
-        //   daoAddress, proposalId, userAddress, newAclProof
-        // )
-        const result = await pollACL.canVoteOnPoll(
-          daoAddress,
-          proposalId,
-          userAddress,
-          newAclProof,
-        )
-        // console.log("xChainAcl check:", result, 0n != result)
-        if (0n != result) {
-          setCanAclVote(true)
-        } else {
-          setCanAclVote(denyWithReason(`you don't hold any ${tokenDetails.name} tokens on the appropriate chain`))
-        }
-      } else {
-        setCanAclVote(denyWithReason("there is an unknown ACL setting."))
-      }
-    } else {
-      throw new Error("Unknown access policy")
-    }
-  }
-
-
-
-  useEffect(
-    () => {
-      if (poll && userAddress && pollACL && daoAddress) {
-        void checkIfWeCanVote()
-      }
-    },
-    [poll, isWhitelistACL, isTokenHolderACL, isXChainACL, userAddress, pollACL, daoAddress]
-  );
-
-  useEffect(
-    () => {
-      if (!poll || poll.proposal.active || !voteCounts.length) {
-        setPollResults(undefined)
-      } else {
-        const loadedPollResults: PollResults = {
-          totalVotes: voteCounts.reduce((a, b) => a + b),
-          choices: {},
-          winner: poll.proposal.topChoice.toString(),
-          votes,
-        }
-        const noVotes = !loadedPollResults.totalVotes
-        poll.ipfsParams.choices.forEach((choice, index) => {
-          loadedPollResults.choices[index.toString()] = {
-            choice,
-            votes: voteCounts[index],
-            rate: noVotes ? 0 : Math.round(Number(1000n * voteCounts[index] / loadedPollResults.totalVotes) / 10),
-            winner: index.toString() === winningChoice?.toString()
-          }
-        })
-        setPollResults(loadedPollResults)
-      }
-    }, [poll, voteCounts, winningChoice, votes]
-  )
-
-  useEffect(()=>{
+  useEffect(() => {
+    // Reload poll after closing, expecting results
     if (hasClosed) {
       if (!poll) {
         // console.log("No poll loaded, waiting to load")
@@ -616,7 +315,7 @@ export const usePollData = (pollId: string) => {
         // console.log("Apparently, we have closed a poll, but we still perceive it as active, so scheduling a reload...")
         setTimeout(() => {
           // console.log("Reloading now")
-          setPollLoaded(false)
+          invalidateProposal()
         }, 5 * 1000)
       } else {
         // console.log("We no longer perceive it as active, so we can stop reloading")
@@ -625,40 +324,16 @@ export const usePollData = (pollId: string) => {
     }
   }, [hasClosed, poll])
 
-  useEffect(
-    () => {
-      void loadProposal()
-    },
-    [dao, daoAddress, gaslessVoting, userAddress, pollLoaded]
-  );
-
-  useEffect(() => {
-    if (isDemo) return
-    setIsMine(poll?.ipfsParams.creator?.toLowerCase() === userAddress.toLowerCase())
-  }, [poll, userAddress])
-
-  useEffect(() => {
-    if (isDemo) return
-    setHasWallet(isHomeChain && userAddress !== ZeroAddress)
-    setHasWalletOnWrongNetwork(!isHomeChain && userAddress !== ZeroAddress)
-  }, [userAddress, isHomeChain])
-
   return {
     userAddress,
     hasWallet,
     hasWalletOnWrongNetwork,
-    isLoading,
-    error,
+    isLoading: isProposalLoading || isLoading,
+    error: proposalError ?? error,
     poll,
     active: !!poll?.proposal?.active,
 
-    isTokenHolderACL,
-    isWhitelistACL,
-    isXChainACL,
-    aclTokenInfo,
-    xchainOptions,
-
-    selectedChoice,
+    selectedChoice: winningChoice ?? selectedChoice,
     canSelect,
     setSelectedChoice,
 
@@ -666,6 +341,8 @@ export const usePollData = (pollId: string) => {
     remainingTimeString,
 
     canAclVote,
+    aclExplanation,
+    aclError,
     canVote,
     gaslessEnabled,
     gaslessPossible,
@@ -676,7 +353,6 @@ export const usePollData = (pollId: string) => {
     isVoting,
     hasVoted,
     existingVote,
-
     topUp,
 
     isMine,
@@ -690,7 +366,6 @@ export const usePollData = (pollId: string) => {
     pollResults,
 
     votes,
-
   }
 }
 
