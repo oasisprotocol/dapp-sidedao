@@ -72,7 +72,9 @@ export const useExtendedPoll = (
     [proposal, ipfsParams, isDemo],
   )
 
-  const { canAclVote, aclExplanation, aclProof, canAclManage } = usePollPermissions(poll)
+  const { canAclVote, aclExplanation, aclProof, canAclManage, aclError } = usePollPermissions(poll)
+
+  const isActive = !!proposal?.active
 
   const loadVotes = async () => {
     if (isDemo || !proposal || !pollManager || !ipfsParams || !withResults || proposal.active) return
@@ -148,6 +150,7 @@ export const useExtendedPoll = (
 
   return {
     proposalId,
+    isActive,
     isDemo,
     isLoading: isIpfsLoading,
     error: ipfsError,
@@ -165,6 +168,7 @@ export const useExtendedPoll = (
     gvBalances,
     invalidateGaslessStatus,
     canAclVote,
+    aclError,
     aclExplanation,
     aclProof,
     isMine,

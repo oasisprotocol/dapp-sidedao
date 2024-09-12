@@ -52,6 +52,7 @@ export const usePollData = (pollId: string) => {
     invalidateGaslessStatus,
     canAclVote,
     aclExplanation,
+    aclError,
     aclProof,
     isMine,
     canAclManage,
@@ -341,6 +342,7 @@ export const usePollData = (pollId: string) => {
 
     canAclVote,
     aclExplanation,
+    aclError,
     canVote,
     gaslessEnabled,
     gaslessPossible,

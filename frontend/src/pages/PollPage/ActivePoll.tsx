@@ -12,6 +12,7 @@ import { Card } from '../../components/Card'
 import { SocialShares } from '../../components/SocialShares'
 import { getVerdict, getReason } from '../../components/InputFields'
 import { WarningCircleIcon } from '../../components/icons/WarningCircleIcon'
+import { PollAccessIndicatorWrapper } from '../../components/PollCard/PollAccessIndicator'
 
 export const ActivePoll: FC<PollData> = ({
   hasWallet,
@@ -23,6 +24,8 @@ export const ActivePoll: FC<PollData> = ({
   canSelect,
   setSelectedChoice,
   canAclVote,
+  aclExplanation,
+  aclError,
   canVote,
   gaslessEnabled,
   gaslessPossible,
@@ -62,7 +65,7 @@ export const ActivePoll: FC<PollData> = ({
 
   const handleClose = useCallback(() => {
     if (canClose && window.confirm("Are you sure you want to close this poll? This can't be undone.")) {
-      closePoll()
+      void closePoll()
     }
   }, [close])
 
@@ -85,8 +88,16 @@ export const ActivePoll: FC<PollData> = ({
   return (
     <Card className={classes.darkCard}>
       <h2>
-        {name}
-        {isMine && <MyPollIcon creator={creator} />}
+        <div className={'niceLine'}>
+          {name}
+          <PollAccessIndicatorWrapper
+            aclExplanation={aclExplanation}
+            isActive={true}
+            canAclVote={canAclVote}
+            aclError={aclError}
+          />
+          {isMine && <MyPollIcon creator={creator} />}
+        </div>
       </h2>
       <h4>{description}</h4>
 

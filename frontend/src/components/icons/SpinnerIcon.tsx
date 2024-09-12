@@ -6,12 +6,16 @@ import { Icon } from '../Icon'
 import { IconProps } from '../../types'
 import classes from './index.module.css'
 
-export const SpinnerIcon: FC<IconProps & { spinning?: boolean }> = ({
+export const SpinnerIcon: FC<IconProps & { spinning?: boolean; title?: string }> = ({
   size = 'large',
   spinning,
+  title,
   ...restProps
-}) => (
-  <Icon size={size} {...restProps}>
-    <SpinnerSvg className={spinning ? classes.rotating : undefined} />
-  </Icon>
-)
+}) => {
+  const icon = (
+    <Icon size={size} {...restProps}>
+      <SpinnerSvg className={spinning ? classes.rotating : undefined} />
+    </Icon>
+  )
+  return title ? <span title={title}>{icon}</span> : icon
+}

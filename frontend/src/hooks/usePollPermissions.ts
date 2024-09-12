@@ -26,6 +26,7 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined) => {
   const [aclExplanation, setAclExplanation] = useState<string | undefined>()
   const [canAclVote, setCanAclVote] = useState<DecisionWithReason>(true)
   const [canAclManage, setCanAclManage] = useState(false)
+  const [aclError, setAclError] = useState('')
 
   const [aclTokenInfo, setAclTokenInfo] = useState<TokenInfo>()
   const [xchainOptions, setXChainOptions] = useState<AclOptionsXchain | undefined>()
@@ -33,7 +34,7 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined) => {
   const checkPermissions = async () => {
     if (proposalId === '0xdemo') {
       setAclProof('')
-      setAclExplanation(undefined)
+      setAclExplanation('')
       setCanAclVote(true)
       setAclTokenInfo(undefined)
       setXChainOptions(undefined)
@@ -68,6 +69,8 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined) => {
     //   poll?.ipfsParams,
     // )
 
+    setAclError('')
+
     if (isAllowAllACL) {
       const newAclProof = new Uint8Array()
       setAclProof(newAclProof)
@@ -80,18 +83,21 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined) => {
       }
     } else if (isWhitelistACL) {
       const newAclProof = new Uint8Array()
+      setAclExplanation('This poll is only for a predefined list of addresses.')
       setAclProof(newAclProof)
       const result = 0n !== (await pollACL.canVoteOnPoll(daoAddress, proposalId, userAddress, newAclProof))
       // console.log("whiteListAcl check:", result)
       if (result) {
         setCanAclVote(true)
-        setAclExplanation('Only a predefined list of addresses is allowed to vote.')
       } else {
         setCanAclVote(denyWithReason('you are not on the list of allowed addresses'))
       }
     } else if (isTokenHolderACL) {
       const tokenAddress = (poll?.ipfsParams.acl.options as AclOptionsToken).token
       const tokenDetails = await getSapphireTokenDetails(tokenAddress)
+      setAclExplanation(
+        `You need to hold some ${tokenDetails?.name ?? 'specific'} token (on the Sapphire network) to vote.`,
+      )
       setAclTokenInfo(tokenDetails)
       // console.log("loaded token details", tokenDetails?.name)
       const newAclProof = new Uint8Array()
@@ -101,9 +107,6 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined) => {
         // console.log("tokenHolderAcl check:", result)
         if (result) {
           setCanAclVote(true)
-          setAclExplanation(
-            `You need to hold some ${tokenDetails?.name ?? 'specific'} token (on the Sapphire network) to vote.`,
-          )
         } else {
           setCanAclVote(denyWithReason(`you don't hold any ${tokenDetails?.name} tokens`))
         }
@@ -122,7 +125,7 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined) => {
         try {
           const tokenDetails = await getERC20TokenDetails(chainId, tokenAddress)
           setAclExplanation(
-            `This poll is restricted to those who have hold ${tokenDetails.name} token on the ${chainDefinition.name} chain when the poll was created.`,
+            `This poll is only for those who have hold ${tokenDetails.name} token on the ${chainDefinition.name} when the poll was created.`,
           )
           // console.log("Loaded xchain token data", tokenDetails.name)
           // console.log("Creating proof with",
@@ -159,6 +162,7 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined) => {
           )
           // console.log(typeof error, Object.keys(error), error)
           setCanAclVote(denyWithReason(`there was a technical problem verifying your permissions`))
+          setAclError(error.error?.message ?? error.reason ?? error.code)
         }
       } else {
         setCanAclVote(
@@ -179,8 +183,8 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined) => {
     aclExplanation,
     canAclVote,
     canAclManage,
-    // checkIfWeCanVote,
     aclTokenInfo,
     xchainOptions,
+    aclError,
   }
 }

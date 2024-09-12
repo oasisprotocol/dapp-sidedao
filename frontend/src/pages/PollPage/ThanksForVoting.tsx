@@ -7,6 +7,7 @@ import { Button } from '../../components/Button'
 import { RemainingTime } from '../../types'
 import { Card } from '../../components/Card'
 import { SocialShares } from '../../components/SocialShares'
+import { PollAccessIndicatorWrapper } from '../../components/PollCard/PollAccessIndicator'
 
 const VoteIcon: FC = () => {
   return (
@@ -83,6 +84,9 @@ export const ThanksForVote: FC<PollData> = ({
   remainingTime,
   remainingTimeString,
   isMine,
+  aclExplanation,
+  aclError,
+  canAclVote,
   canClose,
   closePoll,
   isClosing,
@@ -96,9 +100,17 @@ export const ThanksForVote: FC<PollData> = ({
   return (
     <Card>
       <h2>Thanks for voting!</h2>
-      <h4 className={'niceLine'}>
-        {name}
-        {isMine && <MyPollIcon creator={creator} />}
+      <h4>
+        <div className={'niceLine'}>
+          {name}
+          <PollAccessIndicatorWrapper
+            aclExplanation={aclExplanation}
+            isActive={false}
+            canAclVote={canAclVote}
+            aclError={aclError}
+          />
+          {isMine && <MyPollIcon creator={creator} />}
+        </div>
       </h4>
       {/*<p>{description}</p>*/}
       <div className={`${classes.choice} ${classes.submitted}`}>

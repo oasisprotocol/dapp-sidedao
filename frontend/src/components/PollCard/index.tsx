@@ -10,6 +10,7 @@ import { HourGlassIcon } from '../icons/HourGlassIcon'
 import { StringUtils } from '../../utils/string.utils'
 import { useExtendedPoll } from '../../hooks/useExtendedPoll'
 import { useCardContext } from '../../pages/DashboardPage/CardContext'
+import { PollAccessIndicatorWrapper } from './PollAccessIndicator'
 
 const Arrow: FC<{ className: string }> = ({ className }) => (
   <svg
@@ -47,7 +48,8 @@ export const PollCard: FC<{
 }> = ({ proposal }) => {
   const { registerOwnership } = useCardContext()
 
-  const { poll, proposalId, gaslessPossible, isMine } = useExtendedPoll(proposal)
+  const { poll, proposalId, gaslessPossible, isMine, aclExplanation, canAclVote, aclError } =
+    useExtendedPoll(proposal)
 
   useEffect(() => {
     if (proposalId && isMine !== undefined) registerOwnership(proposalId, isMine)
@@ -72,7 +74,15 @@ export const PollCard: FC<{
     <Link to={`/polls/${pollId}`} style={{ textDecoration: 'none' }}>
       <div className={classes.pollCard}>
         <div className={classes.pollCardTop}>
-          <h4 className={active ? classes.activePollTitle : undefined}>{name}</h4>
+          <h4 className={active ? classes.activePollTitle : undefined}>
+            {name}
+            <PollAccessIndicatorWrapper
+              aclError={aclError}
+              aclExplanation={aclExplanation}
+              canAclVote={canAclVote}
+              isActive={active}
+            />
+          </h4>
           <Arrow className={active ? classes.activePollArrow : classes.passivePollArrow} />
         </div>
         <div dangerouslySetInnerHTML={{ __html: micromark(description) }} />

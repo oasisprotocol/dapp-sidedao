@@ -28,6 +28,11 @@
 h4.activePollTitle {
   font-weight: 700;
   font-size: 18px;
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+  align-items: center;
+  gap: 8px;
 }
 
 .activePollArrow {

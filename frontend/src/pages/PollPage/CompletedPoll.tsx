@@ -5,8 +5,16 @@ import { MyPollIcon } from '../../components/icons/MyPollIcon'
 import { StringUtils } from '../../utils/string.utils'
 import { Card } from '../../components/Card'
 import { SocialShares } from '../../components/SocialShares'
+import { PollAccessIndicatorWrapper } from '../../components/PollCard/PollAccessIndicator'
 
-export const CompletedPoll: FC<PollData> = ({ poll, pollResults, isMine }) => {
+export const CompletedPoll: FC<PollData> = ({
+  poll,
+  pollResults,
+  isMine,
+  aclExplanation,
+  aclError,
+  canAclVote,
+}) => {
   const {
     name,
     // description,
@@ -18,8 +26,16 @@ export const CompletedPoll: FC<PollData> = ({ poll, pollResults, isMine }) => {
     <Card>
       <h2>Results are in!</h2>
       <h4 className={'niceLine'}>
-        {name}
-        {isMine && <MyPollIcon creator={creator} />}
+        <div className={'niceLine'}>
+          {name}
+          <PollAccessIndicatorWrapper
+            aclExplanation={aclExplanation}
+            isActive={false}
+            canAclVote={canAclVote}
+            aclError={aclError}
+          />
+          {isMine && <MyPollIcon creator={creator} />}
+        </div>
       </h4>
       {/*<h4>{description}</h4>*/}
       <>

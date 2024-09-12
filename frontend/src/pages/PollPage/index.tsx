@@ -66,13 +66,11 @@ export const PollPage: FC = () => {
 
   // Active vote
   if (active) {
-    // return <EnforceWallet content={
     return (
       <Layout variation="light">
         <ActivePoll {...pollData} />
       </Layout>
     )
-    // } />
   } else {
     // Completed vote
     if (!pollResults) return <PollLoading />
