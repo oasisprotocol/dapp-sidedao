@@ -56,6 +56,7 @@ export function useTextField(props: TextFieldProps): TextFieldControls {
       ...props,
       initialValue,
       validators: undefined,
+      cleanUp: props.cleanUp ?? ((s: string) => s.trim()),
       validatorsGenerator: value => [
         // Check minimum length
         minLength
