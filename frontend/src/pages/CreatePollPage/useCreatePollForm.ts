@@ -619,11 +619,11 @@ export const useCreatePollForm = () => {
         navigate(`/polls/${newId.substring(2)}`)
       }
     } catch (ex) {
-      let exString = '' + ex
+      let exString = `${ex}`
       if (exString.startsWith('Error: user rejected action')) {
         exString = 'Signer refused to sign transaction.'
       }
-      logger('Failed to create poll: ' + exString)
+      logger(`Failed to create poll: ${exString}`)
     } finally {
       setIsCreating(false)
     }

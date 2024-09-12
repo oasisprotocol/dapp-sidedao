@@ -7,7 +7,7 @@ import { checkProblems } from './util'
 import { SpinnerIcon } from '../icons/SpinnerIcon'
 import { CheckCircleIcon } from '../icons/CheckCircleIcon'
 
-export const TextInput: FC<TextFieldControls & {}> = ({
+export const TextInput: FC<TextFieldControls> = ({
   name,
   label,
   description,

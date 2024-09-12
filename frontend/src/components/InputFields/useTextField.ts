@@ -35,7 +35,7 @@ type TextFieldProps = Omit<InputFieldProps<string>, 'initialValue'> & {
   maxLength?: CoupledData<number, NumberMessageTemplate>
 }
 
-export type TextFieldControls = InputFieldControls<string> & {}
+export type TextFieldControls = InputFieldControls<string>
 
 export function useTextField(props: TextFieldProps): TextFieldControls {
   const { initialValue = '', validatorsGenerator, validators } = props

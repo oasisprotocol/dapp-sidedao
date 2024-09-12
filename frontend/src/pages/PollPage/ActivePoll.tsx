@@ -115,15 +115,15 @@ export const ActivePoll: FC<PollData> = ({
         !hasWallet &&
         (hasWalletOnWrongNetwork ? (
           <div className={classes.needWallet}>
-            To vote on this poll, please <b>point your wallet to the Oasis network</b> by clicking the "Switch
-            Network" button. This will open your wallet, and let you confirm that you want to connect to the
-            Oasis Sapphire network. Ensure you have enough ROSE for any transaction fees.
+            To vote on this poll, please <b>point your wallet to the Oasis network</b> by clicking the
+            &quot;Switch Network&quot; button. This will open your wallet, and let you confirm that you want
+            to connect to the Oasis Sapphire network. Ensure you have enough ROSE for any transaction fees.
           </div>
         ) : (
           <div className={classes.needWallet}>
-            To vote on this poll, please <b>connect your wallet</b> by clicking the "Connect Wallet" button.
-            This will open your wallet, and let you confirm the connection, and also point your wallet to the
-            Oasis Sapphire network. Ensure you have enough ROSE for any transaction fees.
+            To vote on this poll, please <b>connect your wallet</b> by clicking the &quot;Connect Wallet&quot;
+            button. This will open your wallet, and let you confirm the connection, and also point your wallet
+            to the Oasis Sapphire network. Ensure you have enough ROSE for any transaction fees.
           </div>
         ))}
       {remainingTimeString && <h4>{remainingTimeString}</h4>}
@@ -133,10 +133,10 @@ export const ActivePoll: FC<PollData> = ({
           Voting results will be available when {isMine ? 'you close' : 'the owner formally closes'} the poll.
         </h4>
       )}
-      {!getVerdict(canAclVote) && (
+      {hasWallet && !hasWalletOnWrongNetwork && !getVerdict(canAclVote) && (
         <h4 className={'niceLine'}>
           <WarningCircleIcon size={'large'} />
-          You can't vote on this poll, since {getReason(canAclVote)}.
+          You can&apos;t vote on this poll, since {getReason(canAclVote)}.
         </h4>
       )}
       <div className={classes.buttons}>

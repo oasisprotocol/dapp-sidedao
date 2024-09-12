@@ -37,7 +37,7 @@ export type InputFieldProps<DataType> = {
    *
    * Optionally, you can also specify the corresponding error message.
    */
-  required?: CoupledData<boolean, string>
+  required?: CoupledData
 
   validatorsGenerator?: (values: DataType) => ValidatorBundle<DataType>
 
@@ -313,7 +313,7 @@ export function useInputField<DataType>(
           })
       } catch (validatorError) {
         console.log('Error while running validator', validatorError)
-        currentProblems.push(wrapProblem(`Error while checking: ${validatorError + ''}`, 'root', 'error')!)
+        currentProblems.push(wrapProblem(`Error while checking: ${validatorError}`, 'root', 'error')!)
       }
     }
 

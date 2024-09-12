@@ -37,7 +37,7 @@ export const SelectInput: FC<OneOfFieldControls<any>> = props => {
             disabled={!getVerdict(choice.enabled, true)}
             title={getReasonForDenial(choice.enabled) ?? choice.description}
           >
-            {choice.label} {!!choice.description ? '🛈' : ''}
+            {choice.label} {choice.description ? '🛈' : ''}
           </option>
         ))}
     </select>

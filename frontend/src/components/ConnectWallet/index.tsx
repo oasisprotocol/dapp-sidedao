@@ -35,7 +35,6 @@ export const ConnectWallet: FC<Props> = ({ mobileSticky, avoidButtonClasses = fa
     init().catch(ex => {
       setAppError(toErrorString(ex as Error))
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleConnectWallet = async () => {

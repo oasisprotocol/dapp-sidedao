@@ -192,10 +192,8 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
     ['This item is repeated below.', 'This item is already listed above!'],
   ])
 
-  const {
-    initialValue = [...Array(initialItemCount ?? minItemCount).keys()].map((_, _index) => ''),
-    placeholders,
-  } = props
+  const { initialValue = [...Array(initialItemCount ?? minItemCount).keys()].map(() => ''), placeholders } =
+    props
 
   const wrapItemValidatorFunction = (
     itemValidator: ValidatorFunction<string>,

@@ -60,7 +60,7 @@ export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => 
       await getSigner(false, false, undefined, accounts)
     })
 
-    ethProvider.on('chainChanged', async _chainId => {
+    ethProvider.on('chainChanged', async () => {
       // console.log('Chain Changed!', chainId);
       await getSigner()
       // console.log('chainChanged', chainId);

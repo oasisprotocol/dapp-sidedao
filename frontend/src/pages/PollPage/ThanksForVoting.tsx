@@ -25,7 +25,7 @@ const StatusInfo: FC<{
   remainingTimeString: string | undefined
   isMine: boolean | undefined
   canClose: boolean
-  closePoll: () => {}
+  closePoll: () => void
   isClosing: boolean
 }> = ({ remainingTime, remainingTimeString, isMine, canClose, closePoll, isClosing }) => {
   const handleClose = () => {

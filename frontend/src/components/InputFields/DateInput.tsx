@@ -17,7 +17,7 @@ const convertToDateTimeLocalString = (date: Date) => {
   return `${year}-${month}-${day}T${hours}:${minutes}`
 }
 
-export const DateInput: FC<DateFieldControls & {}> = ({
+export const DateInput: FC<DateFieldControls> = ({
   name,
   label,
   description,

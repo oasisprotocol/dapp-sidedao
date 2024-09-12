@@ -24,13 +24,13 @@ export const CardContextProvider: FC<PropsWithChildren> = ({ children }) => {
       ownership.set(pollId, mine)
       setMyIDList(
         Array.from(ownership.entries())
-          .filter(([_, value]) => value)
-          .map(([key, _]) => key),
+          .filter(e => e[1])
+          .map(e => e[0]),
       )
       setOtherIDList(
         Array.from(ownership.entries())
-          .filter(([_, value]) => !value)
-          .map(([key, _]) => key),
+          .filter(e => !e[1])
+          .map(e => e[0]),
       )
     }
   }

@@ -56,7 +56,7 @@ const AddIcon: FC<{
   )
 }
 
-export const TextArrayInput: FC<TextArrayControls & {}> = ({
+export const TextArrayInput: FC<TextArrayControls> = ({
   name,
   label,
   description,
@@ -159,7 +159,7 @@ export const TextArrayInput: FC<TextArrayControls & {}> = ({
 
   return (
     <div className={classes.fieldContainer}>
-      {!!label ? (
+      {label ? (
         <label>
           <div className={classes.fieldLabel}>{label}</div>
           <div className={classes.fieldDescription}>{description}</div>

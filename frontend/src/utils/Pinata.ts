@@ -1,4 +1,3 @@
-// @ts-ignore
 import { LRUCache } from 'lru-cache'
 import { VITE_IPFS_GATEWAY, VITE_PINATA_JWT } from '../constants/config'
 
