@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useContracts } from './useContracts'
 import { useEthereum } from './useEthereum'
+import { dashboard } from '../constants/config'
 
-export const usePollGaslessStatus = (proposalId: string | undefined) => {
+export const usePollGaslessStatus = (proposalId: string | undefined, onDashboard: boolean) => {
   const eth = useEthereum()
   const { pollManagerAddress: daoAddress, gaslessVoting } = useContracts(eth)
 
@@ -20,7 +21,7 @@ export const usePollGaslessStatus = (proposalId: string | undefined) => {
       return
     }
 
-    if (!daoAddress || !gaslessVoting || !proposalId) return
+    if (!daoAddress || !gaslessVoting || !proposalId || (onDashboard && !dashboard.showGasless)) return
 
     try {
       const addressBalances = await gaslessVoting.listAddresses(daoAddress, proposalId)

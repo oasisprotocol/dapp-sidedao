@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useIPFSData } from './useIPFSData'
 import { getBytes } from 'ethers'
 import { decryptJSON } from '../utils/crypto.demo'
-import { demoSettings, getDemoPoll } from '../constants/config'
+import { dashboard, demoSettings, getDemoPoll } from '../constants/config'
 import { useTime } from './useTime'
 import { usePollGaslessStatus } from './usePollGaslessStatus'
 import { usePollPermissions } from './usePollPermissions'
@@ -15,12 +15,11 @@ const noVotes: ListOfVotes = { out_count: 0n, out_voters: [], out_choices: [] }
 export const useExtendedPoll = (
   proposal: Proposal | undefined,
   params: {
-    withResults?: boolean
-  } = {},
+    onDashboard: boolean
+  },
 ) => {
   const eth = useEthereum()
   const { pollManager } = useContracts(eth)
-  const { withResults = false } = params
 
   const proposalId = proposal?.id
   const isDemo = proposalId === '0xdemo'
@@ -33,7 +32,7 @@ export const useExtendedPoll = (
   const { now } = useTime(!!deadline)
 
   const { gaslessEnabled, gaslessPossible, gvAddresses, gvBalances, invalidateGaslessStatus } =
-    usePollGaslessStatus(proposalId)
+    usePollGaslessStatus(proposalId, params.onDashboard)
 
   const ipfsHash = proposal?.params?.ipfsHash
 
@@ -71,12 +70,17 @@ export const useExtendedPoll = (
     [proposal, ipfsParams, isDemo],
   )
 
-  const { permissions, checkPermissions } = usePollPermissions(poll)
+  const { permissions, checkPermissions } = usePollPermissions(poll, params.onDashboard)
 
   const isActive = !!proposal?.active
 
   const loadVotes = async () => {
-    if (isDemo || !proposal || !pollManager || !ipfsParams || !withResults || proposal.active) return
+    if (isDemo || !proposal || !pollManager || !ipfsParams || proposal.active) return
+
+    if (params.onDashboard && !dashboard.showResults) return
+
+    console.log('Loading results for', proposalId)
+
     const voteCounts = (await pollManager.getVoteCounts(proposal.id)).slice(0, ipfsParams.choices.length)
     setVoteCounts(voteCounts)
     setWinningChoice(proposal.topChoice)
@@ -91,7 +95,7 @@ export const useExtendedPoll = (
   useEffect(
     // Load votes, when the stars are right
     () => void loadVotes(),
-    [proposal, proposal?.active, withResults, pollManager, ipfsParams, isDemo],
+    [proposal, proposal?.active, params.onDashboard, dashboard.showResults, pollManager, ipfsParams, isDemo],
   )
 
   const pollResults = useMemo(() => {

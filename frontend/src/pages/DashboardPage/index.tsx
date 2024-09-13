@@ -7,7 +7,7 @@ import classes from './index.module.css'
 import { Button } from '../../components/Button'
 import { useNavigate } from 'react-router-dom'
 import { InputFieldGroup, TextInput } from '../../components/InputFields'
-import { dashboardFiltering } from '../../constants/config'
+import { dashboard } from '../../constants/config'
 
 export const DashboardPage: FC = () => {
   const navigate = useNavigate()
@@ -17,8 +17,8 @@ export const DashboardPage: FC = () => {
     otherProposals,
     registerOwnership,
     registerMatch,
-    hideInaccessible,
-    wantedPollType,
+    shouldHideInaccessibleData,
+    filterInputs,
     pollSearchPatternInput,
     searchPatterns,
   } = useDashboardData()
@@ -34,7 +34,7 @@ export const DashboardPage: FC = () => {
     <Layout variation="dashboard" extraWidget={createButton}>
       <div className={classes.dashboardMain}>
         <div className={classes.dashboardMyColumn}>
-          {dashboardFiltering.enabled && <TextInput {...pollSearchPatternInput} />}
+          {dashboard.filtering.enabled && <TextInput {...pollSearchPatternInput} />}
           <div className={classes.dashboardLabel}>My polls</div>
           {isLoadingPolls ? (
             <Alert headerText="Please wait" type="loading" actions={<span>Fetching polls...</span>} />
@@ -43,7 +43,7 @@ export const DashboardPage: FC = () => {
               <PollCard
                 key={proposal.id}
                 proposal={proposal}
-                hideInaccessible={dashboardFiltering.enabled && hideInaccessible.value}
+                hideInaccessible={shouldHideInaccessibleData}
                 registerOwnership={registerOwnership}
                 searchPatterns={searchPatterns}
                 registerMatch={registerMatch}
@@ -52,7 +52,7 @@ export const DashboardPage: FC = () => {
           )}
         </div>
         <div className={classes.dashboardOtherColumn}>
-          {dashboardFiltering.enabled && <InputFieldGroup fields={[[wantedPollType, hideInaccessible]]} />}
+          <InputFieldGroup fields={[filterInputs]} />
           <div className={classes.dashboardLabel}>Explore polls</div>
           {isLoadingPolls ? (
             <Alert headerText="Please wait" type="loading" actions={<span>Fetching polls...</span>} />
@@ -62,7 +62,7 @@ export const DashboardPage: FC = () => {
                 key={proposal.id}
                 proposal={proposal}
                 registerOwnership={registerOwnership}
-                hideInaccessible={dashboardFiltering.enabled && hideInaccessible.value}
+                hideInaccessible={shouldHideInaccessibleData}
                 searchPatterns={searchPatterns}
                 registerMatch={registerMatch}
               />

@@ -13,6 +13,7 @@ import { PollAccessIndicatorWrapper } from './PollAccessIndicator'
 import { getVerdict } from '../InputFields'
 import { findTextMatches } from '../HighlightedText/text-matching'
 import { getHighlightedTextHtml, HighlightedText } from '../HighlightedText'
+import { dashboard } from '../../constants/config'
 
 const Arrow: FC<{ className: string }> = ({ className }) => (
   <svg
@@ -45,6 +46,15 @@ const PollStatusIndicator: FC<{ active: boolean; isPastDue: boolean }> = ({ acti
   )
 }
 
+const GaslessStatusIndicator: FC<{ possible: boolean | undefined }> = ({ possible }) =>
+  possible === undefined ? (
+    <SpinnerIcon size={'medium'} spinning />
+  ) : possible ? (
+    <NoGasRequiredIcon />
+  ) : (
+    <GasRequiredIcon />
+  )
+
 export const PollCard: FC<{
   proposal: Proposal
   registerOwnership: (id: string, mine: boolean) => void
@@ -52,7 +62,9 @@ export const PollCard: FC<{
   hideInaccessible?: boolean
   searchPatterns: string[]
 }> = ({ proposal, registerOwnership, hideInaccessible, searchPatterns, registerMatch }) => {
-  const { poll, proposalId, gaslessPossible, permissions, checkPermissions } = useExtendedPoll(proposal)
+  const { poll, proposalId, gaslessPossible, permissions, checkPermissions } = useExtendedPoll(proposal, {
+    onDashboard: true,
+  })
 
   const { isMine } = permissions
 
@@ -101,24 +113,20 @@ export const PollCard: FC<{
             <span>
               <HighlightedText text={name} patterns={searchPatterns} />
             </span>
-            <PollAccessIndicatorWrapper
-              permissions={permissions}
-              isActive={active}
-              retest={checkPermissions}
-            />
+            {dashboard.showPermissions && (
+              <PollAccessIndicatorWrapper
+                permissions={permissions}
+                isActive={active}
+                retest={checkPermissions}
+              />
+            )}
           </h4>
           <Arrow className={active ? classes.activePollArrow : classes.passivePollArrow} />
         </div>
         <div dangerouslySetInnerHTML={{ __html: highlightedDescription }} />
         <div className={classes.pollCardBottom}>
           <PollStatusIndicator active={active} isPastDue={isPastDue} />
-          {gaslessPossible === undefined ? (
-            <SpinnerIcon size={'medium'} spinning />
-          ) : gaslessPossible ? (
-            <NoGasRequiredIcon />
-          ) : (
-            <GasRequiredIcon />
-          )}
+          {dashboard.showGasless && <GaslessStatusIndicator possible={gaslessPossible} />}
         </div>
       </div>
     </Link>

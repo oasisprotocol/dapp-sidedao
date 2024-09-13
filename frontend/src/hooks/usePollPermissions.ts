@@ -5,6 +5,7 @@ import { denyWithReason } from '../components/InputFields'
 import { ExtendedPoll } from '../types'
 import { CheckPermissionContext, CheckPermissionInputs, PollPermissions } from '../utils/poll.utils'
 import { PermissionCache } from './PermissionCache'
+import { dashboard } from '../constants/config'
 
 const blackPermissions: PollPermissions = {
   proof: '',
@@ -17,7 +18,7 @@ const blackPermissions: PollPermissions = {
   error: '',
 }
 
-export const usePollPermissions = (poll: ExtendedPoll | undefined) => {
+export const usePollPermissions = (poll: ExtendedPoll | undefined, onDashboard: boolean) => {
   const proposalId = (poll?.proposal as any)?.id as string
   const aclAddress = poll?.proposal.params?.acl
   const creator = poll?.ipfsParams.creator
@@ -53,6 +54,12 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined) => {
       !creator
     )
       return
+
+    if (onDashboard && !dashboard.showPermissions) {
+      const isMine = creator.toLowerCase() === userAddress.toLowerCase()
+      setPermissions({ ...permissions, isMine })
+      return
+    }
 
     const inputs: CheckPermissionInputs = {
       userAddress,
