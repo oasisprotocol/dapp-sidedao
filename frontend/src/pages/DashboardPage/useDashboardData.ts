@@ -1,7 +1,10 @@
 import { useContracts } from '../../hooks/useContracts'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { PollManager, Proposal } from '../../types'
 import { useEthereum } from '../../hooks/useEthereum'
+import { useBooleanField, useOneOfField, useTextField } from '../../components/InputFields'
+import { useNavigate } from 'react-router-dom'
+import { dashboardFiltering } from '../../constants/config'
 
 const FETCH_BATCH_SIZE = 100
 
@@ -13,6 +16,20 @@ interface FetchProposalResult {
 }
 
 const ownership = new Map<string, boolean>()
+
+const matchingCards = new Map<string, Set<string>>()
+
+const searchPatternsToKey = (searchPatterns: string[]) => searchPatterns.join('--')
+
+const registerMatch = (searchPatterns: string[], pollId: string) => {
+  const key = searchPatternsToKey(searchPatterns)
+  let currentBucket: Set<string> | undefined = matchingCards.get(key)
+  if (!currentBucket) {
+    currentBucket = new Set<string>()
+    matchingCards.set(key, currentBucket)
+  }
+  currentBucket.add(pollId)
+}
 
 async function fetchProposals(
   fetcher: (offset: number, batchSize: number) => Promise<FetchProposalResult>,
@@ -126,24 +143,79 @@ export const useDashboardData = () => {
     }
   }
 
+  const hideInaccessible = useBooleanField({
+    name: 'hideInaccessible',
+    label: "Hide polls I don't have access to",
+    initialValue: dashboardFiltering.hideInaccessibleByDefault,
+  })
+
+  const wantedPollType = useOneOfField({
+    name: 'wantedPollType',
+    choices: [
+      { value: 'openOnly', label: 'Open polls' },
+      { value: 'completedOnly', label: 'Completed polls' },
+      { value: 'all', label: 'Both open and completed polls' },
+    ],
+    initialValue: dashboardFiltering.showOnlyOpenByDefault ? 'openOnly' : 'all',
+  } as const)
+
+  const navigate = useNavigate()
+
+  const pollSearchPatternInput = useTextField({
+    name: 'pollSearchPattern',
+    placeholder: 'Start typing here to search for poll',
+    autoFocus: true,
+    onEnter: () => {
+      const key = searchPatternsToKey(searchPatterns)
+      const cards = matchingCards.get(key)
+      if (!cards) return // No matching cards registered'
+      if (cards.size > 1) return // Too many matching cards
+      const pollId = Array.from(cards.values())[0]
+      // console.log('Should just to', pollId)
+      navigate(`/polls/${pollId}`)
+    },
+  })
+
+  const searchPatterns = useMemo(() => {
+    if (!dashboardFiltering.enabled) return []
+    const patterns = pollSearchPatternInput.value
+      .trim()
+      .split(' ')
+      .filter(p => p.length)
+    if (patterns.length === 1 && patterns[0].length < 2) {
+      return []
+    } else {
+      return patterns
+    }
+  }, [dashboardFiltering.enabled, pollSearchPatternInput.value])
+
   const [myProposals, setMyProposals] = useState<Proposal[]>([])
   const [otherProposals, setOtherProposals] = useState<Proposal[]>([])
+
+  const typeFilters: Record<typeof wantedPollType.value, (proposal: Proposal) => boolean> = useMemo(
+    () => ({
+      openOnly: proposal => proposal.active,
+      completedOnly: proposal => !proposal.active,
+      all: () => true,
+    }),
+    [],
+  )
+
+  const typeFilter = typeFilters[dashboardFiltering.enabled ? wantedPollType.value : 'all']
 
   useEffect(() => {
     // console.log('Updating lists')
     const newMine: Proposal[] = []
     const newOthers: Proposal[] = []
-    allProposals
-      // .slice(0, 5)
-      .forEach(proposal => {
-        const isThisMine = ownership.get(proposal.id)
-        if (isThisMine !== true) newOthers.push(proposal)
-        if (isThisMine !== false) newMine.push(proposal)
-      })
+    allProposals.filter(typeFilter).forEach(proposal => {
+      const isThisMine = ownership.get(proposal.id)
+      if (isThisMine !== true) newOthers.push(proposal)
+      if (isThisMine !== false) newMine.push(proposal)
+    })
     setMyProposals(newMine)
     setOtherProposals(newOthers)
     // console.log('Found:', newMine.length, newOthers.length, 'out of', allProposals.length)
-  }, [version, allProposals])
+  }, [version, allProposals, typeFilter])
 
   return {
     userAddress,
@@ -152,5 +224,10 @@ export const useDashboardData = () => {
     myProposals,
     otherProposals,
     registerOwnership,
+    registerMatch,
+    hideInaccessible,
+    wantedPollType,
+    pollSearchPatternInput,
+    searchPatterns,
   }
 }

@@ -10,6 +10,9 @@ import { HourGlassIcon } from '../icons/HourGlassIcon'
 import { StringUtils } from '../../utils/string.utils'
 import { useExtendedPoll } from '../../hooks/useExtendedPoll'
 import { PollAccessIndicatorWrapper } from './PollAccessIndicator'
+import { getVerdict } from '../InputFields'
+import { findTextMatches } from '../HighlightedText/text-matching'
+import { getHighlightedTextHtml, HighlightedText } from '../HighlightedText'
 
 const Arrow: FC<{ className: string }> = ({ className }) => (
   <svg
@@ -45,8 +48,12 @@ const PollStatusIndicator: FC<{ active: boolean; isPastDue: boolean }> = ({ acti
 export const PollCard: FC<{
   proposal: Proposal
   registerOwnership: (id: string, mine: boolean) => void
-}> = ({ proposal, registerOwnership }) => {
+  registerMatch: (searchPatterns: string[], pollId: string) => void
+  hideInaccessible?: boolean
+  searchPatterns: string[]
+}> = ({ proposal, registerOwnership, hideInaccessible, searchPatterns, registerMatch }) => {
   const { poll, proposalId, gaslessPossible, permissions, checkPermissions } = useExtendedPoll(proposal)
+
   const { isMine } = permissions
 
   useEffect(() => {
@@ -66,6 +73,24 @@ export const PollCard: FC<{
     },
   } = poll
 
+  const renderedDescription = micromark(description)
+
+  const textMatches = searchPatterns.length
+    ? findTextMatches(`${name} ${renderedDescription}`, searchPatterns)
+    : []
+  const hasAllMatches = textMatches.length === searchPatterns.length
+  if (!hasAllMatches) return
+
+  registerMatch(searchPatterns, pollId)
+
+  const highlightedDescription =
+    getHighlightedTextHtml({
+      text: renderedDescription,
+      patterns: searchPatterns,
+    }) ?? ''
+
+  if (hideInaccessible && !permissions.error && !getVerdict(permissions.canVote) && !isMine) return
+
   const isPastDue = !!closeTimestamp && new Date().getTime() / 1000 > closeTimestamp
 
   return (
@@ -73,7 +98,9 @@ export const PollCard: FC<{
       <div className={classes.pollCard}>
         <div className={classes.pollCardTop}>
           <h4 className={active ? classes.activePollTitle : undefined}>
-            {name}
+            <span>
+              <HighlightedText text={name} patterns={searchPatterns} />
+            </span>
             <PollAccessIndicatorWrapper
               permissions={permissions}
               isActive={active}
@@ -82,7 +109,7 @@ export const PollCard: FC<{
           </h4>
           <Arrow className={active ? classes.activePollArrow : classes.passivePollArrow} />
         </div>
-        <div dangerouslySetInnerHTML={{ __html: micromark(description) }} />
+        <div dangerouslySetInnerHTML={{ __html: highlightedDescription }} />
         <div className={classes.pollCardBottom}>
           <PollStatusIndicator active={active} isPastDue={isPastDue} />
           {gaslessPossible === undefined ? (

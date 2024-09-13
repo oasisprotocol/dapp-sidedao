@@ -150,3 +150,9 @@ export const demoSettings = {
   jumpToSecondsBeforeClosing: 5,
   timeContractionSeconds: 5,
 }
+
+export const dashboardFiltering = {
+  enabled: true,
+  hideInaccessibleByDefault: true,
+  showOnlyOpenByDefault: true,
+}

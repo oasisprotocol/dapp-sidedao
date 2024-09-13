@@ -33,12 +33,18 @@ type TextFieldProps = Omit<InputFieldProps<string>, 'initialValue'> & {
    *      [50, l => `Please use at most %{l} characters!`]*
    */
   maxLength?: CoupledData<number, NumberMessageTemplate>
+
+  autoFocus?: boolean
+  onEnter?: () => void
 }
 
-export type TextFieldControls = InputFieldControls<string>
+export type TextFieldControls = InputFieldControls<string> & {
+  autoFocus: boolean
+  onEnter: (() => void) | undefined
+}
 
 export function useTextField(props: TextFieldProps): TextFieldControls {
-  const { initialValue = '', validatorsGenerator, validators } = props
+  const { initialValue = '', validatorsGenerator, validators, autoFocus = false, onEnter } = props
 
   const [minLength, tooShortMessage] = expandCoupledData(props.minLength, [
     1,
@@ -89,5 +95,7 @@ export function useTextField(props: TextFieldProps): TextFieldControls {
       controls.clearAllProblems()
       controls.setValue(value)
     },
+    autoFocus,
+    onEnter,
   }
 }
