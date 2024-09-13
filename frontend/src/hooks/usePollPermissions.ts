@@ -5,7 +5,6 @@ import { denyWithReason } from '../components/InputFields'
 import { ExtendedPoll } from '../types'
 import { CheckPermissionContext, CheckPermissionInputs, PollPermissions } from '../utils/poll.utils'
 import { PermissionCache } from './PermissionCache'
-import './cache-save'
 
 const blackPermissions: PollPermissions = {
   proof: '',
