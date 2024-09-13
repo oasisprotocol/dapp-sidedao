@@ -99,7 +99,11 @@ export const HighlightedText: FC<HighlightedTextProps> = ({
         // We use this task
         pieces.push(text.substring(processedChars, task.startPos))
         const focus = text.substring(task.startPos, task.endPos)
-        pieces.push(<mark style={style}>{focus}</mark>)
+        pieces.push(
+          <mark key={processedTasks} style={style}>
+            {focus}
+          </mark>,
+        )
         processedChars = task.endPos
       }
     } else {
