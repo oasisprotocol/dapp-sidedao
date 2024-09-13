@@ -6,7 +6,7 @@ import { Layout } from '../../components/Layout'
 import classes from './index.module.css'
 import { Button } from '../../components/Button'
 import { useNavigate } from 'react-router-dom'
-import { BooleanInput, TextInput } from '../../components/InputFields'
+import { InputFieldGroup, TextInput } from '../../components/InputFields'
 
 export const DashboardPage: FC = () => {
   const navigate = useNavigate()
@@ -17,6 +17,7 @@ export const DashboardPage: FC = () => {
     registerOwnership,
     registerMatch,
     hideInaccessible,
+    wantedPollType,
     pollSearchPatternInput,
     searchPatterns,
   } = useDashboardData()
@@ -49,7 +50,7 @@ export const DashboardPage: FC = () => {
           )}
         </div>
         <div className={classes.dashboardOtherColumn}>
-          <BooleanInput {...hideInaccessible} />
+          <InputFieldGroup fields={[[wantedPollType, hideInaccessible]]} />
           <div className={classes.dashboardLabel}>Explore polls</div>
           {isLoadingPolls ? (
             <Alert headerText="Please wait" type="loading" actions={<span>Fetching polls...</span>} />

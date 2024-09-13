@@ -2,7 +2,7 @@ import { useContracts } from '../../hooks/useContracts'
 import { useEffect, useMemo, useState } from 'react'
 import { PollManager, Proposal } from '../../types'
 import { useEthereum } from '../../hooks/useEthereum'
-import { useBooleanField, useTextField } from '../../components/InputFields'
+import { useBooleanField, useOneOfField, useTextField } from '../../components/InputFields'
 import { useNavigate } from 'react-router-dom'
 
 const FETCH_BATCH_SIZE = 100
@@ -148,6 +148,16 @@ export const useDashboardData = () => {
     initialValue: true,
   })
 
+  const wantedPollType = useOneOfField({
+    name: 'wantedPollType',
+    choices: [
+      { value: 'openOnly', label: 'Open polls' },
+      { value: 'completedOnly', label: 'Completed polls' },
+      { value: 'all', label: 'Both open and completed polls' },
+    ],
+    initialValue: 'all',
+  } as const)
+
   const navigate = useNavigate()
 
   const pollSearchPatternInput = useTextField({
@@ -170,7 +180,7 @@ export const useDashboardData = () => {
       .trim()
       .split(' ')
       .filter(p => p.length)
-    if (patterns.length === 1 && patterns[0].length < 3) {
+    if (patterns.length === 1 && patterns[0].length < 2) {
       return []
     } else {
       return patterns
@@ -180,12 +190,24 @@ export const useDashboardData = () => {
   const [myProposals, setMyProposals] = useState<Proposal[]>([])
   const [otherProposals, setOtherProposals] = useState<Proposal[]>([])
 
+  const typeFilters: Record<typeof wantedPollType.value, (proposal: Proposal) => boolean> = useMemo(
+    () => ({
+      openOnly: proposal => proposal.active,
+      completedOnly: proposal => !proposal.active,
+      all: () => true,
+    }),
+    [],
+  )
+
+  const typeFilter = typeFilters[wantedPollType.value]
+
   useEffect(() => {
     // console.log('Updating lists')
     const newMine: Proposal[] = []
     const newOthers: Proposal[] = []
     allProposals
       // .slice(0, 5)
+      .filter(typeFilter)
       .forEach(proposal => {
         const isThisMine = ownership.get(proposal.id)
         if (isThisMine !== true) newOthers.push(proposal)
@@ -194,7 +216,7 @@ export const useDashboardData = () => {
     setMyProposals(newMine)
     setOtherProposals(newOthers)
     // console.log('Found:', newMine.length, newOthers.length, 'out of', allProposals.length)
-  }, [version, allProposals])
+  }, [version, allProposals, typeFilter])
 
   return {
     userAddress,
@@ -205,6 +227,7 @@ export const useDashboardData = () => {
     registerOwnership,
     registerMatch,
     hideInaccessible,
+    wantedPollType,
     pollSearchPatternInput,
     searchPatterns,
   }
