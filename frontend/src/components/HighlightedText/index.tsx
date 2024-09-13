@@ -1,5 +1,5 @@
 import { findTextMatches, MatchInfo, NO_MATCH, NormalizerOptions, PositiveMatchInfo } from './text-matching'
-import { CSSProperties, FC } from 'react'
+import { CSSProperties, FC, ReactNode } from 'react'
 
 export interface HighlightOptions {
   /**
@@ -79,19 +79,39 @@ export const HighlightedText: FC<HighlightedTextProps> = ({
   if (text === undefined) return undefined // Nothing to display
   if (!realTasks.length) return text // We don't have to highlight anything
 
-  const task = realTasks[0]
-
-  const beginning = text.substring(0, task.startPos)
-  const focus = text.substring(task.startPos, task.endPos)
-  const end = text.substring(task.endPos)
-
-  return (
-    <>
-      {beginning}
-      <mark style={style}>{focus}</mark>
-      {end}
-    </>
+  const sortedTasks = realTasks.sort((a, b) =>
+    a.startPos > b.startPos ? 1 : a.startPos < b.startPos ? -1 : 0,
   )
+
+  const pieces: ReactNode[] = []
+  let processedChars = 0
+  let processedTasks = 0
+
+  while (processedChars < text.length) {
+    // Do we still have tasks?
+    if (processedTasks < sortedTasks.length) {
+      // Yes, there are more tasks
+      const task = sortedTasks[processedTasks]
+      if (task.startPos < processedChars) {
+        // This task with collude
+        processedTasks++ // just skip this task
+      } else {
+        // We use this task
+        pieces.push(text.substring(processedChars, task.startPos))
+        const focus = text.substring(task.startPos, task.endPos)
+        pieces.push(<mark style={style}>{focus}</mark>)
+        processedChars = task.endPos
+      }
+    } else {
+      // No more tasks, just grab the remaining string
+      pieces.push(text.substring(processedChars))
+      processedChars = text.length
+    }
+  }
+
+  // console.log('pieces:', pieces)
+
+  return <>{pieces}</>
 }
 
 const renderStyle = (style: CSSProperties): string => {
@@ -118,15 +138,38 @@ export const getHighlightedTextHtml = (props: HighlightedTextProps) => {
   if (text === undefined) return undefined // Nothing to display
   if (!realTasks.length) return text // We don't have to highlight anything
 
-  // const sortedTasks = realTasks.sort((a, b) =>
-  //   a.startPos > b.startPos ? 1 : a.startPos < b.startPos ? -1 : 0,
-  // )
+  const sortedTasks = realTasks.sort((a, b) =>
+    a.startPos > b.startPos ? 1 : a.startPos < b.startPos ? -1 : 0,
+  )
 
-  const task = realTasks[0]
+  // console.log('Tasks', JSON.stringify(sortedTasks))
 
-  const beginning = text.substring(0, task.startPos)
-  const focus = text.substring(task.startPos, task.endPos)
-  const end = text.substring(task.endPos)
+  const pieces: string[] = []
+  let processedChars = 0
+  let processedTasks = 0
 
-  return `${beginning}<mark style={${styleString}}>${focus}</mark>${end}`
+  while (processedChars < text.length) {
+    // Do we still have tasks?
+    if (processedTasks < sortedTasks.length) {
+      // Yes, there are more tasks
+      const task = sortedTasks[processedTasks]
+      if (task.startPos < processedChars) {
+        // This task with collude
+        processedTasks++ // just skip this task
+      } else {
+        // We use this task
+        pieces.push(text.substring(processedChars, task.startPos))
+        const focus = text.substring(task.startPos, task.endPos)
+        pieces.push(`<mark style={${styleString}}>${focus}</mark>`)
+        processedChars = task.endPos
+      }
+    } else {
+      // No more tasks, just grab the remaining string
+      pieces.push(text.substring(processedChars))
+      processedChars = text.length
+    }
+  }
+
+  // console.log('pieces:', pieces.map(p => `"${p}"`).join(', '))
+  return pieces.join('')
 }
