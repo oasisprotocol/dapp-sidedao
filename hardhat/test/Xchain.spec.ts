@@ -1,14 +1,16 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { Block, BlockParams, decodeRlp, encodeRlp, getBytes, getNumber,
-         JsonRpcProvider, keccak256, toBigInt, toQuantity, ZeroAddress
+         JsonRpcProvider, keccak256, toBeHex, toBigInt, toQuantity, ZeroAddress
        } from "ethers";
 import { Trie } from '@ethereumjs/trie'
-import { AccountCache, HeaderCache } from "../src/contracts";
+import { AccountCache, HeaderCache, StorageProof } from "../src/contracts";
 import {
     chain_info,
     fetchAccountProof,
+    fetchStorageProof,
     getBlockHeaderRLP,
+    getMapSlot,
     xchainRPC
 } from "@oasisprotocol/side-dao-contracts";
 
@@ -22,12 +24,25 @@ async function fetchBlock(rpc:JsonRpcProvider, blockNumber:number) : Promise<[Bl
     return [b, rawBlockData as BlockParamsExtra];
 }
 
-async function verifyProof(
+function toBigIntFromPossiblyQuantity(x:string) {
+    if( x === "0x" ) {
+        return 0n;
+    }
+    return toBigInt(x);
+}
+
+async function verifyAccountProof(
     rpc:JsonRpcProvider,
+    headerCache:HeaderCache,
     accountCache:AccountCache,
     block:BlockParamsExtra,
     testAccount:string
 ) {
+    if( ! (await headerCache.exists(block.hash!)) ) {
+        const headerRlpBytes = await getBlockHeaderRLP(rpc, block.hash!);
+        await headerCache.add(headerRlpBytes);
+    }
+
     console.log(`  - fetching proof (blockhash:${block.hash} block:${block.number} account:${testAccount})`);
     const proof = await fetchAccountProof(rpc, block.hash!, testAccount);
 
@@ -37,21 +52,51 @@ async function verifyProof(
     expect(await proofTree.checkRoot(getBytes(block.stateRoot))).eq(true);
     const accountData = decodeRlp( (await proofTree.get(getBytes(testAccount)))! ) as string[];
 
+    // Add to the cache
+    if( ! (await accountCache.exists(block.hash!, testAccount)) ) {
+        await accountCache.add(block.hash!, testAccount, proof);
+    }
+
     // And that the on-chain contracts can verify the merkle proof
     const onChainAccountData = await accountCache.verifyAccount(block.stateRoot, testAccount, proof);
 
     // Verify our local decoding & on-chain decoding matches
-    expect(toBigInt(accountData[0])).eq(onChainAccountData[0]);
-    expect(toBigInt(accountData[1])).eq(onChainAccountData[1]);
-    expect(accountData[2]).eq(onChainAccountData[2]);
-    expect(accountData[3]).eq(onChainAccountData[3]);
+    expect(toBigIntFromPossiblyQuantity(accountData[0])).eq(onChainAccountData[0]); // nonce
+    expect(toBigIntFromPossiblyQuantity(accountData[1])).eq(onChainAccountData[1]); // balance
+    expect(accountData[2]).eq(onChainAccountData[2]);           // storageRoot
+    expect(accountData[3]).eq(onChainAccountData[3]);           // codeHash
 
     return onChainAccountData;
+}
+
+async function verifyStorageProof(
+    rpc:JsonRpcProvider,
+    storageProofContract:StorageProof,
+    block:BlockParamsExtra,
+    contractAddress:string,
+    storageSlot:number,
+    holderAddress:string
+) {
+    const proof = await fetchStorageProof(rpc, block.hash!, contractAddress, storageSlot, holderAddress);
+
+    // Can @ethereumjs code verify the returned merkle proof?
+    const rawProof = (decodeRlp(proof) as string[]).map(encodeRlp).map((_) => getBytes(_));
+    const proofTree = await Trie.createFromProof(rawProof, {useKeyHashing: true});
+    // TODO: fetch account?
+    const leafKey = getMapSlot(holderAddress, storageSlot);
+    const leafData = decodeRlp( (await proofTree.get(getBytes(leafKey)))! ) as string;
+
+    const onChainLeafData = await storageProofContract["verifyStorage(bytes32,address,uint256,address,bytes)"](block.hash!, contractAddress, storageSlot, holderAddress, proof);
+
+    expect(onChainLeafData).eq(toBeHex(leafData, 32));
+
+    return onChainLeafData;
 }
 
 describe("Cross-chain", function () {
     let headerCache: HeaderCache;
     let accountCache: AccountCache;
+    let storageProof: StorageProof;
 
     before(async () => {
         const headerCacheFactory = await ethers.getContractFactory('HeaderCache');
@@ -59,9 +104,12 @@ describe("Cross-chain", function () {
 
         const accountCacheFactory = await ethers.getContractFactory('AccountCache');
         accountCache = await accountCacheFactory.deploy(await headerCache.getAddress());
+
+        const storageProofFactory = await ethers.getContractFactory('StorageProof');
+        storageProof = await storageProofFactory.deploy(await accountCache.getAddress());
     });
 
-    it.skip('Header Serialization', async () => {
+    it('Header Serialization', async () => {
         for( const k of Object.keys(chain_info) )
         {
             const chainId = Number(k);
@@ -95,8 +143,39 @@ describe("Cross-chain", function () {
         }
     });
 
+    it('Token Proof Regression', async () => {
+        const checkAddresses = [
+            '0x48520fF9b32d8B5BF87Abf789Ea7B3c394c95ebe',
+            '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
+            '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'
+        ];
+
+        for( const holderAddress of checkAddresses )
+        {
+            const chainId = 80002;
+            //const blockHash = '0xda03e597e10f764854118e66b258909398abbcf6ad31f0ba5e0eb24107bcfc66';
+            const blockNumber = 11764736;
+            const slot = 9;
+            const tokenAddress = '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582';
+
+            const rpc = xchainRPC(chainId);
+            const [,block] = await fetchBlock(rpc, blockNumber);
+
+            // Need to prime the account proof first, so storage proof can be verified
+            await verifyAccountProof(rpc, headerCache, accountCache, block, tokenAddress);
+
+            const leafData = await verifyStorageProof(rpc, storageProof, block, tokenAddress, slot, holderAddress);
+            const accountTokenBalance = toBigInt(leafData);
+
+            expect(accountTokenBalance > 0n).eq(true);
+        }
+    });
+
     // Verifies that the RPC endpoints are archive nodes and can retrieve historic proofs
-    it('Historic Proofs', async () => {
+    it('Historic Proofs', async function () {
+        // Allow roughly 3 seconds per supported chain
+        this.timeout(Object.keys(chain_info).length * 1000 * 3);
+
         for( const k of Object.keys(chain_info) )
         {
             const chainId = Number(k);
@@ -164,7 +243,7 @@ describe("Cross-chain", function () {
 
             // Fetch proofs for the chosen account, ensuring eth_getProof works
             // Ensure that on-chain contract can verify the account proof
-            const proofInfo = await verifyProof(rpc, accountCache, blockRawData, testAccount);
+            const proofInfo = await verifyAccountProof(rpc, headerCache, accountCache, blockRawData, testAccount);
             expect(proofInfo.balance).eq(testAccountBalance);
 
             // Then, to verify archive node status...
@@ -185,7 +264,7 @@ describe("Cross-chain", function () {
             }
 
             // Then verify we can retrieve proofs for historic data, and verify on-chain
-            await verifyProof(rpc, accountCache, rawYesterdayBlockData, testAccount);
+            await verifyAccountProof(rpc, headerCache, accountCache, rawYesterdayBlockData, testAccount);
         }
     });
 });
