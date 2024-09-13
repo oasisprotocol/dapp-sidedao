@@ -33,6 +33,7 @@ export const PollAccessIndicator: FC<{
       {isPending && <SpinnerIcon spinning height={32} title={'Checking access'} />}
       {isBroken && <BrokenPollAccessIcon onClick={retest} />}
       {isMine && <MyPollIcon />}
+      {/*<Button onClick={retest}>ASD</Button>*/}
     </>
   )
 }
@@ -41,16 +42,19 @@ export const PollAccessIndicatorWrapper: FC<{
   permissions: PollPermissions
   isActive: boolean
   retest: () => void
-}> = ({ permissions: { explanation, error, canVote, isMine }, isActive, retest }) => (
-  <PollAccessIndicator
-    isOpen={explanation === ''}
-    isBroken={!!error}
-    isClosed={!!explanation && !error}
-    explanation={explanation}
-    hasAccess={getVerdict(canVote)}
-    isCompleted={!isActive}
-    isPending={explanation === undefined}
-    isMine={isMine}
-    retest={retest}
-  />
-)
+}> = ({ permissions, isActive, retest }) => {
+  const { explanation, error, canVote, isMine } = permissions
+  return (
+    <PollAccessIndicator
+      isOpen={explanation === ''}
+      isBroken={!!error}
+      isClosed={!!explanation && !error}
+      explanation={explanation}
+      hasAccess={getVerdict(canVote)}
+      isCompleted={!isActive}
+      isPending={explanation === undefined}
+      isMine={isMine}
+      retest={retest}
+    />
+  )
+}
