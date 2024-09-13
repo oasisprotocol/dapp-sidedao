@@ -1,21 +1,15 @@
 import { FC } from 'react'
 import { PollData } from './hook'
 import classes from './index.module.css'
-import { MyPollIcon } from '../../components/icons/MyPollIcon'
 import { StringUtils } from '../../utils/string.utils'
 import { Card } from '../../components/Card'
 import { SocialShares } from '../../components/SocialShares'
 import { PollAccessIndicatorWrapper } from '../../components/PollCard/PollAccessIndicator'
 
-export const CompletedPoll: FC<PollData> = ({
-  poll,
-  pollResults,
-  isMine,
-  aclExplanation,
-  aclError,
-  canAclVote,
-}) => {
-  const { name, description, creator } = poll!.ipfsParams!
+export const CompletedPoll: FC<
+  Pick<PollData, 'poll' | 'pollResults' | 'permissions' | 'checkPermissions'>
+> = ({ poll, pollResults, permissions, checkPermissions }) => {
+  const { name, description } = poll!.ipfsParams!
   const { choices, votes } = pollResults!
 
   return (
@@ -24,13 +18,7 @@ export const CompletedPoll: FC<PollData> = ({
       <h4 className={'niceLine'}>
         <div className={'niceLine'}>
           {name}
-          <PollAccessIndicatorWrapper
-            aclExplanation={aclExplanation}
-            isActive={false}
-            canAclVote={canAclVote}
-            aclError={aclError}
-          />
-          {isMine && <MyPollIcon creator={creator} />}
+          <PollAccessIndicatorWrapper permissions={permissions} isActive={false} retest={checkPermissions} />
         </div>
       </h4>
       {!!description && <h4>{description}</h4>}

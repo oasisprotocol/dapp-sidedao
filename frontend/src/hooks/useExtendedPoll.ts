@@ -19,7 +19,6 @@ export const useExtendedPoll = (
   } = {},
 ) => {
   const eth = useEthereum()
-  const { userAddress } = eth
   const { pollManager } = useContracts(eth)
   const { withResults = false } = params
 
@@ -72,7 +71,7 @@ export const useExtendedPoll = (
     [proposal, ipfsParams, isDemo],
   )
 
-  const { canAclVote, aclExplanation, aclProof, canAclManage, aclError } = usePollPermissions(poll)
+  const { permissions, checkPermissions } = usePollPermissions(poll)
 
   const isActive = !!proposal?.active
 
@@ -140,14 +139,6 @@ export const useExtendedPoll = (
     }, 1000)
   }
 
-  const creator = poll?.ipfsParams.creator
-
-  const isMine = useMemo(() => {
-    if (isDemo) return false
-    if (!creator || !userAddress) return undefined
-    return creator.toLowerCase() === userAddress.toLowerCase()
-  }, [isDemo, creator, userAddress])
-
   return {
     proposalId,
     isActive,
@@ -167,11 +158,8 @@ export const useExtendedPoll = (
     gvAddresses,
     gvBalances,
     invalidateGaslessStatus,
-    canAclVote,
-    aclError,
-    aclExplanation,
-    aclProof,
-    isMine,
-    canAclManage,
+    permissions,
+    checkPermissions,
+    // error,
   }
 }

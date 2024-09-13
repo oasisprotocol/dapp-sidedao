@@ -1,190 +1,83 @@
 import { useEffect, useState } from 'react'
 import { useContracts } from './useContracts'
 import { useEthereum } from './useEthereum'
-import { DecisionWithReason, denyWithReason } from '../components/InputFields'
-import {
-  AclOptionsToken,
-  TokenInfo,
-  AclOptionsXchain,
-  xchainRPC,
-  fetchStorageProof,
-} from '@oasisprotocol/side-dao-contracts'
-import { BytesLike } from 'ethers'
-import { getChainDefinition, getERC20TokenDetails, getSapphireTokenDetails } from '../utils/poll.utils'
+import { denyWithReason } from '../components/InputFields'
 import { ExtendedPoll } from '../types'
+import { CheckPermissionContext, CheckPermissionInputs, PollPermissions } from '../utils/poll.utils'
+import { PermissionCache } from './PermissionCache'
+
+const blackPermissions: PollPermissions = {
+  proof: '',
+  explanation: undefined,
+  canVote: denyWithReason("Hasn't been checked yet"),
+  isMine: undefined,
+  tokenInfo: undefined,
+  xChainOptions: undefined,
+  canManage: false,
+  error: '',
+}
 
 export const usePollPermissions = (poll: ExtendedPoll | undefined) => {
   const proposalId = (poll?.proposal as any)?.id as string
   const aclAddress = poll?.proposal.params?.acl
+  const creator = poll?.ipfsParams.creator
 
   const eth = useEthereum()
   const { pollManagerAddress: daoAddress, pollACL } = useContracts(eth, aclAddress)
 
   const { userAddress } = eth
 
-  const [aclProof, setAclProof] = useState<BytesLike>('')
-  const [aclExplanation, setAclExplanation] = useState<string | undefined>()
-  const [canAclVote, setCanAclVote] = useState<DecisionWithReason>(true)
-  const [canAclManage, setCanAclManage] = useState(false)
-  const [aclError, setAclError] = useState('')
+  const [permissions, setPermissions] = useState<PollPermissions>({ ...blackPermissions })
 
-  const [aclTokenInfo, setAclTokenInfo] = useState<TokenInfo>()
-  const [xchainOptions, setXChainOptions] = useState<AclOptionsXchain | undefined>()
-
-  const checkPermissions = async () => {
+  const checkPermissions = async (force = false) => {
     if (proposalId === '0xdemo') {
-      setAclProof('')
-      setAclExplanation('')
-      setCanAclVote(true)
-      setAclTokenInfo(undefined)
-      setXChainOptions(undefined)
-      setCanAclManage(false)
+      setPermissions({
+        proof: '',
+        explanation: '',
+        isMine: false,
+        canVote: true,
+        tokenInfo: undefined,
+        xChainOptions: undefined,
+        canManage: false,
+        error: '',
+      })
     }
 
-    if (!pollACL || !daoAddress || !poll || !poll?.ipfsParams) return
+    if (
+      !pollACL ||
+      !daoAddress ||
+      !poll ||
+      !poll?.ipfsParams ||
+      !userAddress ||
+      userAddress === '0x0000000000000000000000000000000000000000' ||
+      !creator
+    )
+      return
 
-    setCanAclManage(await pollACL.canManagePoll(daoAddress, proposalId, userAddress))
-
-    const isAllowAllACL = 'allowAll' in poll.ipfsParams.acl.options
-    const isTokenHolderACL = 'token' in poll.ipfsParams.acl.options
-    const isWhitelistACL = 'allowList' in poll.ipfsParams.acl.options
-    const isXChainACL = 'xchain' in poll.ipfsParams.acl.options
-
-    // console.log('Checking if we can vote for', proposalId)
-
-    // console.log(
-    //   'is allowAll ACL?',
-    //   isAllowAllACL,
-    //   'is TokenHolder ACL?',
-    //   isTokenHolderACL,
-    //   'is xChain ACL?',
-    //   isXChainACL,
-    //   'is WhiteList ACL?',
-    //   isWhitelistACL,
-    //   'useAddress',
-    //   userAddress,
-    //   'daoAddress',
-    //   daoAddress,
-    //   'ipfsParams',
-    //   poll?.ipfsParams,
-    // )
-
-    setAclError('')
-
-    if (isAllowAllACL) {
-      const newAclProof = new Uint8Array()
-      setAclProof(newAclProof)
-      const result = 0n !== (await pollACL.canVoteOnPoll(daoAddress, proposalId, userAddress, newAclProof))
-      if (result) {
-        setCanAclVote(true)
-        setAclExplanation('')
-      } else {
-        setCanAclVote(denyWithReason('some unknown reason'))
-      }
-    } else if (isWhitelistACL) {
-      const newAclProof = new Uint8Array()
-      setAclExplanation('This poll is only for a predefined list of addresses.')
-      setAclProof(newAclProof)
-      const result = 0n !== (await pollACL.canVoteOnPoll(daoAddress, proposalId, userAddress, newAclProof))
-      // console.log("whiteListAcl check:", result)
-      if (result) {
-        setCanAclVote(true)
-      } else {
-        setCanAclVote(denyWithReason('you are not on the list of allowed addresses'))
-      }
-    } else if (isTokenHolderACL) {
-      const tokenAddress = (poll?.ipfsParams.acl.options as AclOptionsToken).token
-      const tokenDetails = await getSapphireTokenDetails(tokenAddress)
-      setAclExplanation(
-        `You need to hold some ${tokenDetails?.name ?? 'specific'} token (on the Sapphire network) to vote.`,
-      )
-      setAclTokenInfo(tokenDetails)
-      // console.log("loaded token details", tokenDetails?.name)
-      const newAclProof = new Uint8Array()
-      setAclProof(newAclProof)
-      try {
-        const result = 0n !== (await pollACL.canVoteOnPoll(daoAddress, proposalId, userAddress, newAclProof))
-        // console.log("tokenHolderAcl check:", result)
-        if (result) {
-          setCanAclVote(true)
-        } else {
-          setCanAclVote(denyWithReason(`you don't hold any ${tokenDetails?.name} tokens`))
-        }
-      } catch {
-        setCanAclVote(denyWithReason(`you don't hold any ${tokenDetails?.name} tokens`))
-      }
-    } else if (isXChainACL) {
-      setXChainOptions(poll?.ipfsParams.acl.options as AclOptionsXchain)
-      const {
-        xchain: { chainId, blockHash, address: tokenAddress, slot },
-      } = poll?.ipfsParams.acl.options as AclOptionsXchain
-      const provider = xchainRPC(chainId)
-      const chainDefinition = getChainDefinition(chainId)
-
-      if (userAddress) {
-        try {
-          const tokenDetails = await getERC20TokenDetails(chainId, tokenAddress)
-          setAclExplanation(
-            `This poll is only for those who have hold ${tokenDetails.name} token on the ${chainDefinition.name} when the poll was created.`,
-          )
-          // console.log("Loaded xchain token data", tokenDetails.name)
-          // console.log("Creating proof with",
-          //   provider,
-          //   blockHash,
-          //   tokenAddress,
-          //   slot,
-          //   signer_addr,
-          // )
-          const newAclProof = await fetchStorageProof(provider, blockHash, tokenAddress, slot, userAddress)
-          setAclProof(newAclProof)
-          // console.log("Proof is", newAclProof)
-          // console.log("Checking ACL with",
-          //   daoAddress, proposalId, userAddress, newAclProof
-          // )
-          const result = await pollACL.canVoteOnPoll(daoAddress, proposalId, userAddress, newAclProof)
-          // console.log("xChainAcl check:", result, 0n != result)
-          if (0n !== result) {
-            setCanAclVote(true)
-          } else {
-            setCanAclVote(
-              denyWithReason(
-                `you don't hold any ${tokenDetails.name} tokens on the ${chainDefinition} chain`,
-              ),
-            )
-          }
-        } catch (e) {
-          const error = e as any
-          console.log(
-            'Error when testing permission to vote on',
-            proposalId,
-            ':',
-            error.error?.message ?? error.reason ?? error.code ?? error,
-          )
-          // console.log(typeof error, Object.keys(error), error)
-          setCanAclVote(denyWithReason(`there was a technical problem verifying your permissions`))
-          setAclError(error.error?.message ?? error.reason ?? error.code)
-        }
-      } else {
-        setCanAclVote(
-          denyWithReason(
-            'this poll has some unknown access control settings. (Poll created by newer version of software?)',
-          ),
-        )
-      }
-    } else {
-      throw new Error('Unknown access policy')
+    const inputs: CheckPermissionInputs = {
+      userAddress,
+      proposalId,
+      creator,
+      aclAddress: poll.proposal.params.acl,
+      options: poll.ipfsParams.acl.options,
     }
+
+    const context: CheckPermissionContext = {
+      daoAddress,
+      provider: eth.state.provider,
+    }
+
+    const newStatus = await PermissionCache.fetch(inputs, context, { forceRefresh: force })
+    if (newStatus) setPermissions(newStatus)
   }
 
   useEffect(() => void checkPermissions(), [proposalId, pollACL, daoAddress, poll?.ipfsParams, userAddress])
 
   return {
-    aclProof,
-    aclExplanation,
-    canAclVote,
-    canAclManage,
-    aclTokenInfo,
-    xchainOptions,
-    aclError,
+    permissions,
+    checkPermissions: () => {
+      setPermissions({ ...blackPermissions })
+      void checkPermissions(true)
+    },
   }
 }

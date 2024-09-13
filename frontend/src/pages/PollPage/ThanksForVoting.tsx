@@ -2,7 +2,6 @@ import { FC } from 'react'
 import classes from './index.module.css'
 import { PollData } from './hook'
 import { BigCountdown } from './BigCountdown'
-import { MyPollIcon } from '../../components/icons/MyPollIcon'
 import { Button } from '../../components/Button'
 import { RemainingTime } from '../../types'
 import { Card } from '../../components/Card'
@@ -83,10 +82,8 @@ export const ThanksForVote: FC<PollData> = ({
   existingVote: myVote,
   remainingTime,
   remainingTimeString,
-  isMine,
-  aclExplanation,
-  aclError,
-  canAclVote,
+  permissions,
+  checkPermissions,
   canClose,
   closePoll,
   isClosing,
@@ -95,7 +92,6 @@ export const ThanksForVote: FC<PollData> = ({
     name,
     // description,
     choices,
-    creator,
   } = poll!.ipfsParams
   return (
     <Card>
@@ -103,13 +99,7 @@ export const ThanksForVote: FC<PollData> = ({
       <h4>
         <div className={'niceLine'}>
           {name}
-          <PollAccessIndicatorWrapper
-            aclExplanation={aclExplanation}
-            isActive={false}
-            canAclVote={canAclVote}
-            aclError={aclError}
-          />
-          {isMine && <MyPollIcon creator={creator} />}
+          <PollAccessIndicatorWrapper permissions={permissions} isActive={false} retest={checkPermissions} />
         </div>
       </h4>
       {/*<p>{description}</p>*/}
@@ -121,7 +111,7 @@ export const ThanksForVote: FC<PollData> = ({
       <StatusInfo
         remainingTime={remainingTime}
         remainingTimeString={remainingTimeString}
-        isMine={isMine}
+        isMine={permissions.isMine}
         canClose={canClose}
         closePoll={closePoll}
         isClosing={isClosing}
