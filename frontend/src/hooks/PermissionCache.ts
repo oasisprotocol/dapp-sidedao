@@ -11,7 +11,7 @@ import {
 
 const STORAGE_KEY = 'sideDAO.pollPermissions'
 
-const WAIT_BEFORE_SAVE = 5
+const WAIT_BEFORE_SAVE = 3
 const MAX_UNSAVED_TIME = 30
 
 setInterval(() => PermissionCache.tick(), 1000)
