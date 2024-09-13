@@ -1,8 +1,10 @@
 
+type IconT = string | { url: string; width: number; height: number; format: 'png'|'svg' };
+
 export interface ChainDefinition {
     name: string;
     chain: string;
-    icon?: string;
+    icon?: IconT;
     nativeCurrency: {name:string; symbol:string; decimals:number;};
     infoURL: string;
     shortName: string;
@@ -12,10 +14,12 @@ export interface ChainDefinition {
     rpcUrls: string[];
     features?: {name:string}[];
     hardfork: string;
-    explorers?: {name:string;url:string;standard:string;icon?:string;}[];
+    explorers?: {name:string;url:string;standard:string;icon?:IconT;}[];
+    faucets?: string[];
     ens?: {registry:string};
     customEIPs?: number[];
     parent?: {type:string; chain:string; bridges:{url:string}[];};
+    isTestnet?:boolean;
     cannotMakeStorageProofs?:boolean;
 }
 
@@ -29,14 +33,14 @@ export const chain_info: Record<number,ChainDefinition> = {
         "chain": "ETH",
         "icon": "ethereum",
         "rpcUrls": [
-        `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
+            `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
         ],
         "features": [{ "name": "EIP155" }, { "name": "EIP1559" }],
         "hardfork": "cancun",
         "nativeCurrency": {
-        "name": "Ether",
-        "symbol": "ETH",
-        "decimals": 18
+            "name": "Ether",
+            "symbol": "ETH",
+            "decimals": 18
         },
         "infoURL": "https://ethereum.org",
         "shortName": "eth",
@@ -44,7 +48,7 @@ export const chain_info: Record<number,ChainDefinition> = {
         "networkId": 1,
         "slip44": 60,
         "ens": {
-        "registry": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e"
+            "registry": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e"
         },
         "explorers": [
         {
@@ -127,40 +131,40 @@ export const chain_info: Record<number,ChainDefinition> = {
         "networkId": 42161,
         "slip44": 9001,
         "nativeCurrency": {
-        "name": "Ether",
-        "symbol": "ETH",
-        "decimals": 18
+            "name": "Ether",
+            "symbol": "ETH",
+            "decimals": 18
         },
         "rpcUrls": [
-        `https://arb-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
-        //"https://arbitrum-mainnet.infura.io/v3/${INFURA_API_KEY}",
-        //"https://arb1.arbitrum.io/rpc",
-        //"https://arbitrum-one.publicnode.com",
-        //"wss://arbitrum-one.publicnode.com"
+            `https://arb-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
+            //"https://arbitrum-mainnet.infura.io/v3/${INFURA_API_KEY}",
+            //"https://arb1.arbitrum.io/rpc",
+            //"https://arbitrum-one.publicnode.com",
+            //"wss://arbitrum-one.publicnode.com"
         ],
         "explorers": [
-        {
-            "name": "Arbiscan",
-            "url": "https://arbiscan.io",
-            "standard": "EIP3091"
-        },
-        {
-            "name": "Arbitrum Explorer",
-            "url": "https://explorer.arbitrum.io",
-            "standard": "EIP3091"
-        },
-        {
-            "name": "dexguru",
-            "url": "https://arbitrum.dex.guru",
-            "icon": "dexguru",
-            "standard": "EIP3091"
-        }
+            {
+                "name": "Arbiscan",
+                "url": "https://arbiscan.io",
+                "standard": "EIP3091"
+            },
+            {
+                "name": "Arbitrum Explorer",
+                "url": "https://explorer.arbitrum.io",
+                "standard": "EIP3091"
+            },
+            {
+                "name": "dexguru",
+                "url": "https://arbitrum.dex.guru",
+                "icon": "dexguru",
+                "standard": "EIP3091"
+            }
         ],
         "infoURL": "https://arbitrum.io",
         "parent": {
-        "type": "L2",
-        "chain": "eip155-1",
-        "bridges": [{ "url": "https://bridge.arbitrum.io" }]
+            "type": "L2",
+            "chain": "eip155-1",
+            "bridges": [{ "url": "https://bridge.arbitrum.io" }]
         }
     },
 
@@ -169,17 +173,17 @@ export const chain_info: Record<number,ChainDefinition> = {
         "hardfork": "cancun",
         "chain": "ETH",
         "rpcUrls": [
-        `https://opt-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
-        //"https://mainnet.optimism.io",
-        //"https://optimism.publicnode.com",
-        //"wss://optimism.publicnode.com",
-        //"https://optimism.gateway.tenderly.co",
-        //"wss://optimism.gateway.tenderly.co"
+            `https://opt-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
+            //"https://mainnet.optimism.io",
+            //"https://optimism.publicnode.com",
+            //"wss://optimism.publicnode.com",
+            //"https://optimism.gateway.tenderly.co",
+            //"wss://optimism.gateway.tenderly.co"
         ],
         "nativeCurrency": {
-        "name": "Ether",
-        "symbol": "ETH",
-        "decimals": 18
+            "name": "Ether",
+            "symbol": "ETH",
+            "decimals": 18
         },
         "infoURL": "https://optimism.io",
         "shortName": "oeth",
@@ -187,24 +191,24 @@ export const chain_info: Record<number,ChainDefinition> = {
         "networkId": 10,
         "slip44": 614,
         "explorers": [
-        {
-            "name": "etherscan",
-            "url": "https://optimistic.etherscan.io",
-            "standard": "EIP3091",
-            "icon": "etherscan"
-        },
-        {
-            "name": "blockscout",
-            "url": "https://optimism.blockscout.com",
-            "icon": "blockscout",
-            "standard": "EIP3091"
-        },
-        {
-            "name": "dexguru",
-            "url": "https://optimism.dex.guru",
-            "icon": "dexguru",
-            "standard": "EIP3091"
-        }
+            {
+                "name": "etherscan",
+                "url": "https://optimistic.etherscan.io",
+                "standard": "EIP3091",
+                "icon": "etherscan"
+            },
+            {
+                "name": "blockscout",
+                "url": "https://optimism.blockscout.com",
+                "icon": "blockscout",
+                "standard": "EIP3091"
+            },
+            {
+                "name": "dexguru",
+                "url": "https://optimism.dex.guru",
+                "icon": "dexguru",
+                "standard": "EIP3091"
+            }
         ]
     },
 
@@ -214,22 +218,22 @@ export const chain_info: Record<number,ChainDefinition> = {
         "chain": "Polygon",
         "icon": "polygon",
         "rpcUrls": [
-        `https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
-        //"https://polygon-rpc.com/",
-        //"https://rpc-mainnet.matic.network",
-        //"https://matic-mainnet.chainstacklabs.com",
-        //"https://rpc-mainnet.maticvigil.com",
-        //"https://rpc-mainnet.matic.quiknode.pro",
-        //"https://matic-mainnet-full-rpc.bwarelabs.com",
-        //"https://polygon-bor.publicnode.com",
-        //"wss://polygon-bor.publicnode.com",
-        //"https://polygon.gateway.tenderly.co",
-        //"wss://polygon.gateway.tenderly.co"
+            `https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
+            //"https://polygon-rpc.com/",
+            //"https://rpc-mainnet.matic.network",
+            //"https://matic-mainnet.chainstacklabs.com",
+            //"https://rpc-mainnet.maticvigil.com",
+            //"https://rpc-mainnet.matic.quiknode.pro",
+            //"https://matic-mainnet-full-rpc.bwarelabs.com",
+            //"https://polygon-bor.publicnode.com",
+            //"wss://polygon-bor.publicnode.com",
+            //"https://polygon.gateway.tenderly.co",
+            //"wss://polygon.gateway.tenderly.co"
         ],
         "nativeCurrency": {
-        "name": "POL",
-        "symbol": "POL",
-        "decimals": 18
+            "name": "POL",
+            "symbol": "POL",
+            "decimals": 18
         },
         "infoURL": "https://polygon.technology/",
         "shortName": "matic",
@@ -237,44 +241,160 @@ export const chain_info: Record<number,ChainDefinition> = {
         "networkId": 137,
         "slip44": 966,
         "explorers": [
-        {
-            "name": "polygonscan",
-            "url": "https://polygonscan.com",
-            "standard": "EIP3091"
-        },
-        {
-            "name": "dexguru",
-            "url": "https://polygon.dex.guru",
-            "icon": "dexguru",
-            "standard": "EIP3091"
-        }
+            {
+                "name": "polygonscan",
+                "url": "https://polygonscan.com",
+                "standard": "EIP3091"
+            },
+            {
+                "name": "dexguru",
+                "url": "https://polygon.dex.guru",
+                "icon": "dexguru",
+                "standard": "EIP3091"
+            }
         ]
     },
 
     80002: {
-    "name": "Polygon Testnet (Amoy)",
-    "hardfork": "london",
-    "chain": "polygon-testnet",
-    "icon": "polygon-testnet-amoy",
-    "rpcUrls": [
-        `https://polygon-amoy.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
-    ],
-    "nativeCurrency": {
-        "name": "testPOL",
-        "symbol": "testPOL",
-        "decimals": 18
+        "name": "Polygon Testnet (Amoy)",
+        "hardfork": "london",
+        "chain": "polygon-testnet",
+        "icon": "polygon-testnet-amoy",
+        "rpcUrls": [
+            `https://polygon-amoy.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
+        ],
+        "nativeCurrency": {
+            "name": "testPOL",
+            "symbol": "testPOL",
+            "decimals": 18
+        },
+        "infoURL": "https://polygon.technology/blog/introducing-the-amoy-testnet-for-polygon-pos",
+        "shortName": "polygon-amoy",
+        "chainId": 80002,
+        "networkId": 80002,
+        "explorers": [
+            {
+            name: "polygonscan-amoy",
+            url: "https://amoy.polygonscan.com/",
+            standard: "EIP3091"
+            }
+        ],
+        isTestnet: true,
     },
-    "infoURL": "https://polygon.technology/blog/introducing-the-amoy-testnet-for-polygon-pos",
-    "shortName": "polygon-amoy",
-    "chainId": 80002,
-    "networkId": 80002,
-    "explorers": [
-        {
-        name: "polygonscan-amoy",
-        url: "https://amoy.polygonscan.com/",
-        standard: "EIP3091"
-        }
-    ]
+
+    8453: {
+        "hardfork": "cancun",
+        "chain": "ETH",
+        "chainId": 8453,
+        "explorers": [
+          {
+            "name": "basescan",
+            "url": "https://basescan.org",
+            "standard": "none"
+          },
+          {
+            "name": "basescout",
+            "url": "https://base.blockscout.com",
+            "standard": "EIP3091",
+            "icon": {
+              "url": "ipfs://QmYtUimyqHkkFxYdbXXRbUqNg2VLPUg6Uu2C2nmFWowiZM",
+              "width": 551,
+              "height": 540,
+              "format": "png"
+            }
+          },
+          {
+            "name": "dexguru",
+            "url": "https://base.dex.guru",
+            "standard": "EIP3091",
+            "icon": {
+              "url": "ipfs://QmRaASKRSjQ5btoUQ2rNTJNxKtx2a2RoewgA7DMQkLVEne",
+              "width": 83,
+              "height": 82,
+              "format": "svg"
+            }
+          }
+        ],
+        "faucets": [],
+        "features": [],
+        "icon": {
+          "url": "ipfs://QmW5Vn15HeRkScMfPcW12ZdZcC2yUASpu6eCsECRdEmjjj/base-512.png",
+          "width": 512,
+          "height": 512,
+          "format": "png"
+        },
+        "infoURL": "https://base.org",
+        "name": "Base",
+        "nativeCurrency": {
+          "name": "Ether",
+          "symbol": "ETH",
+          "decimals": 18
+        },
+        "networkId": 8453,
+        //"redFlags": [],
+        "rpcUrls": [
+            `https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
+            /*
+            "https://8453.rpc.thirdweb.com/${THIRDWEB_API_KEY}",
+            "https://mainnet.base.org/",
+            "https://developer-access-mainnet.base.org/",
+            "https://base.gateway.tenderly.co",
+            "wss://base.gateway.tenderly.co",
+            "https://base-rpc.publicnode.com",
+            "wss://base-rpc.publicnode.com"
+            */
+        ],
+        "shortName": "base",
+        //"slug": "base",
+        //"status": "active",
+        //"testnet": false
+    },
+
+    84532: {
+        "hardfork": "cancun",
+        "chain": "ETH",
+        "chainId": 84532,
+        "explorers": [
+          {
+            "name": "basescout",
+            "url": "https://base-sepolia.blockscout.com",
+            "standard": "EIP3091",
+            "icon": {
+              "url": "ipfs://QmYtUimyqHkkFxYdbXXRbUqNg2VLPUg6Uu2C2nmFWowiZM",
+              "width": 551,
+              "height": 540,
+              "format": "png"
+            }
+          }
+        ],
+        "faucets": [],
+        "icon": {
+          "url": "ipfs://QmaxRoHpxZd8PqccAynherrMznMufG6sdmHZLihkECXmZv",
+          "width": 1200,
+          "height": 1200,
+          "format": "png"
+        },
+        "infoURL": "https://base.org",
+        "name": "Base Sepolia Testnet",
+        "nativeCurrency": {
+          "name": "Sepolia Ether",
+          "symbol": "ETH",
+          "decimals": 18
+        },
+        "networkId": 84532,
+        "rpcUrls": [
+            `https://base-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
+            /*
+            "https://84532.rpc.thirdweb.com/${THIRDWEB_API_KEY}",
+            "https://sepolia.base.org",
+            "https://base-sepolia-rpc.publicnode.com",
+            "wss://base-sepolia-rpc.publicnode.com"
+            */
+        ],
+        "shortName": "basesep",
+        "slip44": 1,
+        //"slug": "base-sepolia-testnet",
+        isTestnet: true
     },
 
     23294: {
