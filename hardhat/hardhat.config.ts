@@ -1,4 +1,5 @@
-import '@oasisprotocol/sapphire-hardhat';
+// Don't import sapphire-hardhat, as it encrypts deployment transactions
+//import '@oasisprotocol/sapphire-hardhat';
 import "@nomicfoundation/hardhat-ethers"
 import 'hardhat-tracer';
 import { promises as fs } from 'fs';
