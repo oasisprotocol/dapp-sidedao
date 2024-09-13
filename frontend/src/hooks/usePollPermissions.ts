@@ -3,21 +3,9 @@ import { useContracts } from './useContracts'
 import { useEthereum } from './useEthereum'
 import { denyWithReason } from '../components/InputFields'
 import { ExtendedPoll } from '../types'
-import { LRUCache } from 'lru-cache'
-import {
-  CheckPermissionContext,
-  CheckPermissionInputs,
-  checkPollPermission,
-  PollPermissions,
-} from '../utils/poll.utils'
-
-const permissionCache = new LRUCache<string, PollPermissions>({
-  ttl: 1000 * 60 * 60 * 5,
-  max: 10000,
-  // fetchMethod: async () => {},
-})
-
-const checkPending = new Set<string>()
+import { CheckPermissionContext, CheckPermissionInputs, PollPermissions } from '../utils/poll.utils'
+import { PermissionCache } from './PermissionCache'
+import './cache-save'
 
 export const usePollPermissions = (poll: ExtendedPoll | undefined) => {
   const proposalId = (poll?.proposal as any)?.id as string
@@ -56,8 +44,6 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined) => {
 
     if (!pollACL || !daoAddress || !poll || !poll?.ipfsParams || !userAddress || !creator) return
 
-    const key = `${proposalId}::${userAddress}`
-
     const inputs: CheckPermissionInputs = {
       userAddress,
       proposalId,
@@ -71,28 +57,8 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined) => {
       provider: eth.state.provider,
     }
 
-    if (permissionCache.has(key)) {
-      // console.log('Cache hit on', key)
-      setPermissionStatus(permissionCache.get(key)!)
-      return
-    }
-
-    if (checkPending.has(key)) {
-      // console.log('Already checking', key)
-      return
-    }
-
-    checkPending.add(key)
-
-    console.log('*** Checking if we can vote for', poll.id)
-
-    const newStatus = await checkPollPermission(inputs, context)
-
-    // console.log('No data for', key, 'will have to find out')
-
-    setPermissionStatus(newStatus)
-    permissionCache.set(key, newStatus)
-    console.log('Storing for key', inputs)
+    const newStatus = await PermissionCache.fetch(inputs, context)
+    if (newStatus) setPermissionStatus(newStatus)
   }
 
   useEffect(() => void checkPermissions(), [proposalId, pollACL, daoAddress, poll?.ipfsParams, userAddress])
