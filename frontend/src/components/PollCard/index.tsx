@@ -48,9 +48,10 @@ const PollStatusIndicator: FC<{ active: boolean; isPastDue: boolean }> = ({ acti
 export const PollCard: FC<{
   proposal: Proposal
   registerOwnership: (id: string, mine: boolean) => void
+  registerMatch: (searchPatterns: string[], pollId: string) => void
   hideInaccessible?: boolean
   searchPatterns: string[]
-}> = ({ proposal, registerOwnership, hideInaccessible, searchPatterns }) => {
+}> = ({ proposal, registerOwnership, hideInaccessible, searchPatterns, registerMatch }) => {
   const { poll, proposalId, gaslessPossible, permissions, checkPermissions } = useExtendedPoll(proposal)
 
   const { isMine } = permissions
@@ -79,6 +80,8 @@ export const PollCard: FC<{
     : []
   const hasAllMatches = textMatches.length === searchPatterns.length
   if (!hasAllMatches) return
+
+  registerMatch(searchPatterns, pollId)
 
   const highlightedDescription =
     getHighlightedTextHtml({

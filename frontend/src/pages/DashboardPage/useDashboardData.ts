@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { PollManager, Proposal } from '../../types'
 import { useEthereum } from '../../hooks/useEthereum'
 import { useBooleanField, useTextField } from '../../components/InputFields'
+import { useNavigate } from 'react-router-dom'
 
 const FETCH_BATCH_SIZE = 100
 
@@ -14,6 +15,20 @@ interface FetchProposalResult {
 }
 
 const ownership = new Map<string, boolean>()
+
+const matchingCards = new Map<string, Set<string>>()
+
+const searchPatternsToKey = (searchPatterns: string[]) => searchPatterns.join('--')
+
+const registerMatch = (searchPatterns: string[], pollId: string) => {
+  const key = searchPatternsToKey(searchPatterns)
+  let currentBucket: Set<string> | undefined = matchingCards.get(key)
+  if (!currentBucket) {
+    currentBucket = new Set<string>()
+    matchingCards.set(key, currentBucket)
+  }
+  currentBucket.add(pollId)
+}
 
 async function fetchProposals(
   fetcher: (offset: number, batchSize: number) => Promise<FetchProposalResult>,
@@ -133,11 +148,21 @@ export const useDashboardData = () => {
     initialValue: true,
   })
 
+  const navigate = useNavigate()
+
   const pollSearchPatternInput = useTextField({
     name: 'pollSearchPattern',
-    // label: 'Search for poll',
     placeholder: 'Start typing here to search for poll',
     autoFocus: true,
+    onEnter: () => {
+      const key = searchPatternsToKey(searchPatterns)
+      const cards = matchingCards.get(key)
+      if (!cards) return // No matching cards registered'
+      if (cards.size > 1) return // Too many matching cards
+      const pollId = Array.from(cards.values())[0]
+      // console.log('Should just to', pollId)
+      navigate(`/polls/${pollId}`)
+    },
   })
 
   const searchPatterns = useMemo(() => {
@@ -178,6 +203,7 @@ export const useDashboardData = () => {
     myProposals,
     otherProposals,
     registerOwnership,
+    registerMatch,
     hideInaccessible,
     pollSearchPatternInput,
     searchPatterns,

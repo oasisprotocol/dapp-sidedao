@@ -15,6 +15,7 @@ export const DashboardPage: FC = () => {
     myProposals,
     otherProposals,
     registerOwnership,
+    registerMatch,
     hideInaccessible,
     pollSearchPatternInput,
     searchPatterns,
@@ -42,6 +43,7 @@ export const DashboardPage: FC = () => {
                 proposal={proposal}
                 registerOwnership={registerOwnership}
                 searchPatterns={searchPatterns}
+                registerMatch={registerMatch}
               />
             ))
           )}
@@ -59,6 +61,7 @@ export const DashboardPage: FC = () => {
                 registerOwnership={registerOwnership}
                 hideInaccessible={hideInaccessible.value}
                 searchPatterns={searchPatterns}
+                registerMatch={registerMatch}
               />
             ))
           )}
