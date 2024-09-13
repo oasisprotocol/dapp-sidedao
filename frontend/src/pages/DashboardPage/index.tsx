@@ -7,6 +7,7 @@ import classes from './index.module.css'
 import { Button } from '../../components/Button'
 import { useNavigate } from 'react-router-dom'
 import { InputFieldGroup, TextInput } from '../../components/InputFields'
+import { dashboardFiltering } from '../../constants/config'
 
 export const DashboardPage: FC = () => {
   const navigate = useNavigate()
@@ -33,7 +34,7 @@ export const DashboardPage: FC = () => {
     <Layout variation="dashboard" extraWidget={createButton}>
       <div className={classes.dashboardMain}>
         <div className={classes.dashboardMyColumn}>
-          <TextInput {...pollSearchPatternInput} />
+          {dashboardFiltering.enabled && <TextInput {...pollSearchPatternInput} />}
           <div className={classes.dashboardLabel}>My polls</div>
           {isLoadingPolls ? (
             <Alert headerText="Please wait" type="loading" actions={<span>Fetching polls...</span>} />
@@ -42,6 +43,7 @@ export const DashboardPage: FC = () => {
               <PollCard
                 key={proposal.id}
                 proposal={proposal}
+                hideInaccessible={dashboardFiltering.enabled && hideInaccessible.value}
                 registerOwnership={registerOwnership}
                 searchPatterns={searchPatterns}
                 registerMatch={registerMatch}
@@ -50,7 +52,7 @@ export const DashboardPage: FC = () => {
           )}
         </div>
         <div className={classes.dashboardOtherColumn}>
-          <InputFieldGroup fields={[[wantedPollType, hideInaccessible]]} />
+          {dashboardFiltering.enabled && <InputFieldGroup fields={[[wantedPollType, hideInaccessible]]} />}
           <div className={classes.dashboardLabel}>Explore polls</div>
           {isLoadingPolls ? (
             <Alert headerText="Please wait" type="loading" actions={<span>Fetching polls...</span>} />
@@ -60,7 +62,7 @@ export const DashboardPage: FC = () => {
                 key={proposal.id}
                 proposal={proposal}
                 registerOwnership={registerOwnership}
-                hideInaccessible={hideInaccessible.value}
+                hideInaccessible={dashboardFiltering.enabled && hideInaccessible.value}
                 searchPatterns={searchPatterns}
                 registerMatch={registerMatch}
               />

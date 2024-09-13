@@ -4,6 +4,7 @@ import { PollManager, Proposal } from '../../types'
 import { useEthereum } from '../../hooks/useEthereum'
 import { useBooleanField, useOneOfField, useTextField } from '../../components/InputFields'
 import { useNavigate } from 'react-router-dom'
+import { dashboardFiltering } from '../../constants/config'
 
 const FETCH_BATCH_SIZE = 100
 
@@ -145,7 +146,7 @@ export const useDashboardData = () => {
   const hideInaccessible = useBooleanField({
     name: 'hideInaccessible',
     label: "Hide polls I don't have access to",
-    initialValue: true,
+    initialValue: dashboardFiltering.hideInaccessibleByDefault,
   })
 
   const wantedPollType = useOneOfField({
@@ -155,7 +156,7 @@ export const useDashboardData = () => {
       { value: 'completedOnly', label: 'Completed polls' },
       { value: 'all', label: 'Both open and completed polls' },
     ],
-    initialValue: 'all',
+    initialValue: dashboardFiltering.showOnlyOpenByDefault ? 'openOnly' : 'all',
   } as const)
 
   const navigate = useNavigate()
@@ -176,6 +177,7 @@ export const useDashboardData = () => {
   })
 
   const searchPatterns = useMemo(() => {
+    if (!dashboardFiltering.enabled) return []
     const patterns = pollSearchPatternInput.value
       .trim()
       .split(' ')
@@ -185,7 +187,7 @@ export const useDashboardData = () => {
     } else {
       return patterns
     }
-  }, [pollSearchPatternInput.value])
+  }, [dashboardFiltering.enabled, pollSearchPatternInput.value])
 
   const [myProposals, setMyProposals] = useState<Proposal[]>([])
   const [otherProposals, setOtherProposals] = useState<Proposal[]>([])
@@ -199,20 +201,17 @@ export const useDashboardData = () => {
     [],
   )
 
-  const typeFilter = typeFilters[wantedPollType.value]
+  const typeFilter = typeFilters[dashboardFiltering.enabled ? wantedPollType.value : 'all']
 
   useEffect(() => {
     // console.log('Updating lists')
     const newMine: Proposal[] = []
     const newOthers: Proposal[] = []
-    allProposals
-      // .slice(0, 5)
-      .filter(typeFilter)
-      .forEach(proposal => {
-        const isThisMine = ownership.get(proposal.id)
-        if (isThisMine !== true) newOthers.push(proposal)
-        if (isThisMine !== false) newMine.push(proposal)
-      })
+    allProposals.filter(typeFilter).forEach(proposal => {
+      const isThisMine = ownership.get(proposal.id)
+      if (isThisMine !== true) newOthers.push(proposal)
+      if (isThisMine !== false) newMine.push(proposal)
+    })
     setMyProposals(newMine)
     setOtherProposals(newOthers)
     // console.log('Found:', newMine.length, newOthers.length, 'out of', allProposals.length)
