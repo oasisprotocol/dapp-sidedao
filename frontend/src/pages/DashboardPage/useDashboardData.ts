@@ -1,5 +1,5 @@
 import { useContracts } from '../../hooks/useContracts'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { PollManager, Proposal } from '../../types'
 import { useEthereum } from '../../hooks/useEthereum'
 import { useBooleanField, useTextField } from '../../components/InputFields'
@@ -133,25 +133,24 @@ export const useDashboardData = () => {
     initialValue: true,
   })
 
-  const [searchPatterns, setSearchPatterns] = useState<string[]>([])
-
   const pollSearchPatternInput = useTextField({
     name: 'pollSearchPattern',
     // label: 'Search for poll',
     placeholder: 'Start typing here to search for poll',
-    onValueChange: input => {
-      const patterns = input
-        .trim()
-        .split(' ')
-        .filter(p => p.length)
-      if (patterns.length === 1 && patterns[0].length < 3) {
-        setSearchPatterns([])
-      } else {
-        setSearchPatterns(patterns)
-      }
-    },
     autoFocus: true,
   })
+
+  const searchPatterns = useMemo(() => {
+    const patterns = pollSearchPatternInput.value
+      .trim()
+      .split(' ')
+      .filter(p => p.length)
+    if (patterns.length === 1 && patterns[0].length < 3) {
+      return []
+    } else {
+      return patterns
+    }
+  }, [pollSearchPatternInput.value])
 
   const [myProposals, setMyProposals] = useState<Proposal[]>([])
   const [otherProposals, setOtherProposals] = useState<Proposal[]>([])
