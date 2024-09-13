@@ -17,7 +17,11 @@ export abstract class PermissionCache {
     },
   })
 
-  static fetch(input: CheckPermissionInputs, context: CheckPermissionContext) {
-    return PermissionCache.cache.fetch(JSON.stringify(input), { context })
+  static fetch(
+    input: CheckPermissionInputs,
+    context: CheckPermissionContext,
+    options: LRUCache.FetchOptionsNoContext<string, PollPermissions> = {},
+  ) {
+    return PermissionCache.cache.fetch(JSON.stringify(input), { context, ...options })
   }
 }

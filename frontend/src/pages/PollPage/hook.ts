@@ -51,6 +51,7 @@ export const usePollData = (pollId: string) => {
     gvBalances,
     invalidateGaslessStatus,
     permissions,
+    checkPermissions,
   } = useExtendedPoll(proposal, { withResults: true })
 
   const { now } = useTime(!!deadline)
@@ -336,6 +337,7 @@ export const usePollData = (pollId: string) => {
     remainingTimeString,
 
     permissions,
+    checkPermissions,
     canVote,
     gaslessEnabled,
     gaslessPossible,

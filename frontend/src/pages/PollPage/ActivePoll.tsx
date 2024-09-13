@@ -30,6 +30,7 @@ export const ActivePoll: FC<PollData> = ({
   canVote,
   isVoting,
   permissions,
+  checkPermissions,
   canClose,
   isClosing,
   closePoll,
@@ -87,7 +88,7 @@ export const ActivePoll: FC<PollData> = ({
       <h2>
         <div className={'niceLine'}>
           {name}
-          <PollAccessIndicatorWrapper permissions={permissions} isActive={true} />
+          <PollAccessIndicatorWrapper permissions={permissions} isActive={true} retest={checkPermissions} />
         </div>
       </h2>
       <h4>{description}</h4>

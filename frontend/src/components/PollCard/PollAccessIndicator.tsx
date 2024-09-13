@@ -8,45 +8,49 @@ import { PollPermissions } from '../../utils/poll.utils'
 import { MyPollIcon } from '../icons/MyPollIcon'
 
 export const PollAccessIndicator: FC<{
-  open: boolean
-  closed: boolean
-  pending: boolean
-  broken: boolean
+  isOpen: boolean
+  isClosed: boolean
+  isPending: boolean
+  isBroken: boolean
   explanation: string | undefined
   hasAccess: boolean
-  completed: boolean
-  mine: boolean | undefined
-}> = ({ open, broken, closed, pending, explanation, hasAccess, completed, mine }) => {
+  isCompleted: boolean
+  isMine: boolean | undefined
+  retest: () => void
+}> = ({ isOpen, isBroken, isClosed, isPending, explanation, hasAccess, isCompleted, isMine, retest }) => {
   return (
     <>
-      {open && <OpenPollIcon completed={completed} height={20} />}
-      {closed && (
+      {isOpen && <OpenPollIcon completed={isCompleted} height={20} />}
+      {isClosed && (
         <ClosedPollIcon
           explanation={explanation ?? 'unknown restriction'}
-          completed={completed}
+          completed={isCompleted}
           hasAccess={hasAccess}
           height={20}
+          onClick={retest}
         />
       )}
-      {pending && <SpinnerIcon spinning height={32} title={'Checking access'} />}
-      {broken && <BrokenPollAccessIcon />}
-      {mine && <MyPollIcon />}
+      {isPending && <SpinnerIcon spinning height={32} title={'Checking access'} />}
+      {isBroken && <BrokenPollAccessIcon onClick={retest} />}
+      {isMine && <MyPollIcon />}
     </>
   )
 }
 
-export const PollAccessIndicatorWrapper: FC<{ permissions: PollPermissions; isActive: boolean }> = ({
-  permissions: { explanation, error, canVote, isMine },
-  isActive,
-}) => (
+export const PollAccessIndicatorWrapper: FC<{
+  permissions: PollPermissions
+  isActive: boolean
+  retest: () => void
+}> = ({ permissions: { explanation, error, canVote, isMine }, isActive, retest }) => (
   <PollAccessIndicator
-    open={explanation === ''}
-    broken={!!error}
-    closed={!!explanation && !error}
+    isOpen={explanation === ''}
+    isBroken={!!error}
+    isClosed={!!explanation && !error}
     explanation={explanation}
     hasAccess={getVerdict(canVote)}
-    completed={!isActive}
-    pending={explanation === undefined}
-    mine={isMine}
+    isCompleted={!isActive}
+    isPending={explanation === undefined}
+    isMine={isMine}
+    retest={retest}
   />
 )

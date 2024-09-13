@@ -7,6 +7,17 @@ import { CheckPermissionContext, CheckPermissionInputs, PollPermissions } from '
 import { PermissionCache } from './PermissionCache'
 import './cache-save'
 
+const blackPermissions: PollPermissions = {
+  proof: '',
+  explanation: undefined,
+  canVote: denyWithReason("Hasn't been checked yet"),
+  isMine: undefined,
+  tokenInfo: undefined,
+  xChainOptions: undefined,
+  canManage: false,
+  error: '',
+}
+
 export const usePollPermissions = (poll: ExtendedPoll | undefined) => {
   const proposalId = (poll?.proposal as any)?.id as string
   const aclAddress = poll?.proposal.params?.acl
@@ -17,20 +28,11 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined) => {
 
   const { userAddress } = eth
 
-  const [permissionStatus, setPermissionStatus] = useState<PollPermissions>({
-    proof: '',
-    explanation: '',
-    canVote: denyWithReason("Hasn't been checked yet"),
-    isMine: undefined,
-    tokenInfo: undefined,
-    xChainOptions: undefined,
-    canManage: false,
-    error: '',
-  })
+  const [permissions, setPermissions] = useState<PollPermissions>({ ...blackPermissions })
 
-  const checkPermissions = async () => {
+  const checkPermissions = async (force = false) => {
     if (proposalId === '0xdemo') {
-      setPermissionStatus({
+      setPermissions({
         proof: '',
         explanation: '',
         isMine: false,
@@ -42,7 +44,16 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined) => {
       })
     }
 
-    if (!pollACL || !daoAddress || !poll || !poll?.ipfsParams || !userAddress || !creator) return
+    if (
+      !pollACL ||
+      !daoAddress ||
+      !poll ||
+      !poll?.ipfsParams ||
+      !userAddress ||
+      userAddress === '0x0000000000000000000000000000000000000000' ||
+      !creator
+    )
+      return
 
     const inputs: CheckPermissionInputs = {
       userAddress,
@@ -57,11 +68,17 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined) => {
       provider: eth.state.provider,
     }
 
-    const newStatus = await PermissionCache.fetch(inputs, context)
-    if (newStatus) setPermissionStatus(newStatus)
+    const newStatus = await PermissionCache.fetch(inputs, context, { forceRefresh: force })
+    if (newStatus) setPermissions(newStatus)
   }
 
   useEffect(() => void checkPermissions(), [proposalId, pollACL, daoAddress, poll?.ipfsParams, userAddress])
 
-  return permissionStatus
+  return {
+    permissions,
+    checkPermissions: () => {
+      setPermissions({ ...blackPermissions })
+      void checkPermissions(true)
+    },
+  }
 }

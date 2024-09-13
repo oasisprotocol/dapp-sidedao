@@ -5,13 +5,10 @@ import { StringUtils } from '../../utils/string.utils'
 import { Card } from '../../components/Card'
 import { SocialShares } from '../../components/SocialShares'
 import { PollAccessIndicatorWrapper } from '../../components/PollCard/PollAccessIndicator'
-import { PollPermissions } from '../../utils/poll.utils'
 
-export const CompletedPoll: FC<Pick<PollData, 'poll' | 'pollResults'> & { permissions: PollPermissions }> = ({
-  poll,
-  pollResults,
-  permissions,
-}) => {
+export const CompletedPoll: FC<
+  Pick<PollData, 'poll' | 'pollResults' | 'permissions' | 'checkPermissions'>
+> = ({ poll, pollResults, permissions, checkPermissions }) => {
   const { name, description } = poll!.ipfsParams!
   const { choices, votes } = pollResults!
 
@@ -21,7 +18,7 @@ export const CompletedPoll: FC<Pick<PollData, 'poll' | 'pollResults'> & { permis
       <h4 className={'niceLine'}>
         <div className={'niceLine'}>
           {name}
-          <PollAccessIndicatorWrapper permissions={permissions} isActive={false} />
+          <PollAccessIndicatorWrapper permissions={permissions} isActive={false} retest={checkPermissions} />
         </div>
       </h4>
       {!!description && <h4>{description}</h4>}

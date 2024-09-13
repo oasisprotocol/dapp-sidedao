@@ -71,7 +71,7 @@ export const useExtendedPoll = (
     [proposal, ipfsParams, isDemo],
   )
 
-  const permissions = usePollPermissions(poll)
+  const { permissions, checkPermissions } = usePollPermissions(poll)
 
   const isActive = !!proposal?.active
 
@@ -159,6 +159,7 @@ export const useExtendedPoll = (
     gvBalances,
     invalidateGaslessStatus,
     permissions,
+    checkPermissions,
     // error,
   }
 }
