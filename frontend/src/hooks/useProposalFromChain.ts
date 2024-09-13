@@ -20,7 +20,10 @@ export const useProposalFromChain = (proposalId: string) => {
 
     setProposal(undefined)
     setError(undefined)
-    if (isDemo) return
+    if (isDemo) {
+      setProposal({ id: proposalId } as Proposal)
+      return
+    }
 
     // console.log('Attempting to load proposal', proposalId)
 

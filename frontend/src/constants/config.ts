@@ -111,6 +111,7 @@ export const MIN_CLOSE_TIME_MINUTES = 3
 export const demoPoll1 = {
   id: 'demo',
   proposal: {
+    id: '0xdemo',
     active: true,
   },
   ipfsParams: {
@@ -127,6 +128,7 @@ export const demoPoll1 = {
 export const demoPoll2 = {
   id: 'demo',
   proposal: {
+    id: '0xdemo',
     active: true,
   },
   ipfsParams: {
