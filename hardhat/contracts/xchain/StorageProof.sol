@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import { MerklePatriciaVerifier, RLP } from './lib/MerklePatriciaVerifier.sol';
+import { MerklePatriciaProofVerifier, RLPReader } from "./lib/MerklePatriciaProofVerifier.sol";
 
 import { AccountCache } from './AccountCache.sol';
 
@@ -44,8 +44,11 @@ contract StorageProof {
 
         bytes32 hashedStorageKey = keccak256(abi.encodePacked(storageKey));
 
-        bytes memory accountDetailsBytes = MerklePatriciaVerifier.getValueFromProof(account.storageRoot, hashedStorageKey, rlpStorageProof);
+        bytes memory accountDetailsBytes = MerklePatriciaProofVerifier.extractProofValue(
+            account.storageRoot,
+            abi.encodePacked(hashedStorageKey),
+            RLPReader.toList(RLPReader.toRlpItem(rlpStorageProof)));
 
-        return RLP.toBytes32(RLP.toItem(accountDetailsBytes));
+        return RLPReader.toBytes32(RLPReader.toRlpItem(accountDetailsBytes));
     }
 }

@@ -40,9 +40,10 @@ describe('Merkle Patricia Trie', () => {
     it('Accounts Tree', async () => {
         const t = new Trie({useKeyHashing: true, useRootPersistence: true});
 
-        const n = 23;
+        let skip = 1;
+        const total = 10000;
 
-        for( let i = 0; i < (n**2); i += 1 )
+        for( let i = 0; i < total; i += 1 )
         {
             // Create some random account data & put into our ever growing tree
             const randAddress = randomBytes(20);
@@ -56,9 +57,12 @@ describe('Merkle Patricia Trie', () => {
             await t.put(randAddress, getBytes(randAcctEncoded));
 
             // Every N items, verify proofs
-            if( i == 0 || i % n != 0 ) {
+            if( i == 0 || (i % skip) != 0 ) {
                 continue
             }
+            // Increase the number of items inserted in between checks
+            // To progressively check deeper & deeper trees
+            skip = Math.round(skip + (skip/10)) + 1;
 
             const proof = await t.createProof(randAddress);
 

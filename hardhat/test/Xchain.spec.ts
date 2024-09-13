@@ -109,7 +109,7 @@ describe("Cross-chain", function () {
         storageProof = await storageProofFactory.deploy(await accountCache.getAddress());
     });
 
-    it.skip('Header Serialization', async () => {
+    it('Header Serialization', async () => {
         for( const k of Object.keys(chain_info) )
         {
             const chainId = Number(k);
@@ -172,7 +172,7 @@ describe("Cross-chain", function () {
     });
 
     // Verifies that the RPC endpoints are archive nodes and can retrieve historic proofs
-    it.skip('Historic Proofs', async function () {
+    it('Historic Proofs', async function () {
         // Allow roughly 3 seconds per supported chain
         this.timeout(Object.keys(chain_info).length * 1000 * 3);
 

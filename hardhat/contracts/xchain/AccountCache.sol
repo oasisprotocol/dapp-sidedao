@@ -3,7 +3,7 @@
 pragma solidity ^0.8.0;
 
 import { HeaderCache } from './HeaderCache.sol';
-import { MerklePatriciaVerifier, RLP } from './lib/MerklePatriciaVerifier.sol';
+import { MerklePatriciaProofVerifier, RLPReader } from "./lib/MerklePatriciaProofVerifier.sol";
 
 contract AccountCache {
     struct Account {
@@ -52,17 +52,17 @@ contract AccountCache {
         public pure
         returns (Account memory account)
     {
-        bytes memory accountDetailsBytes = MerklePatriciaVerifier.getValueFromProof(
+        bytes memory accountDetailsBytes = MerklePatriciaProofVerifier.extractProofValue(
             stateRoot,
-            keccak256(abi.encodePacked(accountAddress)),
-            rlpAccountProof);
+            abi.encodePacked(keccak256(abi.encodePacked(accountAddress))),
+            RLPReader.toList(RLPReader.toRlpItem(rlpAccountProof)));
 
-        RLP.Item[] memory accountDetails = RLP.toList(RLP.toItem(accountDetailsBytes));
+        RLPReader.RLPItem[] memory accountDetails = RLPReader.toList(RLPReader.toRlpItem(accountDetailsBytes));
 
-        account.nonce = RLP.toUint(accountDetails[0]);
-        account.balance = RLP.toUint(accountDetails[1]);
-        account.storageRoot = RLP.toBytes32(accountDetails[2]);
-        account.codeHash = RLP.toBytes32(accountDetails[3]);
+        account.nonce = RLPReader.toUint(accountDetails[0]);
+        account.balance = RLPReader.toUint(accountDetails[1]);
+        account.storageRoot = RLPReader.toBytes32(accountDetails[2]);
+        account.codeHash = RLPReader.toBytes32(accountDetails[3]);
     }
 
     function add (
