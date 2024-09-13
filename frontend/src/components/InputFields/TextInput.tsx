@@ -1,4 +1,4 @@
-import React, { FC, useCallback } from 'react'
+import React, { FC, KeyboardEventHandler, useCallback } from 'react'
 import classes from './index.module.css'
 import { StringUtils } from '../../utils/string.utils'
 import { TextFieldControls } from './useTextField'
@@ -25,6 +25,7 @@ export const TextInput: FC<TextFieldControls> = ({
   enabled,
   whyDisabled,
   autoFocus,
+  onEnter,
 }) => {
   const handleChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => setValue(event.target.value),
@@ -32,6 +33,14 @@ export const TextInput: FC<TextFieldControls> = ({
   )
 
   if (!visible) return
+
+  const handleKeyPress: KeyboardEventHandler<HTMLInputElement> = event => {
+    if (event.key == 'Enter') {
+      if (onEnter) onEnter()
+    }
+  }
+
+  //<Field onKeyDown={this.handleKeyPress}
 
   const field = (
     <input
@@ -43,6 +52,7 @@ export const TextInput: FC<TextFieldControls> = ({
       disabled={!enabled}
       title={whyDisabled}
       autoFocus={autoFocus}
+      onKeyDown={handleKeyPress}
     />
   )
 
