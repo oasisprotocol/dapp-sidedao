@@ -371,15 +371,9 @@ export const checkPollPermission = async (
       }
     } catch (e) {
       const problem = e as any
-      console.log(
-        'Error when testing permission to vote on',
-        proposalId,
-        ':',
-        problem.error?.message ?? problem.reason ?? problem.code ?? problem,
-      )
-      // console.log(typeof error, Object.keys(error), error)
+      error = problem.error?.message ?? problem.reason ?? problem.code ?? problem
+      console.log('Error when testing permission to vote on', proposalId, ':', error)
       canVote = denyWithReason(`there was a technical problem verifying your permissions`)
-      error = problem.error?.message ?? problem.reason ?? problem.code
     }
   } else {
     canVote = denyWithReason(
