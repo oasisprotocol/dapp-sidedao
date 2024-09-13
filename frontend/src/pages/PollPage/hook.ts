@@ -52,7 +52,7 @@ export const usePollData = (pollId: string) => {
     invalidateGaslessStatus,
     permissions,
     checkPermissions,
-  } = useExtendedPoll(proposal, { withResults: true })
+  } = useExtendedPoll(proposal, { onDashboard: false })
 
   const { now } = useTime(!!deadline)
   const { pollManagerWithSigner: signerDao, gaslessVoting } = useContracts(eth, poll?.proposal.params?.acl)

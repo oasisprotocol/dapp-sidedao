@@ -4,7 +4,7 @@ import { PollManager, Proposal } from '../../types'
 import { useEthereum } from '../../hooks/useEthereum'
 import { useBooleanField, useOneOfField, useTextField } from '../../components/InputFields'
 import { useNavigate } from 'react-router-dom'
-import { dashboardFiltering } from '../../constants/config'
+import { dashboard } from '../../constants/config'
 
 const FETCH_BATCH_SIZE = 100
 
@@ -146,7 +146,7 @@ export const useDashboardData = () => {
   const hideInaccessible = useBooleanField({
     name: 'hideInaccessible',
     label: "Hide polls I don't have access to",
-    initialValue: dashboardFiltering.hideInaccessibleByDefault,
+    initialValue: dashboard.filtering.hideInaccessibleByDefault,
   })
 
   const wantedPollType = useOneOfField({
@@ -156,7 +156,7 @@ export const useDashboardData = () => {
       { value: 'completedOnly', label: 'Completed polls' },
       { value: 'all', label: 'Both open and completed polls' },
     ],
-    initialValue: dashboardFiltering.showOnlyOpenByDefault ? 'openOnly' : 'all',
+    initialValue: dashboard.filtering.showOnlyOpenByDefault ? 'openOnly' : 'all',
   } as const)
 
   const navigate = useNavigate()
@@ -177,7 +177,7 @@ export const useDashboardData = () => {
   })
 
   const searchPatterns = useMemo(() => {
-    if (!dashboardFiltering.enabled) return []
+    if (!dashboard.filtering.enabled) return []
     const patterns = pollSearchPatternInput.value
       .trim()
       .split(' ')
@@ -187,7 +187,7 @@ export const useDashboardData = () => {
     } else {
       return patterns
     }
-  }, [dashboardFiltering.enabled, pollSearchPatternInput.value])
+  }, [dashboard.filtering.enabled, pollSearchPatternInput.value])
 
   const [myProposals, setMyProposals] = useState<Proposal[]>([])
   const [otherProposals, setOtherProposals] = useState<Proposal[]>([])
@@ -201,7 +201,7 @@ export const useDashboardData = () => {
     [],
   )
 
-  const typeFilter = typeFilters[dashboardFiltering.enabled ? wantedPollType.value : 'all']
+  const typeFilter = typeFilters[dashboard.filtering.enabled ? wantedPollType.value : 'all']
 
   useEffect(() => {
     // console.log('Updating lists')
@@ -217,6 +217,11 @@ export const useDashboardData = () => {
     // console.log('Found:', newMine.length, newOthers.length, 'out of', allProposals.length)
   }, [version, allProposals, typeFilter])
 
+  const filterInputs = useMemo(() => {
+    if (!dashboard.filtering.enabled) return []
+    return [wantedPollType, ...(dashboard.showPermissions ? [hideInaccessible] : [])]
+  }, [dashboard.filtering.enabled, dashboard.showPermissions])
+
   return {
     userAddress,
     canCreatePoll,
@@ -225,8 +230,9 @@ export const useDashboardData = () => {
     otherProposals,
     registerOwnership,
     registerMatch,
-    hideInaccessible,
-    wantedPollType,
+    filterInputs,
+    shouldHideInaccessibleData:
+      dashboard.filtering.enabled && dashboard.showPermissions && hideInaccessible.value,
     pollSearchPatternInput,
     searchPatterns,
   }
