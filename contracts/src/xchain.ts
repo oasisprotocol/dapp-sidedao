@@ -22,6 +22,21 @@ function _getNameAndChainidMap() {
 
 export const xchain_ChainNamesToChainId = _getNameAndChainidMap();
 
+const CACHED_RPC_PROVIDERS = new Map<string,JsonRpcProvider>();
+
+/**
+ * Get an RPC provider connection
+ *
+ * If there are multiple RPC URLs in the chain definition, one will be chosen
+ * at random.
+ *
+ * RPC providers with the same URLs are cached. So if there are 2 URLs then the
+ * 2nd time it's called with the same chain ID there's a 50% chance of getting
+ * an existing cached RPC connector, or a fresh one with the other URL.
+ *
+ * @param chainId Chain ID
+ * @returns Ethers v6 JsonRpcProvider
+ */
 export function xchainRPC(chainId:number)
 {
     if( ! (chainId in chain_info) ) {
@@ -30,8 +45,17 @@ export function xchainRPC(chainId:number)
 
     const info = chain_info[chainId];
     const rpc_url = randomchoice(info.rpcUrls as string[]);
-    console.log('Using RPC URL', rpc_url);
-    return new JsonRpcProvider(rpc_url);
+
+    if( CACHED_RPC_PROVIDERS.has(rpc_url) ) {
+      return CACHED_RPC_PROVIDERS.get(rpc_url)!;
+    }
+
+    console.log(`RPC Connection, chain:${chainId} url:${rpc_url}`);
+    const rpc = new JsonRpcProvider(rpc_url);
+
+    CACHED_RPC_PROVIDERS.set(rpc_url, rpc);
+
+    return rpc;
 }
 
 const ERC20Abi = [
@@ -143,7 +167,14 @@ export async function guessStorageSlot(
   return null;
 }
 
-export async function fetchStorageProof(provider: JsonRpcProvider, blockHash: string, address: string, slot: number, holder: string): Promise<BytesLike> {
+export async function fetchStorageProof(
+  provider: JsonRpcProvider,
+  blockHash: string,
+  address: string,
+  slot: number,
+  holder: string
+): Promise<BytesLike>
+{
   // TODO Probably unpack and verify
   const response = await provider.send('eth_getProof', [
     address,
