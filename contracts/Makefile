@@ -1,3 +1,7 @@
+all: build
+
+.PHONY: build clean veryclean
+
 build:
 	pnpm build
 
