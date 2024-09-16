@@ -1,5 +1,5 @@
 import { FC, PropsWithChildren, useCallback, useState } from 'react'
-import * as sapphire from '@oasisprotocol/sapphire-paratime'
+import { wrapEthersProvider } from '@oasisprotocol/sapphire-ethers-v6'
 import { CHAINS, VITE_NETWORK_BIGINT, VITE_NETWORK_NUMBER } from '../constants/config'
 import { UnknownNetworkError } from '../utils/errors'
 import { Web3Context, Web3ProviderContext, Web3ProviderState } from './Web3Context'
@@ -115,7 +115,7 @@ export const Web3ContextProvider: FC<PropsWithChildren> = ({ children }) => {
   const _init = async (account: string, provider: typeof window.ethereum) => {
     try {
       const ethProvider = new BrowserProvider(provider!)
-      const sapphireEthProvider = sapphire.wrap(ethProvider) as BrowserProvider & sapphire.SapphireAnnex
+      const sapphireEthProvider = wrapEthersProvider(ethProvider)
 
       const network = await sapphireEthProvider.getNetwork()
       _setNetworkSpecificVars(network.chainId, sapphireEthProvider)

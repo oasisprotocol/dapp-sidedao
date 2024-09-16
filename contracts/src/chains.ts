@@ -24,9 +24,7 @@ export interface ChainDefinition {
 }
 
 const INFURA_API_KEY = 'e9b08cc1b55b430494f6cf5259b2a560';
-const THIRDWEB_CLIENT_ID = '6699629aefc73887e7f962c5438dddd1';
-const THIRDWEB_API_KEY = THIRDWEB_CLIENT_ID;
-const THIRDWEB_CLIENT_SECRET = 'cq3cmTMjm5P7C0KwvH5E97MpMwbJajb5v9mkFgI175qh-Pzy--KLQ4rksftvTxsE-my-k07FO69mSBexa9n4ow';
+const THIRDWEB_API_KEY = '6699629aefc73887e7f962c5438dddd1';
 const ALCHEMY_API_KEY = 'LTUd8wMSlbXxWBHpYyFE-WyOh2wud4Hb';
 
 // NOTE: many chains are defined in https://github.com/thirdweb-dev/js/tree/main/legacy_packages/chains/chains
@@ -78,7 +76,6 @@ export const chain_info: Record<number,ChainDefinition> = {
     },
 
     // Alchemy BNB Smart Chain requires upgraded plan
-    /*
     56: {
         "name": "BNB Smart Chain Mainnet",
         "chain": "BSC",
@@ -86,21 +83,7 @@ export const chain_info: Record<number,ChainDefinition> = {
         // Same as cancun, but without 4788
         "customEIPs": [1153, 4844, 5656, 6780, 7516],
         "rpcUrls": [
-        "https://bsc-dataseed1.bnbchain.org",
-        "https://bsc-dataseed2.bnbchain.org",
-        "https://bsc-dataseed3.bnbchain.org",
-        "https://bsc-dataseed4.bnbchain.org",
-        "https://bsc-dataseed1.defibit.io",
-        "https://bsc-dataseed2.defibit.io",
-        "https://bsc-dataseed3.defibit.io",
-        "https://bsc-dataseed4.defibit.io",
-        "https://bsc-dataseed1.ninicoin.io",
-        "https://bsc-dataseed2.ninicoin.io",
-        "https://bsc-dataseed3.ninicoin.io",
-        "https://bsc-dataseed4.ninicoin.io",
-        "https://bsc.publicnode.com",
-        //"wss://bsc.publicnode.com",
-        //"wss://bsc-ws-node.nariox.org"
+            `https://bsc-mainnet.infura.io/v3/${INFURA_API_KEY}`,
         ],
         "nativeCurrency": {
         "name": "BNB Chain Native Token",
@@ -126,7 +109,6 @@ export const chain_info: Record<number,ChainDefinition> = {
         }
         ]
     },
-    */
 
     42161: {
         "name": "Arbitrum One",
