@@ -282,7 +282,7 @@ export function useInputField<DataType>(
     let hasError = false
 
     // If it's required but empty, that's already an error
-    if (required && isEmpty(cleanValue)) {
+    if (required && isEmpty(cleanValue) && reason !== 'change') {
       currentProblems.push(wrapProblem(requiredMessage, 'root', 'error')!)
       hasError = true
     }

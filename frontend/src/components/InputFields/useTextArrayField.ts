@@ -222,21 +222,23 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
         // No empty elements, please
         allowEmptyItems
           ? undefined
-          : values =>
-              values.map((value, index) =>
-                value
-                  ? undefined
-                  : {
-                      message: emptyItemMessage,
-                      location: `value-${index}`,
-                    },
-              ),
+          : (values, _changed, _control, reason) =>
+              reason === 'change'
+                ? []
+                : values.map((value, index) =>
+                    value
+                      ? undefined
+                      : {
+                          message: emptyItemMessage,
+                          location: `value-${index}`,
+                        },
+                  ),
 
         // Do we have enough elements?
         minItemCount
-          ? values => {
+          ? (values, _changed, _control, reason) => {
               const currentCount = values.filter(v => !!v).length
-              return currentCount < minItemCount
+              return currentCount < minItemCount && reason !== 'change'
                 ? `${getNumberMessage(tooFewItemsMessage, minItemCount)} (Currently, ${thereIsOnly(currentCount)}.)`
                 : undefined
             }
