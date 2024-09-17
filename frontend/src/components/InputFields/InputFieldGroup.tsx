@@ -6,14 +6,15 @@ import classes from './index.module.css'
 
 type InputFieldGroupProps = {
   fields: FieldConfiguration
+  alignRight?: boolean
 }
 
-export const InputFieldGroup: FC<InputFieldGroupProps> = ({ fields }) => (
+export const InputFieldGroup: FC<InputFieldGroupProps> = ({ fields, alignRight }) => (
   <>
     {fields.map((row, index) =>
       Array.isArray(row) ? (
         row.some(controls => controls.visible) ? (
-          <div className={classes.fieldRow} key={`row-${index}`}>
+          <div className={alignRight ? classes.fieldRowRight : classes.fieldRow} key={`row-${index}`}>
             {row.map(field => (
               <InputField key={field.name} controls={field as any} />
             ))}
