@@ -209,8 +209,11 @@ export const useDashboardData = () => {
     const newOthers: Proposal[] = []
     allProposals.filter(typeFilter).forEach(proposal => {
       const isThisMine = ownership.get(proposal.id)
-      if (isThisMine !== true) newOthers.push(proposal)
-      if (isThisMine !== false) newMine.push(proposal)
+      if (isThisMine) {
+        newMine.push(proposal)
+      } else {
+        newOthers.push(proposal)
+      }
     })
     setMyProposals(newMine)
     setOtherProposals(newOthers)
