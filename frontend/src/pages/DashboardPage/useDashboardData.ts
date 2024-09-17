@@ -5,6 +5,7 @@ import { useEthereum } from '../../hooks/useEthereum'
 import { useBooleanField, useOneOfField, useTextField } from '../../components/InputFields'
 import { useNavigate } from 'react-router-dom'
 import { dashboard, designDecisions } from '../../constants/config'
+import classes from './index.module.css'
 
 const FETCH_BATCH_SIZE = 100
 
@@ -165,13 +166,13 @@ export const useDashboardData = () => {
     name: 'pollSearchPattern',
     placeholder: 'Start typing here to search for poll',
     autoFocus: true,
+    containerClassName: classes.search,
     onEnter: () => {
       const key = searchPatternsToKey(searchPatterns)
       const cards = matchingCards.get(key)
       if (!cards) return // No matching cards registered'
       if (cards.size > 1) return // Too many matching cards
       const pollId = Array.from(cards.values())[0]
-      // console.log('Should just to', pollId)
       navigate(`/polls/${pollId}`)
     },
   })
