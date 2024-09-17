@@ -154,6 +154,23 @@ export const invertDecision = (decision: Decision): Decision => {
   }
 }
 
+export const andDecisions = (a: Decision, b: Decision): Decision => {
+  const aVerdict = getVerdict(a, false)
+  const bVerdict = getVerdict(b, false)
+  if (aVerdict) {
+    if (bVerdict) {
+      return {
+        verdict: true,
+        reason: getReason(a) + '; ' + getReason(b),
+      }
+    } else {
+      return b
+    }
+  } else {
+    return a
+  }
+}
+
 export const getVerdict = (decision: Decision | undefined, defaultVerdict: boolean): boolean =>
   decision === undefined ? defaultVerdict : typeof decision === 'boolean' ? decision : decision.verdict
 

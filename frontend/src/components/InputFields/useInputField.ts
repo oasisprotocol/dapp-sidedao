@@ -168,7 +168,7 @@ const calculateVisible = (controls: Pick<InputFieldProps<any>, 'name' | 'hidden'
   }
 }
 
-const calculateEnabled = (
+export const calculateEnabled = (
   controls: Pick<InputFieldProps<any>, 'name' | 'enabled' | 'disabled'>,
 ): Decision => {
   const { name, enabled, disabled } = controls

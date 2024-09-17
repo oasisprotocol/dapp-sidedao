@@ -1,5 +1,5 @@
-import { InputFieldControls, InputFieldProps, useInputField } from './useInputField'
-import { Decision, getVerdict } from './util'
+import { calculateEnabled, InputFieldControls, InputFieldProps, useInputField } from './useInputField'
+import { andDecisions, Decision, deny, getVerdict } from './util'
 
 export type Choice<DataType = string> = {
   value: DataType
@@ -16,6 +16,7 @@ type OneOfFieldProps<DataType = string> = Omit<
   initialValue?: DataType
   choices: Choice<DataType>[]
   requiredMessage?: string
+  disableIfOnlyOneVisibleChoice?: boolean
 }
 
 export type OneOfFieldControls<DataType> = InputFieldControls<DataType> & {
@@ -23,15 +24,23 @@ export type OneOfFieldControls<DataType> = InputFieldControls<DataType> & {
 }
 
 export function useOneOfField<DataType>(props: OneOfFieldProps<DataType>): OneOfFieldControls<DataType> {
-  const { choices, requiredMessage = 'Please select an option!' } = props
+  const { choices, requiredMessage = 'Please select an option!', disableIfOnlyOneVisibleChoice } = props
   const visibleChoices = choices.filter(choice => !choice.hidden)
   const enabledChoices = visibleChoices.filter(choice => getVerdict(choice.enabled, true))
   const initialValue = props.initialValue ?? (enabledChoices[0] ?? visibleChoices[0]).value
+
+  const originallyEnabled = calculateEnabled(props)
+  const canSeeAlternatives =
+    disableIfOnlyOneVisibleChoice && visibleChoices.length <= 1
+      ? deny('Currently no other choice is available.')
+      : true
 
   const controls = useInputField<DataType>(
     'oneOf',
     {
       ...props,
+      enabled: andDecisions(originallyEnabled, canSeeAlternatives),
+      disabled: undefined,
       initialValue,
       required: [true, requiredMessage],
       cleanUp: v => v,
