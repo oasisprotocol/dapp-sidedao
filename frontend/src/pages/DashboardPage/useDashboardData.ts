@@ -144,10 +144,10 @@ export const useDashboardData = () => {
     }
   }
 
-  const hideInaccessible = useBooleanField({
-    name: 'hideInaccessible',
-    label: "Hide polls I don't have access to",
-    initialValue: true,
+  const showInaccessible = useBooleanField({
+    name: 'showInaccessible',
+    label: "Show polls I don't have access to",
+    initialValue: false,
   })
 
   const wantedPollType = useOneOfField({
@@ -170,7 +170,7 @@ export const useDashboardData = () => {
     onEnter: () => {
       const key = searchPatternsToKey(searchPatterns)
       const cards = matchingCards.get(key)
-      if (!cards) return // No matching cards registered'
+      if (!cards) return // No matching cards registered
       if (cards.size > 1) return // Too many matching cards
       const pollId = Array.from(cards.values())[0]
       navigate(`/polls/${pollId}`)
@@ -223,11 +223,11 @@ export const useDashboardData = () => {
   const filterInputs = useMemo(() => {
     return [
       wantedPollType,
-      ...(dashboard.showPermissions && !designDecisions.hideHideInaccessiblePollCheckbox
-        ? [hideInaccessible]
+      ...(dashboard.showPermissions && designDecisions.showInaccessiblePollCheckbox
+        ? [showInaccessible]
         : []),
     ]
-  }, [dashboard.showPermissions, wantedPollType.value, hideInaccessible.value])
+  }, [dashboard.showPermissions, wantedPollType.value, showInaccessible.value])
 
   return {
     userAddress,
@@ -238,7 +238,7 @@ export const useDashboardData = () => {
     registerOwnership,
     registerMatch,
     filterInputs,
-    shouldHideInaccessibleData: dashboard.showPermissions && hideInaccessible.value,
+    shouldShowInaccessiblePolls: !dashboard.showPermissions || showInaccessible.value,
     pollSearchPatternInput,
     searchPatterns,
   }

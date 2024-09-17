@@ -16,7 +16,7 @@ export const DashboardPage: FC = () => {
     otherProposals,
     registerOwnership,
     registerMatch,
-    shouldHideInaccessibleData,
+    shouldShowInaccessiblePolls,
     filterInputs,
     pollSearchPatternInput,
     searchPatterns,
@@ -42,7 +42,7 @@ export const DashboardPage: FC = () => {
               <PollCard
                 key={proposal.id}
                 proposal={proposal}
-                hideInaccessible={shouldHideInaccessibleData}
+                hideInaccessible={!shouldShowInaccessiblePolls}
                 registerOwnership={registerOwnership}
                 searchPatterns={searchPatterns}
                 registerMatch={registerMatch}
@@ -61,7 +61,7 @@ export const DashboardPage: FC = () => {
                 key={proposal.id}
                 proposal={proposal}
                 registerOwnership={registerOwnership}
-                hideInaccessible={shouldHideInaccessibleData}
+                hideInaccessible={!shouldShowInaccessiblePolls}
                 searchPatterns={searchPatterns}
                 registerMatch={registerMatch}
               />
