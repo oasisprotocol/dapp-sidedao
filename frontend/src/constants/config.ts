@@ -174,6 +174,11 @@ export const dashboard = {
   },
 }
 
+/**
+ * Aesthetic decisions about the UI
+ */
 export const designDecisions = {
   hideGaslessIndicator: true,
+  hideOpenPollIndicator: true,
+  hideClosePollHaveAccessIndicator: true,
 }
