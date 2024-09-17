@@ -82,6 +82,7 @@ export const ThanksForVote: FC<PollData> = ({
   existingVote: myVote,
   remainingTime,
   remainingTimeString,
+  isMine,
   permissions,
   checkPermissions,
   canClose,
@@ -99,7 +100,12 @@ export const ThanksForVote: FC<PollData> = ({
       <h4>
         <div className={'niceLine'}>
           {name}
-          <PollAccessIndicatorWrapper permissions={permissions} isActive={false} retest={checkPermissions} />
+          <PollAccessIndicatorWrapper
+            isMine={isMine}
+            permissions={permissions}
+            isActive={false}
+            retest={checkPermissions}
+          />
         </div>
       </h4>
       {/*<p>{description}</p>*/}
@@ -111,7 +117,7 @@ export const ThanksForVote: FC<PollData> = ({
       <StatusInfo
         remainingTime={remainingTime}
         remainingTimeString={remainingTimeString}
-        isMine={permissions.isMine}
+        isMine={isMine}
         canClose={canClose}
         closePoll={closePoll}
         isClosing={isClosing}

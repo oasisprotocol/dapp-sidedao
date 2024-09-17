@@ -7,8 +7,8 @@ import { SocialShares } from '../../components/SocialShares'
 import { PollAccessIndicatorWrapper } from '../../components/PollCard/PollAccessIndicator'
 
 export const CompletedPoll: FC<
-  Pick<PollData, 'poll' | 'pollResults' | 'permissions' | 'checkPermissions'>
-> = ({ poll, pollResults, permissions, checkPermissions }) => {
+  Pick<PollData, 'poll' | 'pollResults' | 'isMine' | 'permissions' | 'checkPermissions'>
+> = ({ poll, pollResults, isMine, permissions, checkPermissions }) => {
   const { name, description } = poll!.ipfsParams!
   const { choices, votes } = pollResults!
 
@@ -18,7 +18,12 @@ export const CompletedPoll: FC<
       <h4 className={'niceLine'}>
         <div className={'niceLine'}>
           {name}
-          <PollAccessIndicatorWrapper permissions={permissions} isActive={false} retest={checkPermissions} />
+          <PollAccessIndicatorWrapper
+            isMine={isMine}
+            permissions={permissions}
+            isActive={false}
+            retest={checkPermissions}
+          />
         </div>
       </h4>
       {!!description && <h4>{description}</h4>}

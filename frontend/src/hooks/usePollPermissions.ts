@@ -11,7 +11,6 @@ const blackPermissions: PollPermissions = {
   proof: '',
   explanation: undefined,
   canVote: denyWithReason("Hasn't been checked yet"),
-  isMine: undefined,
   tokenInfo: undefined,
   xChainOptions: undefined,
   canManage: false,
@@ -28,14 +27,24 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined, onDashboard: 
 
   const { userAddress } = eth
 
+  const [isMine, setIsMine] = useState<boolean | undefined>()
   const [permissions, setPermissions] = useState<PollPermissions>({ ...blackPermissions })
 
   const checkPermissions = async (force = false) => {
-    if (proposalId === '0xdemo') {
+    const isDemo = proposalId === '0xdemo'
+
+    setIsMine(
+      isDemo
+        ? false
+        : !creator || !userAddress
+          ? undefined
+          : creator.toLowerCase() === userAddress.toLowerCase(),
+    )
+
+    if (isDemo) {
       setPermissions({
         proof: '',
         explanation: '',
-        isMine: false,
         canVote: true,
         tokenInfo: undefined,
         xChainOptions: undefined,
@@ -56,15 +65,13 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined, onDashboard: 
       return
 
     if (onDashboard && !dashboard.showPermissions) {
-      const isMine = creator.toLowerCase() === userAddress.toLowerCase()
-      setPermissions({ ...permissions, isMine })
+      setPermissions(permissions)
       return
     }
 
     const inputs: CheckPermissionInputs = {
       userAddress,
       proposalId,
-      creator,
       aclAddress: poll.proposal.params.acl,
       options: poll.ipfsParams.acl.options,
     }
@@ -81,6 +88,7 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined, onDashboard: 
   useEffect(() => void checkPermissions(), [proposalId, pollACL, daoAddress, poll?.ipfsParams, userAddress])
 
   return {
+    isMine,
     permissions,
     checkPermissions: () => {
       setPermissions({ ...blackPermissions })

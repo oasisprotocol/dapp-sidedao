@@ -6,20 +6,21 @@ export const useIPFSData = (hash: string | undefined) => {
   const [data, setData] = useState<Uint8Array | undefined>()
   const [error, setError] = useState<string | undefined>()
 
-  const fetchData = async (key: string) => {
+  const fetchData = async (key: string | undefined) => {
+    if (!key) return
+
     setIsLoading(true)
     setError(undefined)
     try {
       setData(await Pinata.fetchData(key))
     } catch {
-      setError('Failed to fetch data from IPFS')
+      setError('Failed to load poll details from IPFS')
     } finally {
       setIsLoading(false)
     }
   }
 
   useEffect(() => {
-    if (!hash) return
     void fetchData(hash)
   }, [hash])
 

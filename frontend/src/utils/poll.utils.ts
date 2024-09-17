@@ -262,7 +262,6 @@ export type PollPermissions = {
   proof: BytesLike
   explanation: string | undefined
   canVote: DecisionWithReason
-  isMine: boolean | undefined
   canManage: boolean
   tokenInfo: TokenInfo | undefined
   xChainOptions: AclOptionsXchain | undefined
@@ -271,7 +270,6 @@ export type PollPermissions = {
 
 export type CheckPermissionInputs = Pick<AclOptions, 'options'> & {
   userAddress: string
-  creator: string
   proposalId: string
   aclAddress: string
 }
@@ -286,7 +284,7 @@ export const checkPollPermission = async (
   context: CheckPermissionContext,
 ): Promise<PollPermissions> => {
   const { daoAddress, provider } = context
-  const { userAddress, creator, proposalId, aclAddress, options } = input
+  const { userAddress, proposalId, aclAddress, options } = input
 
   const pollACL = IPollACL__factory.connect(aclAddress, provider)
 
@@ -297,14 +295,6 @@ export const checkPollPermission = async (
   let error = ''
   let tokenInfo: TokenInfo | undefined = undefined
   let xChainOptions: AclOptionsXchain | undefined = undefined
-
-  const isDemo = proposalId === '0xdemo'
-
-  const isMine = isDemo
-    ? false
-    : !creator || !userAddress
-      ? undefined
-      : creator.toLowerCase() === userAddress.toLowerCase()
 
   const isAllowAll = 'allowAll' in options
   const isTokenHolder = 'token' in options
@@ -387,7 +377,6 @@ export const checkPollPermission = async (
     error,
     tokenInfo,
     xChainOptions,
-    isMine,
     canVote,
     canManage,
   }

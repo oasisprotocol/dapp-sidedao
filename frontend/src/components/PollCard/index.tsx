@@ -14,6 +14,7 @@ import { getVerdict } from '../InputFields'
 import { findTextMatches } from '../HighlightedText/text-matching'
 import { getHighlightedTextHtml, HighlightedText } from '../HighlightedText'
 import { dashboard } from '../../constants/config'
+import { WarningCircleIcon } from '../icons/WarningCircleIcon'
 
 const Arrow: FC<{ className: string }> = ({ className }) => (
   <svg
@@ -62,17 +63,14 @@ export const PollCard: FC<{
   hideInaccessible?: boolean
   searchPatterns: string[]
 }> = ({ proposal, registerOwnership, hideInaccessible, searchPatterns, registerMatch }) => {
-  const { poll, proposalId, gaslessPossible, permissions, checkPermissions } = useExtendedPoll(proposal, {
-    onDashboard: true,
-  })
-
-  const { isMine } = permissions
+  const { poll, proposalId, gaslessPossible, isMine, permissions, checkPermissions, isLoading, error } =
+    useExtendedPoll(proposal, {
+      onDashboard: true,
+    })
 
   useEffect(() => {
     if (proposalId && isMine !== undefined) registerOwnership(proposalId, isMine)
   }, [proposalId, isMine])
-
-  if (!poll) return
 
   const {
     id: pollId,
@@ -83,7 +81,15 @@ export const PollCard: FC<{
       options: { closeTimestamp },
       // acl,
     },
-  } = poll
+  } = poll ?? {
+    id: proposalId?.substring(2),
+    proposal,
+    ipfsParams: {
+      name: '',
+      description: '',
+      options: {},
+    },
+  }
 
   const renderedDescription = micromark(description)
 
@@ -93,7 +99,7 @@ export const PollCard: FC<{
   const hasAllMatches = textMatches.length === searchPatterns.length
   if (!hasAllMatches) return
 
-  registerMatch(searchPatterns, pollId)
+  registerMatch(searchPatterns, pollId!)
 
   const highlightedDescription =
     getHighlightedTextHtml({
@@ -109,18 +115,33 @@ export const PollCard: FC<{
     <Link to={`/polls/${pollId}`} style={{ textDecoration: 'none' }}>
       <div className={classes.pollCard}>
         <div className={classes.pollCardTop}>
-          <h4 className={active ? classes.activePollTitle : undefined}>
-            <span>
-              <HighlightedText text={name} patterns={searchPatterns} />
-            </span>
-            {dashboard.showPermissions && (
-              <PollAccessIndicatorWrapper
-                permissions={permissions}
-                isActive={active}
-                retest={checkPermissions}
-              />
-            )}
-          </h4>
+          {error && (
+            <div className={'niceLine'}>
+              <WarningCircleIcon size={'large'} />
+              {error}
+            </div>
+          )}
+          {isLoading && (
+            <div className={'niceLine'}>
+              <SpinnerIcon size={'medium'} spinning />
+              <h4>Loading poll details...</h4>
+            </div>
+          )}
+          {!isLoading && !error && (
+            <h4 className={active ? classes.activePollTitle : undefined}>
+              <span>
+                <HighlightedText text={name} patterns={searchPatterns} />
+              </span>
+              {dashboard.showPermissions && (
+                <PollAccessIndicatorWrapper
+                  isMine={isMine}
+                  permissions={permissions}
+                  isActive={active}
+                  retest={checkPermissions}
+                />
+              )}
+            </h4>
+          )}
           <Arrow className={active ? classes.activePollArrow : classes.passivePollArrow} />
         </div>
         <div dangerouslySetInnerHTML={{ __html: highlightedDescription }} />
