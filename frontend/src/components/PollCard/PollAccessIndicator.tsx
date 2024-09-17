@@ -39,11 +39,12 @@ export const PollAccessIndicator: FC<{
 }
 
 export const PollAccessIndicatorWrapper: FC<{
+  isMine: boolean | undefined
   permissions: PollPermissions
   isActive: boolean
   retest: () => void
-}> = ({ permissions, isActive, retest }) => {
-  const { explanation, error, canVote, isMine } = permissions
+}> = ({ isMine, permissions, isActive, retest }) => {
+  const { explanation, error, canVote } = permissions
   return (
     <PollAccessIndicator
       isOpen={explanation === ''}

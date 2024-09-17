@@ -62,11 +62,10 @@ export const PollCard: FC<{
   hideInaccessible?: boolean
   searchPatterns: string[]
 }> = ({ proposal, registerOwnership, hideInaccessible, searchPatterns, registerMatch }) => {
-  const { poll, proposalId, gaslessPossible, permissions, checkPermissions } = useExtendedPoll(proposal, {
-    onDashboard: true,
-  })
-
-  const { isMine } = permissions
+  const { poll, proposalId, gaslessPossible, isMine, permissions, checkPermissions, isLoading, error } =
+    useExtendedPoll(proposal, {
+      onDashboard: true,
+    })
 
   useEffect(() => {
     if (proposalId && isMine !== undefined) registerOwnership(proposalId, isMine)
@@ -121,6 +120,7 @@ export const PollCard: FC<{
               />
             )}
           </h4>
+                  isMine={isMine}
           <Arrow className={active ? classes.activePollArrow : classes.passivePollArrow} />
         </div>
         <div dangerouslySetInnerHTML={{ __html: highlightedDescription }} />

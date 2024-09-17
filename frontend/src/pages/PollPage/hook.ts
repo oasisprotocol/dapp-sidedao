@@ -50,6 +50,7 @@ export const usePollData = (pollId: string) => {
     gvAddresses,
     gvBalances,
     invalidateGaslessStatus,
+    isMine,
     permissions,
     checkPermissions,
   } = useExtendedPoll(proposal, { onDashboard: false })
@@ -336,6 +337,7 @@ export const usePollData = (pollId: string) => {
     remainingTime,
     remainingTimeString,
 
+    isMine,
     permissions,
     checkPermissions,
     canVote,

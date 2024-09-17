@@ -29,6 +29,7 @@ export const ActivePoll: FC<PollData> = ({
   vote,
   canVote,
   isVoting,
+  isMine,
   permissions,
   checkPermissions,
   canClose,
@@ -80,7 +81,7 @@ export const ActivePoll: FC<PollData> = ({
 
   const isPastDue = !!remainingTime?.isPastDue
 
-  const { isMine, canVote: canAclVote } = permissions
+  const { canVote: canAclVote } = permissions
 
   // console.log("selected:", selectedChoice, "can select?", canSelect, "can Vote?", canVote, "voting?", isVoting)
   return (
@@ -88,7 +89,12 @@ export const ActivePoll: FC<PollData> = ({
       <h2>
         <div className={'niceLine'}>
           {name}
-          <PollAccessIndicatorWrapper permissions={permissions} isActive={true} retest={checkPermissions} />
+          <PollAccessIndicatorWrapper
+            isMine={isMine}
+            permissions={permissions}
+            isActive={true}
+            retest={checkPermissions}
+          />
         </div>
       </h2>
       <h4>{description}</h4>
