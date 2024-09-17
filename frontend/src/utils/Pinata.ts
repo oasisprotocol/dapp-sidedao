@@ -1,11 +1,28 @@
-import { LRUCache } from 'lru-cache'
+import { StoredLRUCache } from './StoredLRUCache'
 import { VITE_IPFS_GATEWAY, VITE_PINATA_JWT } from '../constants/config'
 
 export abstract class Pinata {
   static JWT_TOKEN = VITE_PINATA_JWT
   static GATEWAY_URL = VITE_IPFS_GATEWAY
 
-  static #cache = new LRUCache<string, Uint8Array>({ ttl: 60 * 60 * 5, max: 100 })
+  static #cache = new StoredLRUCache<string, Uint8Array, void>({
+    storageKey: 'sideDAO.ipfsCache',
+    ttl: 1000 * 60 * 60 * 5,
+    max: 1000,
+    constantValues: true,
+    // debug: ['fetch'],
+    transformValues: {
+      encode: data => JSON.stringify(data),
+      decode: stringData => new Uint8Array(Object.values(JSON.parse(stringData))),
+    },
+    fetcher: async hash => {
+      const gw = Pinata.GATEWAY_URL ?? 'https://w3s.link/ipfs'
+      const url = `${gw}/${hash}`
+      const resp = await fetch(url)
+      const buffer = await resp.arrayBuffer()
+      return new Uint8Array(buffer)
+    },
+  })
 
   static async pinData(data: Uint8Array) {
     const form = new FormData()
@@ -27,15 +44,5 @@ export abstract class Pinata {
     return resBody.IpfsHash as string
   }
 
-  static async fetchData(ipfsHash: string) {
-    if (Pinata.#cache.has(ipfsHash)) {
-      return Pinata.#cache.get(ipfsHash)!
-    }
-    const gw = Pinata.GATEWAY_URL ?? 'https://w3s.link/ipfs'
-    const url = `${gw}/${ipfsHash}`
-    const resp = await fetch(url)
-    const data = new Uint8Array(await resp.arrayBuffer())
-    Pinata.#cache.set(ipfsHash, data)
-    return data
-  }
+  static fetchData = (ipfsHash: string) => Pinata.#cache.fetch(ipfsHash, {})
 }
