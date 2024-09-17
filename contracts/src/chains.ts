@@ -76,6 +76,8 @@ export const chain_info: Record<number,ChainDefinition> = {
     },
 
     // Alchemy BNB Smart Chain requires upgraded plan
+    // Infura doesn't support archive nodes for BSC
+    /*
     56: {
         "name": "BNB Smart Chain Mainnet",
         "chain": "BSC",
@@ -109,6 +111,7 @@ export const chain_info: Record<number,ChainDefinition> = {
         }
         ]
     },
+    */
 
     42161: {
         "name": "Arbitrum One",
