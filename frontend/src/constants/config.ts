@@ -173,3 +173,7 @@ export const dashboard = {
     showOnlyOpenByDefault: false,
   },
 }
+
+export const designDecisions = {
+  hideGaslessIndicator: true,
+}
