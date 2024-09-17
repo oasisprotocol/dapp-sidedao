@@ -14,6 +14,7 @@ import { getVerdict } from '../InputFields'
 import { findTextMatches } from '../HighlightedText/text-matching'
 import { getHighlightedTextHtml, HighlightedText } from '../HighlightedText'
 import { dashboard } from '../../constants/config'
+import { WarningCircleIcon } from '../icons/WarningCircleIcon'
 
 const Arrow: FC<{ className: string }> = ({ className }) => (
   <svg
@@ -71,8 +72,6 @@ export const PollCard: FC<{
     if (proposalId && isMine !== undefined) registerOwnership(proposalId, isMine)
   }, [proposalId, isMine])
 
-  if (!poll) return
-
   const {
     id: pollId,
     proposal: { active },
@@ -82,7 +81,15 @@ export const PollCard: FC<{
       options: { closeTimestamp },
       // acl,
     },
-  } = poll
+  } = poll ?? {
+    id: proposalId?.substring(2),
+    proposal,
+    ipfsParams: {
+      name: '',
+      description: '',
+      options: {},
+    },
+  }
 
   const renderedDescription = micromark(description)
 
@@ -92,7 +99,7 @@ export const PollCard: FC<{
   const hasAllMatches = textMatches.length === searchPatterns.length
   if (!hasAllMatches) return
 
-  registerMatch(searchPatterns, pollId)
+  registerMatch(searchPatterns, pollId!)
 
   const highlightedDescription =
     getHighlightedTextHtml({
