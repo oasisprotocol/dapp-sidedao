@@ -58,11 +58,14 @@ importers:
         specifier: ^1.3.3
         version: 1.4.0
       '@oasisprotocol/deoxysii':
-        specifier: ^0.0.5
-        version: 0.0.5
+        specifier: ^0.0.6
+        version: 0.0.6
+      '@oasisprotocol/sapphire-ethers-v6':
+        specifier: ^6.0.0
+        version: 6.0.0(@oasisprotocol/sapphire-paratime@2.0.0)(ethers@6.10.0)(typescript@5.3.3)
       '@oasisprotocol/sapphire-paratime':
-        specifier: ^1.3.2
-        version: 1.3.2
+        specifier: ^2.x
+        version: 2.0.0
       '@oasisprotocol/side-dao-contracts':
         specifier: workspace:^
         version: link:../contracts
@@ -3120,11 +3123,32 @@ packages:
       bsaes: 0.0.2
       uint32: 0.2.1
 
+  /@oasisprotocol/deoxysii@0.0.6:
+    resolution: {integrity: sha512-TI51bIpChfsla9aRbjip6zvTbz6rpsqKgM7MqJvSfeFF6G5xLXQcbSC9u/1hOnOOazd7HaqA9NvaXQdeKCb3yw==}
+    dev: false
+
   /@oasisprotocol/sapphire-contracts@0.2.10:
     resolution: {integrity: sha512-3f/MUJxr2QR6KZx6R+nt4e6yZy6tbJ+0YyS3VP5tw/sq4MNEBCrfUgkzZaw9isFadjgZBq6SYwq6Sqn8DXVPRA==}
     dependencies:
       '@openzeppelin/contracts': 5.0.2
     dev: true
+
+  /@oasisprotocol/sapphire-ethers-v6@6.0.0(@oasisprotocol/sapphire-paratime@2.0.0)(ethers@6.10.0)(typescript@5.3.3):
+    resolution: {integrity: sha512-81JIfaNVOcNeNa1ny5g1axH1VrRbon5bJWopK05LUxL9wZ32Ez02liRr9i/3Ez/L2CuQbtaqFtFpQM1HThTyug==}
+    peerDependencies:
+      '@oasisprotocol/sapphire-paratime': ^2.0.0
+      ethers: 6.x
+      typescript: '>=5.0.4'
+    peerDependenciesMeta:
+      '@oasisprotocol/sapphire-paratime':
+        optional: true
+      typescript:
+        optional: true
+    dependencies:
+      '@oasisprotocol/sapphire-paratime': 2.0.0
+      ethers: 6.10.0
+      typescript: 5.3.3
+    dev: false
 
   /@oasisprotocol/sapphire-hardhat@2.19.4(hardhat@2.22.9):
     resolution: {integrity: sha512-gpNRrVN90nDAKZ6O6j76vitp4YPRsaQTNR7xkMNbzBCnHfnlT6BGWvXbLFeyQSPhtia129xUYrrv/gL/X/f+lA==}
@@ -3150,6 +3174,14 @@ packages:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+
+  /@oasisprotocol/sapphire-paratime@2.0.0:
+    resolution: {integrity: sha512-wzGIf55R9hw/j+OKa3VEctn1ryuJsrF64VgrIDBeOG5eq9VxhqQLv6f4D/Bp3XBGebhOm8jQE8hG3XrCGSEHXw==}
+    dependencies:
+      '@noble/hashes': 1.4.0
+      '@oasisprotocol/deoxysii': 0.0.6
+      cborg: 1.10.2
+    dev: false
 
   /@openzeppelin/contracts@4.9.6:
     resolution: {integrity: sha512-xSmezSupL+y9VkHZJGDoCBpmnB2ogM13ccaYDWqJTfS3dbuHkgjuwDFUmaFauBCboQMGB/S5UqUl2y54X99BmA==}

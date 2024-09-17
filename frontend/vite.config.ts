@@ -20,9 +20,11 @@ export default defineConfig({
           if (id.includes('lodash')) {
             return 'lodash'
           }
+          /*
           if (id.includes('react-dom')) {
             return 'react-dom'
           }
+          */
         },
       },
     },

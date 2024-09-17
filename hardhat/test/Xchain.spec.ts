@@ -43,7 +43,7 @@ async function verifyAccountProof(
         await headerCache.add(headerRlpBytes);
     }
 
-    console.log(`  - fetching proof (blockhash:${block.hash} block:${block.number} account:${testAccount})`);
+    console.log(`      - fetching proof (blockhash:${block.hash} block:${block.number} account:${testAccount})`);
     const proof = await fetchAccountProof(rpc, block.hash!, testAccount);
 
     // Can @ethereumjs code verify the returned merkle proof?
@@ -174,7 +174,7 @@ describe("Cross-chain", function () {
     // Verifies that the RPC endpoints are archive nodes and can retrieve historic proofs
     it('Historic Proofs', async function () {
         // Allow roughly 3 seconds per supported chain
-        this.timeout(Object.keys(chain_info).length * 1000 * 3);
+        this.timeout(Object.keys(chain_info).length * 1000 * 10);
 
         for( const k of Object.keys(chain_info) )
         {
@@ -184,6 +184,7 @@ describe("Cross-chain", function () {
                 continue;
             }
 
+            console.log(`    - testing chainId:${chainId} chain:${chain.name}`);
             const rpc = xchainRPC(chainId);
 
             // Walk backwards from most recent block, until we find one useful for testing
@@ -202,7 +203,7 @@ describe("Cross-chain", function () {
                 // Find a block with transactions
                 if( b.transactions.length == 0 ) {
                     blockNumber -= 1;
-                    console.log(`  - skipping, no transactions (chainId:${chainId} chain:${chain.name} height:${blockNumber})`)
+                    console.log(`      - skipping, no transactions (chainId:${chainId} chain:${chain.name} height:${blockNumber})`)
                     continue
                 }
 
@@ -229,7 +230,7 @@ describe("Cross-chain", function () {
                     }
                 }
                 if( ! x || balance === 0n ) {
-                    console.log(`  - cannot find test account (chainId:${chainId} chain:${chain.name} height:${blockNumber})`)
+                    console.log(`       - cannot find test account (chainId:${chainId} chain:${chain.name} height:${blockNumber})`)
                     blockNumber -= 1;
                     continue;
                 }

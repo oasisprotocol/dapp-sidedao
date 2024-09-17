@@ -2,14 +2,14 @@ import detectEthereumProvider from '@metamask/detect-provider'
 import { EthereumContext, EthereumState } from './EthereumContext'
 import { FC, PropsWithChildren, useEffect, useState } from 'react'
 import { BrowserProvider, JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner, ZeroAddress } from 'ethers'
-import { wrap as sapphireWrap, NETWORKS as SAPPHIRE_NETWORKS } from '@oasisprotocol/sapphire-paratime'
+import { wrapEthersProvider, NETWORKS as SAPPHIRE_NETWORKS, wrapEthersSigner } from '@oasisprotocol/sapphire-ethers-v6'
 import { DemoConnectionStatus, DemoNetwork, demoNetworkFromChainId } from '../utils/crypto.demo'
 import { DemoEIP1193Provider } from '../utils/eip1193.demo'
 import { VITE_WEB3_GATEWAY } from '../constants/config'
 
 const ethereumInitialState: EthereumState = {
   signer: undefined,
-  provider: sapphireWrap(new JsonRpcProvider(VITE_WEB3_GATEWAY, 'any')) as JsonRpcProvider,
+  provider: wrapEthersProvider(new JsonRpcProvider(VITE_WEB3_GATEWAY, 'any')),
   network: DemoNetwork.FromConfig,
   address: undefined,
   status: DemoConnectionStatus.Unknown,
@@ -147,7 +147,7 @@ export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => 
     // Sapphire signers are always wrapped
     const l_isSapphire = l_network in SAPPHIRE_NETWORKS
     if (l_isSapphire && l_signer) {
-      l_signer = sapphireWrap(l_signer)
+      l_signer = wrapEthersSigner(l_signer)
     }
 
     const hasAccount = l_accounts.length

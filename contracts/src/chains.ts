@@ -23,6 +23,8 @@ export interface ChainDefinition {
     cannotMakeStorageProofs?:boolean;
 }
 
+const INFURA_API_KEY = 'e9b08cc1b55b430494f6cf5259b2a560';
+const THIRDWEB_API_KEY = '6699629aefc73887e7f962c5438dddd1';
 const ALCHEMY_API_KEY = 'LTUd8wMSlbXxWBHpYyFE-WyOh2wud4Hb';
 
 // NOTE: many chains are defined in https://github.com/thirdweb-dev/js/tree/main/legacy_packages/chains/chains
@@ -33,7 +35,9 @@ export const chain_info: Record<number,ChainDefinition> = {
         "chain": "ETH",
         "icon": "ethereum",
         "rpcUrls": [
-            `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
+            //`https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
+            //`https://1.rpc.thirdweb.com/${THIRDWEB_API_KEY}`,
+            `https://mainnet.infura.io/v3/${INFURA_API_KEY}`
         ],
         "features": [{ "name": "EIP155" }, { "name": "EIP1559" }],
         "hardfork": "cancun",
@@ -72,6 +76,7 @@ export const chain_info: Record<number,ChainDefinition> = {
     },
 
     // Alchemy BNB Smart Chain requires upgraded plan
+    // Infura doesn't support archive nodes for BSC
     /*
     56: {
         "name": "BNB Smart Chain Mainnet",
@@ -80,21 +85,7 @@ export const chain_info: Record<number,ChainDefinition> = {
         // Same as cancun, but without 4788
         "customEIPs": [1153, 4844, 5656, 6780, 7516],
         "rpcUrls": [
-        "https://bsc-dataseed1.bnbchain.org",
-        "https://bsc-dataseed2.bnbchain.org",
-        "https://bsc-dataseed3.bnbchain.org",
-        "https://bsc-dataseed4.bnbchain.org",
-        "https://bsc-dataseed1.defibit.io",
-        "https://bsc-dataseed2.defibit.io",
-        "https://bsc-dataseed3.defibit.io",
-        "https://bsc-dataseed4.defibit.io",
-        "https://bsc-dataseed1.ninicoin.io",
-        "https://bsc-dataseed2.ninicoin.io",
-        "https://bsc-dataseed3.ninicoin.io",
-        "https://bsc-dataseed4.ninicoin.io",
-        "https://bsc.publicnode.com",
-        //"wss://bsc.publicnode.com",
-        //"wss://bsc-ws-node.nariox.org"
+            `https://bsc-mainnet.infura.io/v3/${INFURA_API_KEY}`,
         ],
         "nativeCurrency": {
         "name": "BNB Chain Native Token",
@@ -136,11 +127,9 @@ export const chain_info: Record<number,ChainDefinition> = {
             "decimals": 18
         },
         "rpcUrls": [
-            `https://arb-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
-            //"https://arbitrum-mainnet.infura.io/v3/${INFURA_API_KEY}",
-            //"https://arb1.arbitrum.io/rpc",
-            //"https://arbitrum-one.publicnode.com",
-            //"wss://arbitrum-one.publicnode.com"
+            //`https://arb-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
+            //`https://42161.rpc.thirdweb.com/${THIRDWEB_API_KEY}`
+            `https://arbitrum-mainnet.infura.io/v3/${INFURA_API_KEY}`
         ],
         "explorers": [
             {
@@ -173,12 +162,9 @@ export const chain_info: Record<number,ChainDefinition> = {
         "hardfork": "cancun",
         "chain": "ETH",
         "rpcUrls": [
-            `https://opt-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
-            //"https://mainnet.optimism.io",
-            //"https://optimism.publicnode.com",
-            //"wss://optimism.publicnode.com",
-            //"https://optimism.gateway.tenderly.co",
-            //"wss://optimism.gateway.tenderly.co"
+            //`https://opt-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
+            //`https://10.rpc.thirdweb.com/${THIRDWEB_API_KEY}`,
+            `https://optimism-mainnet.infura.io/v3/${INFURA_API_KEY}`
         ],
         "nativeCurrency": {
             "name": "Ether",
@@ -218,17 +204,9 @@ export const chain_info: Record<number,ChainDefinition> = {
         "chain": "Polygon",
         "icon": "polygon",
         "rpcUrls": [
-            `https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
-            //"https://polygon-rpc.com/",
-            //"https://rpc-mainnet.matic.network",
-            //"https://matic-mainnet.chainstacklabs.com",
-            //"https://rpc-mainnet.maticvigil.com",
-            //"https://rpc-mainnet.matic.quiknode.pro",
-            //"https://matic-mainnet-full-rpc.bwarelabs.com",
-            //"https://polygon-bor.publicnode.com",
-            //"wss://polygon-bor.publicnode.com",
-            //"https://polygon.gateway.tenderly.co",
-            //"wss://polygon.gateway.tenderly.co"
+            //`https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
+            //`https://137.rpc.thirdweb.com/${THIRDWEB_API_KEY}`,
+            `https://polygon-mainnet.infura.io/v3/${INFURA_API_KEY}`
         ],
         "nativeCurrency": {
             "name": "POL",
@@ -261,7 +239,9 @@ export const chain_info: Record<number,ChainDefinition> = {
         "chain": "polygon-testnet",
         "icon": "polygon-testnet-amoy",
         "rpcUrls": [
-            `https://polygon-amoy.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
+            //`https://polygon-amoy.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
+            //`https://80002.rpc.thirdweb.com/${THIRDWEB_API_KEY}`
+            `https://polygon-amoy.infura.io/v3/${INFURA_API_KEY}`
         ],
         "nativeCurrency": {
             "name": "testPOL",
@@ -282,6 +262,8 @@ export const chain_info: Record<number,ChainDefinition> = {
         isTestnet: true,
     },
 
+    // XXX: Base not supported by infura
+    /*
     8453: {
         "hardfork": "cancun",
         "chain": "ETH",
@@ -334,15 +316,6 @@ export const chain_info: Record<number,ChainDefinition> = {
         //"redFlags": [],
         "rpcUrls": [
             `https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
-            /*
-            "https://8453.rpc.thirdweb.com/${THIRDWEB_API_KEY}",
-            "https://mainnet.base.org/",
-            "https://developer-access-mainnet.base.org/",
-            "https://base.gateway.tenderly.co",
-            "wss://base.gateway.tenderly.co",
-            "https://base-rpc.publicnode.com",
-            "wss://base-rpc.publicnode.com"
-            */
         ],
         "shortName": "base",
         //"slug": "base",
@@ -384,18 +357,13 @@ export const chain_info: Record<number,ChainDefinition> = {
         "networkId": 84532,
         "rpcUrls": [
             `https://base-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
-            /*
-            "https://84532.rpc.thirdweb.com/${THIRDWEB_API_KEY}",
-            "https://sepolia.base.org",
-            "https://base-sepolia-rpc.publicnode.com",
-            "wss://base-sepolia-rpc.publicnode.com"
-            */
         ],
         "shortName": "basesep",
         "slip44": 1,
         //"slug": "base-sepolia-testnet",
         isTestnet: true
     },
+    */
 
     23294: {
         chainId: 0x5afe,

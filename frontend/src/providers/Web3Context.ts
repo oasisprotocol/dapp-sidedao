@@ -1,11 +1,10 @@
 import { createContext } from 'react'
-import * as sapphire from '@oasisprotocol/sapphire-paratime'
 import { BrowserProvider } from 'ethers'
 
 export interface Web3ProviderState {
   isConnected: boolean
   ethProvider: BrowserProvider | null
-  sapphireEthProvider: (BrowserProvider & sapphire.SapphireAnnex) | null
+  sapphireEthProvider: BrowserProvider | null
   account: string | null
   explorerBaseUrl: string | null
   chainName: string | null
