@@ -5,6 +5,7 @@ import {
   deny,
   FieldConfiguration,
   findErrorsInFields,
+  getVerdict,
   useBooleanField,
   useDateField,
   useLabel,
@@ -34,7 +35,7 @@ import { useContracts } from '../../hooks/useContracts'
 import classes from './index.module.css'
 import { DateUtils } from '../../utils/date.utils'
 import { useTime } from '../../hooks/useTime'
-import { MIN_CLOSE_TIME_MINUTES } from '../../constants/config'
+import { designDecisions, MIN_CLOSE_TIME_MINUTES } from '../../constants/config'
 import { AclOptions } from '../../types'
 import { renderAddress } from '../../components/Addresses'
 import { useNavigate } from 'react-router-dom'
@@ -72,6 +73,11 @@ const splitAddresses = (addressSoup: string): string[] =>
     .flatMap(x => x.split(' '))
     .map(x => x.trim())
     .filter(x => x.length > 0)
+
+const hideDisabledIfNecessary = (choice: Choice): Choice => ({
+  ...choice,
+  hidden: choice.hidden || (designDecisions.hideDisabledSelectOptions && !getVerdict(choice.enabled, true)),
+})
 
 export const useCreatePollForm = () => {
   const eth = useEthereum()
@@ -364,7 +370,8 @@ export const useCreatePollForm = () => {
         label: 'According to token distribution',
         enabled: deny('Coming soon'),
       },
-    ],
+    ].map(hideDisabledIfNecessary),
+    disableIfOnlyOneVisibleChoice: designDecisions.disableSelectsWithOnlyOneVisibleOption,
   } as const)
 
   const gasFree = useBooleanField({
@@ -429,7 +436,7 @@ export const useCreatePollForm = () => {
         label: 'Show percentage and votes for each answer',
         description: 'Everyone can see who voted for what.',
       },
-    ],
+    ].map(hideDisabledIfNecessary),
   } as const)
 
   const authorResultDisplayType = useOneOfField({
@@ -460,7 +467,8 @@ export const useCreatePollForm = () => {
         description: 'The author can see who voted for what.',
         enabled: deny('Coming soon'),
       },
-    ],
+    ].map(hideDisabledIfNecessary),
+    disableIfOnlyOneVisibleChoice: designDecisions.disableSelectsWithOnlyOneVisibleOption,
   } as const)
 
   const hasCloseDate = useBooleanField({
