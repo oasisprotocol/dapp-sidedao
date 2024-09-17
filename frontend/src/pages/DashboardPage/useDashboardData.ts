@@ -223,7 +223,7 @@ export const useDashboardData = () => {
   const filterInputs = useMemo(() => {
     if (!dashboard.filtering.enabled) return []
     return [wantedPollType, ...(dashboard.showPermissions ? [hideInaccessible] : [])]
-  }, [dashboard.filtering.enabled, dashboard.showPermissions])
+  }, [dashboard.filtering.enabled, dashboard.showPermissions, wantedPollType.value, hideInaccessible.value])
 
   return {
     userAddress,
