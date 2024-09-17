@@ -237,7 +237,7 @@ export const useCreatePollForm = () => {
     choices: chainChoices,
     onValueChange: () => {
       if (xchainTokenAddress.isValidated) {
-        void xchainTokenAddress.validate({ forceChange: true })
+        void xchainTokenAddress.validate({ forceChange: true, reason: 'change' })
       }
     },
   })
@@ -504,7 +504,7 @@ export const useCreatePollForm = () => {
   })
 
   useEffect(() => {
-    void pollCloseDate.validate({ forceChange: true })
+    void pollCloseDate.validate({ forceChange: true, reason: 'change' })
   }, [hasCloseDate.value, now])
 
   useEffect(() => {
@@ -558,7 +558,7 @@ export const useCreatePollForm = () => {
   const goToNextStep = async () => {
     if (stepIndex === numberOfSteps - 1) return
     setValidationPending(true)
-    const hasErrors = await findErrorsInFields(stepFields[step])
+    const hasErrors = await findErrorsInFields(stepFields[step], 'submit')
     setValidationPending(false)
     if (hasErrors) return
     setStep(process[stepIndex + 1])
@@ -593,7 +593,7 @@ export const useCreatePollForm = () => {
 
   const createPoll = async () => {
     setValidationPending(true)
-    const hasErrors = await findErrorsInFields(stepFields[step])
+    const hasErrors = await findErrorsInFields(stepFields[step], 'submit')
     setValidationPending(false)
     if (hasErrors) return
 

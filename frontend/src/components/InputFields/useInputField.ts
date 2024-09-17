@@ -108,9 +108,10 @@ export type InputFieldProps<DataType> = {
   onValueChange?: (value: DataType) => void
 }
 
+export type ValidationReason = 'change' | 'submit'
 export type ValidationParams = {
-  preserve?: boolean
   forceChange?: boolean
+  reason: ValidationReason
 }
 
 /**
@@ -130,7 +131,7 @@ export type InputFieldControls<DataType> = Pick<
   allProblems: AllProblems
   hasProblems: boolean
   isValidated: boolean
-  validate: (params?: ValidationParams) => Promise<boolean>
+  validate: (params: ValidationParams) => Promise<boolean>
   validationPending: boolean
   validationStatusMessage: string
   validatorProgress: number | undefined
@@ -256,8 +257,8 @@ export function useInputField<DataType>(
     },
   }
 
-  const validate = async (params?: { preserve?: boolean; forceChange?: boolean }): Promise<boolean> => {
-    const { preserve = false, forceChange = false } = params ?? {}
+  const validate = async (params: ValidationParams): Promise<boolean> => {
+    const { forceChange = false, reason } = params
     const wasOK = isValidated && !hasProblems
 
     // Clear any previous problems
@@ -272,7 +273,7 @@ export function useInputField<DataType>(
     // Clean up the value
     const cleanValue = cleanUp ? cleanUp(value) : value
     const different = !isEqual(cleanValue, value)
-    if (different && !preserve) {
+    if (different && reason !== 'change') {
       setValue(cleanValue)
     }
 
@@ -301,6 +302,7 @@ export function useInputField<DataType>(
               cleanValue,
               forceChange || !wasOK || lastValidatedData !== cleanValue,
               validatorControls,
+              params.reason,
             ) // Execute the current validators
 
         getAsArray(validatorReport) // Maybe we have a single report, maybe an array. Receive it as an array.
@@ -340,7 +342,7 @@ export function useInputField<DataType>(
 
   useEffect(() => {
     if (visible && validateOnChange && !pristine) {
-      void validate({ preserve: true })
+      void validate({ reason: 'change' })
     }
   }, [visible, value, validateOnChange])
 
