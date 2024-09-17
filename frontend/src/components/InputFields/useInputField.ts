@@ -182,9 +182,9 @@ const calculateEnabled = (
     if (disabled === undefined) {
       return enabled
     } else {
-      if (getVerdict(enabled) !== getVerdict(disabled)) {
+      if (getVerdict(enabled, false) !== getVerdict(disabled, false)) {
         return {
-          verdict: getVerdict(enabled),
+          verdict: getVerdict(enabled, false),
           reason: getReason(disabled) ?? getReason(enabled),
         }
       } else {
@@ -244,7 +244,7 @@ export function useInputField<DataType>(
   const visible = calculateVisible(props)
   const enabled = calculateEnabled(props)
 
-  const isEnabled = getVerdict(enabled)
+  const isEnabled = getVerdict(enabled, true)
 
   const [validatorProgress, setValidatorProgress] = useState<number>()
   const [validatorStatusMessage, setValidatorStatusMessage] = useState<string>()

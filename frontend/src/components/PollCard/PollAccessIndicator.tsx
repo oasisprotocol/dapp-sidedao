@@ -54,7 +54,7 @@ export const PollAccessIndicatorWrapper: FC<{
       isBroken={!!error}
       isClosed={!!explanation && !error}
       explanation={explanation}
-      hasAccess={getVerdict(canVote)}
+      hasAccess={getVerdict(canVote, false)}
       isCompleted={!isActive}
       isPending={explanation === undefined}
       isMine={isMine}

@@ -154,7 +154,7 @@ export const invertDecision = (decision: Decision): Decision => {
   }
 }
 
-export const getVerdict = (decision: Decision | undefined, defaultVerdict = false): boolean =>
+export const getVerdict = (decision: Decision | undefined, defaultVerdict: boolean): boolean =>
   decision === undefined ? defaultVerdict : typeof decision === 'boolean' ? decision : decision.verdict
 
 export const getReason = (decision: Decision | undefined): string | undefined =>

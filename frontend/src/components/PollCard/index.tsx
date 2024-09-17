@@ -109,7 +109,7 @@ export const PollCard: FC<{
       patterns: searchPatterns,
     }) ?? ''
 
-  if (hideInaccessible && !permissions.error && !getVerdict(permissions.canVote) && !isMine) return
+  if (hideInaccessible && !permissions.error && !getVerdict(permissions.canVote, false) && !isMine) return
 
   const isPastDue = !!closeTimestamp && new Date().getTime() / 1000 > closeTimestamp
 

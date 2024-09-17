@@ -131,14 +131,14 @@ export const ActivePoll: FC<PollData> = ({
           Voting results will be available when {isMine ? 'you close' : 'the owner formally closes'} the poll.
         </h4>
       )}
-      {hasWallet && !hasWalletOnWrongNetwork && !getVerdict(canAclVote) && (
+      {hasWallet && !hasWalletOnWrongNetwork && !getVerdict(canAclVote, false) && (
         <h4 className={'niceLine'}>
           <WarningCircleIcon size={'large'} />
           You can&apos;t vote on this poll, since {getReason(canAclVote)}.
         </h4>
       )}
       <div className={classes.buttons}>
-        {hasWallet && getVerdict(canAclVote) && !isPastDue && (
+        {hasWallet && getVerdict(canAclVote, false) && !isPastDue && (
           <div className={'niceLine'}>
             {gaslessPossible ? <NoGasRequiredIcon /> : <GasRequiredIcon />}
             <Button disabled={!canVote} onClick={vote} pending={isVoting}>
