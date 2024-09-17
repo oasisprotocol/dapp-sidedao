@@ -38,7 +38,7 @@ export const ActivePoll: FC<PollData> = ({
   topUp,
 }) => {
   // console.log("hasWallet?", hasWallet, "hasWalletOnWrongNetwork?",hasWalletOnWrongNetwork)
-  // console.log("isMine?", isMine, "canClose?", canClose)
+  // console.log('isMine?', isMine, 'canClose?', canClose)
 
   const {
     name,
