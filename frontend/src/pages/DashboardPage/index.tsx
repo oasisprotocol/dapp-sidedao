@@ -51,7 +51,7 @@ export const DashboardPage: FC = () => {
           )}
         </div>
         <div className={classes.dashboardOtherColumn}>
-          <InputFieldGroup fields={[filterInputs]} />
+          <InputFieldGroup fields={[filterInputs]} alignRight />
           <div className={classes.dashboardLabel}>Explore polls</div>
           {isLoadingPolls ? (
             <Alert headerText="Please wait" type="loading" actions={<span>Fetching polls...</span>} />

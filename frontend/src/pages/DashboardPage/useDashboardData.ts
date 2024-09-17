@@ -153,11 +153,11 @@ export const useDashboardData = () => {
   const wantedPollType = useOneOfField({
     name: 'wantedPollType',
     choices: [
+      { value: 'all', label: 'Both open and completed polls' },
       { value: 'openOnly', label: 'Open polls' },
       { value: 'completedOnly', label: 'Completed polls' },
-      { value: 'all', label: 'Both open and completed polls' },
     ],
-    initialValue: 'all',
+    containerClassName: classes.openClosePolls,
   } as const)
 
   const navigate = useNavigate()
