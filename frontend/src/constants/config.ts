@@ -181,4 +181,5 @@ export const designDecisions = {
   hideGaslessIndicator: true,
   hideOpenPollIndicator: true,
   hideClosePollHaveAccessIndicator: true,
+  hideMyPollIndicator: true,
 }

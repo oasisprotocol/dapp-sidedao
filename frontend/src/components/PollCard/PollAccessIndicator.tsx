@@ -35,7 +35,7 @@ export const PollAccessIndicator: FC<{
       )}
       {isPending && <SpinnerIcon spinning height={32} title={'Checking access'} />}
       {isBroken && <BrokenPollAccessIcon onClick={retest} />}
-      {isMine && <MyPollIcon />}
+      {isMine && !designDecisions.hideMyPollIndicator && <MyPollIcon />}
       {/*<Button onClick={retest}>ASD</Button>*/}
     </>
   )
