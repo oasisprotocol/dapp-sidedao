@@ -26,6 +26,7 @@ export const TextInput: FC<TextFieldControls> = ({
   whyDisabled,
   autoFocus,
   onEnter,
+  containerClassName,
 }) => {
   const handleChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => setValue(event.target.value),
@@ -84,7 +85,7 @@ export const TextInput: FC<TextFieldControls> = ({
   )
 
   return (
-    <div className={classes.fieldContainer}>
+    <div className={StringUtils.clsx(classes.fieldContainer, containerClassName)}>
       {!!label || !!description ? (
         <label>
           <div className={classes.fieldLabel}>{label}</div>
