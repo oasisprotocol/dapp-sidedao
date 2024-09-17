@@ -57,11 +57,13 @@ export type SyncValidatorFunction<DataType> = (
   value: DataType,
   changed: boolean,
   controls: ValidatorControls,
+  reason: string,
 ) => SingleOrArray<ValidatorProduct>
 export type AsyncValidatorFunction<DataType> = (
   value: DataType,
   changed: boolean,
   controls: ValidatorControls,
+  reason: string,
 ) => Promise<SingleOrArray<ValidatorProduct>>
 export type ValidatorFunction<DataType> = SyncValidatorFunction<DataType> | AsyncValidatorFunction<DataType>
 
@@ -154,7 +156,24 @@ export const invertDecision = (decision: Decision): Decision => {
   }
 }
 
-export const getVerdict = (decision: Decision | undefined, defaultVerdict = false): boolean =>
+export const andDecisions = (a: Decision, b: Decision): Decision => {
+  const aVerdict = getVerdict(a, false)
+  const bVerdict = getVerdict(b, false)
+  if (aVerdict) {
+    if (bVerdict) {
+      return {
+        verdict: true,
+        reason: getReason(a) + '; ' + getReason(b),
+      }
+    } else {
+      return b
+    }
+  } else {
+    return a
+  }
+}
+
+export const getVerdict = (decision: Decision | undefined, defaultVerdict: boolean): boolean =>
   decision === undefined ? defaultVerdict : typeof decision === 'boolean' ? decision : decision.verdict
 
 export const getReason = (decision: Decision | undefined): string | undefined =>

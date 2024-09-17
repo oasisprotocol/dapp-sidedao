@@ -108,9 +108,10 @@ export type InputFieldProps<DataType> = {
   onValueChange?: (value: DataType) => void
 }
 
+export type ValidationReason = 'change' | 'submit'
 export type ValidationParams = {
-  preserve?: boolean
   forceChange?: boolean
+  reason: ValidationReason
 }
 
 /**
@@ -130,7 +131,7 @@ export type InputFieldControls<DataType> = Pick<
   allProblems: AllProblems
   hasProblems: boolean
   isValidated: boolean
-  validate: (params?: ValidationParams) => Promise<boolean>
+  validate: (params: ValidationParams) => Promise<boolean>
   validationPending: boolean
   validationStatusMessage: string
   validatorProgress: number | undefined
@@ -168,7 +169,7 @@ const calculateVisible = (controls: Pick<InputFieldProps<any>, 'name' | 'hidden'
   }
 }
 
-const calculateEnabled = (
+export const calculateEnabled = (
   controls: Pick<InputFieldProps<any>, 'name' | 'enabled' | 'disabled'>,
 ): Decision => {
   const { name, enabled, disabled } = controls
@@ -182,9 +183,9 @@ const calculateEnabled = (
     if (disabled === undefined) {
       return enabled
     } else {
-      if (getVerdict(enabled) !== getVerdict(disabled)) {
+      if (getVerdict(enabled, false) !== getVerdict(disabled, false)) {
         return {
-          verdict: getVerdict(enabled),
+          verdict: getVerdict(enabled, false),
           reason: getReason(disabled) ?? getReason(enabled),
         }
       } else {
@@ -244,7 +245,7 @@ export function useInputField<DataType>(
   const visible = calculateVisible(props)
   const enabled = calculateEnabled(props)
 
-  const isEnabled = getVerdict(enabled)
+  const isEnabled = getVerdict(enabled, true)
 
   const [validatorProgress, setValidatorProgress] = useState<number>()
   const [validatorStatusMessage, setValidatorStatusMessage] = useState<string>()
@@ -256,8 +257,8 @@ export function useInputField<DataType>(
     },
   }
 
-  const validate = async (params?: { preserve?: boolean; forceChange?: boolean }): Promise<boolean> => {
-    const { preserve = false, forceChange = false } = params ?? {}
+  const validate = async (params: ValidationParams): Promise<boolean> => {
+    const { forceChange = false, reason } = params
     const wasOK = isValidated && !hasProblems
 
     // Clear any previous problems
@@ -272,7 +273,7 @@ export function useInputField<DataType>(
     // Clean up the value
     const cleanValue = cleanUp ? cleanUp(value) : value
     const different = !isEqual(cleanValue, value)
-    if (different && !preserve) {
+    if (different && reason !== 'change') {
       setValue(cleanValue)
     }
 
@@ -281,7 +282,7 @@ export function useInputField<DataType>(
     let hasError = false
 
     // If it's required but empty, that's already an error
-    if (required && isEmpty(cleanValue)) {
+    if (required && isEmpty(cleanValue) && reason !== 'change') {
       currentProblems.push(wrapProblem(requiredMessage, 'root', 'error')!)
       hasError = true
     }
@@ -301,6 +302,7 @@ export function useInputField<DataType>(
               cleanValue,
               forceChange || !wasOK || lastValidatedData !== cleanValue,
               validatorControls,
+              params.reason,
             ) // Execute the current validators
 
         getAsArray(validatorReport) // Maybe we have a single report, maybe an array. Receive it as an array.
@@ -340,7 +342,7 @@ export function useInputField<DataType>(
 
   useEffect(() => {
     if (visible && validateOnChange && !pristine) {
-      void validate({ preserve: true })
+      void validate({ reason: 'change' })
     }
   }, [visible, value, validateOnChange])
 

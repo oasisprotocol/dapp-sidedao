@@ -6,6 +6,7 @@ import { BrokenPollAccessIcon } from '../icons/BrokenPollAccessIcon'
 import { getVerdict } from '../InputFields'
 import { PollPermissions } from '../../utils/poll.utils'
 import { MyPollIcon } from '../icons/MyPollIcon'
+import { designDecisions } from '../../constants/config'
 
 export const PollAccessIndicator: FC<{
   isOpen: boolean
@@ -20,7 +21,9 @@ export const PollAccessIndicator: FC<{
 }> = ({ isOpen, isBroken, isClosed, isPending, explanation, hasAccess, isCompleted, isMine, retest }) => {
   return (
     <>
-      {isOpen && <OpenPollIcon completed={isCompleted} height={20} />}
+      {isOpen && !designDecisions.hideOpenPollIndicator && (
+        <OpenPollIcon completed={isCompleted} height={20} />
+      )}
       {isClosed && (
         <ClosedPollIcon
           explanation={explanation ?? 'unknown restriction'}
@@ -32,7 +35,7 @@ export const PollAccessIndicator: FC<{
       )}
       {isPending && <SpinnerIcon spinning height={32} title={'Checking access'} />}
       {isBroken && <BrokenPollAccessIcon onClick={retest} />}
-      {isMine && <MyPollIcon />}
+      {isMine && !designDecisions.hideMyPollIndicator && <MyPollIcon />}
       {/*<Button onClick={retest}>ASD</Button>*/}
     </>
   )
@@ -51,7 +54,7 @@ export const PollAccessIndicatorWrapper: FC<{
       isBroken={!!error}
       isClosed={!!explanation && !error}
       explanation={explanation}
-      hasAccess={getVerdict(canVote)}
+      hasAccess={getVerdict(canVote, false)}
       isCompleted={!isActive}
       isPending={explanation === undefined}
       isMine={isMine}

@@ -81,7 +81,7 @@ export const usePollData = (pollId: string) => {
     winningChoice === undefined &&
     selectedChoice !== undefined &&
     existingVote === undefined &&
-    getVerdict(permissions.canVote)
+    getVerdict(permissions.canVote, false)
 
   const hasWallet = isDemo || (isHomeChain && userAddress !== ZeroAddress)
   const hasWalletOnWrongNetwork = !isDemo && !isHomeChain && userAddress !== ZeroAddress

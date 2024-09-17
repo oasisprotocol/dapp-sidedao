@@ -2,6 +2,7 @@ import { FC, MouseEventHandler, useCallback } from 'react'
 import { ClosedLockIcon } from './ClosedLockIcon'
 import { IconProps } from '../../types'
 import classes from './index.module.css'
+import { designDecisions } from '../../constants/config'
 
 export const ClosedPollIcon: FC<
   IconProps & {
@@ -20,6 +21,8 @@ export const ClosedPollIcon: FC<
     },
     [canRetest, onClick],
   )
+
+  if (designDecisions.hideClosePollHaveAccessIndicator && hasAccess) return
 
   return (
     <span

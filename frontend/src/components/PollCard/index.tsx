@@ -13,7 +13,7 @@ import { PollAccessIndicatorWrapper } from './PollAccessIndicator'
 import { getVerdict } from '../InputFields'
 import { findTextMatches } from '../HighlightedText/text-matching'
 import { getHighlightedTextHtml, HighlightedText } from '../HighlightedText'
-import { dashboard } from '../../constants/config'
+import { dashboard, designDecisions } from '../../constants/config'
 import { WarningCircleIcon } from '../icons/WarningCircleIcon'
 
 const Arrow: FC<{ className: string }> = ({ className }) => (
@@ -51,7 +51,9 @@ const GaslessStatusIndicator: FC<{ possible: boolean | undefined }> = ({ possibl
   possible === undefined ? (
     <SpinnerIcon size={'medium'} spinning />
   ) : possible ? (
-    <NoGasRequiredIcon />
+    designDecisions.hideGaslessIndicator ? undefined : (
+      <NoGasRequiredIcon />
+    )
   ) : (
     <GasRequiredIcon />
   )
@@ -107,7 +109,7 @@ export const PollCard: FC<{
       patterns: searchPatterns,
     }) ?? ''
 
-  if (hideInaccessible && !permissions.error && !getVerdict(permissions.canVote) && !isMine) return
+  if (hideInaccessible && !permissions.error && !getVerdict(permissions.canVote, false) && !isMine) return
 
   const isPastDue = !!closeTimestamp && new Date().getTime() / 1000 > closeTimestamp
 

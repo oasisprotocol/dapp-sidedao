@@ -201,9 +201,9 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
   ): ValidatorFunction<string[]>[] =>
     values.map(
       (value, index): ValidatorFunction<string[]> =>
-        async (_, changed, controls) => {
+        async (_, changed, controls, reason) => {
           setPendingValidationIndex(index)
-          const reports = getAsArray(await itemValidator(value, changed, controls))
+          const reports = getAsArray(await itemValidator(value, changed, controls, reason))
             .map(rep => wrapProblem(rep, `value-${index}`, 'error'))
             .filter((p): p is ProblemAtLocation => !!p)
           setPendingValidationIndex(undefined)
@@ -222,21 +222,23 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
         // No empty elements, please
         allowEmptyItems
           ? undefined
-          : values =>
-              values.map((value, index) =>
-                value
-                  ? undefined
-                  : {
-                      message: emptyItemMessage,
-                      location: `value-${index}`,
-                    },
-              ),
+          : (values, _changed, _control, reason) =>
+              reason === 'change'
+                ? []
+                : values.map((value, index) =>
+                    value
+                      ? undefined
+                      : {
+                          message: emptyItemMessage,
+                          location: `value-${index}`,
+                        },
+                  ),
 
         // Do we have enough elements?
         minItemCount
-          ? values => {
+          ? (values, _changed, _control, reason) => {
               const currentCount = values.filter(v => !!v).length
-              return currentCount < minItemCount
+              return currentCount < minItemCount && reason !== 'change'
                 ? `${getNumberMessage(tooFewItemsMessage, minItemCount)} (Currently, ${thereIsOnly(currentCount)}.)`
                 : undefined
             }
