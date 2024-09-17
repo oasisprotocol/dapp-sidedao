@@ -151,7 +151,7 @@ export const demoSettings = {
   timeContractionSeconds: 5,
 }
 
-type DashboardFeature = 'gaslessStatus' | 'permissions' | 'results' | 'filtering'
+type DashboardFeature = 'gaslessStatus' | 'permissions' | 'results'
 
 /**
  * This is where wou can configure which extra features do you want for the dashboard
@@ -160,18 +160,12 @@ const enabledDashboardFeatures: DashboardFeature[] = [
   'gaslessStatus', // Do we want to show the gasless status on each card?
   'permissions', // Do we want to show the permissions on each card?
   'results', // Do we want to show the results on each card?
-  'filtering', // Do we want ro have search and filtering ?
 ]
 
 export const dashboard = {
   showGasless: enabledDashboardFeatures.includes('gaslessStatus'),
   showPermissions: enabledDashboardFeatures.includes('permissions'),
   showResults: enabledDashboardFeatures.includes('results'),
-  filtering: {
-    enabled: enabledDashboardFeatures.includes('filtering'),
-    hideInaccessibleByDefault: false,
-    showOnlyOpenByDefault: false,
-  },
 }
 
 /**
@@ -182,4 +176,5 @@ export const designDecisions = {
   hideOpenPollIndicator: true,
   hideClosePollHaveAccessIndicator: true,
   hideMyPollIndicator: true,
+  hideHideInaccessiblePollCheckbox: true,
 }

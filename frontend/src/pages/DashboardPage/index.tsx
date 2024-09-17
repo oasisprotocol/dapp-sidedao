@@ -7,7 +7,6 @@ import classes from './index.module.css'
 import { Button } from '../../components/Button'
 import { useNavigate } from 'react-router-dom'
 import { InputFieldGroup, TextInput } from '../../components/InputFields'
-import { dashboard } from '../../constants/config'
 
 export const DashboardPage: FC = () => {
   const navigate = useNavigate()
@@ -34,7 +33,7 @@ export const DashboardPage: FC = () => {
     <Layout variation="dashboard" extraWidget={createButton}>
       <div className={classes.dashboardMain}>
         <div className={classes.dashboardMyColumn}>
-          {dashboard.filtering.enabled && <TextInput {...pollSearchPatternInput} />}
+          <TextInput {...pollSearchPatternInput} />
           <div className={classes.dashboardLabel}>My polls</div>
           {isLoadingPolls ? (
             <Alert headerText="Please wait" type="loading" actions={<span>Fetching polls...</span>} />
