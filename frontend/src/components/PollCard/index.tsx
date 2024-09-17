@@ -108,19 +108,33 @@ export const PollCard: FC<{
     <Link to={`/polls/${pollId}`} style={{ textDecoration: 'none' }}>
       <div className={classes.pollCard}>
         <div className={classes.pollCardTop}>
-          <h4 className={active ? classes.activePollTitle : undefined}>
-            <span>
-              <HighlightedText text={name} patterns={searchPatterns} />
-            </span>
-            {dashboard.showPermissions && (
-              <PollAccessIndicatorWrapper
-                permissions={permissions}
-                isActive={active}
-                retest={checkPermissions}
-              />
-            )}
-          </h4>
+          {error && (
+            <div className={'niceLine'}>
+              <WarningCircleIcon size={'large'} />
+              {error}
+            </div>
+          )}
+          {isLoading && (
+            <div className={'niceLine'}>
+              <SpinnerIcon size={'medium'} spinning />
+              <h4>Loading poll details...</h4>
+            </div>
+          )}
+          {!isLoading && !error && (
+            <h4 className={active ? classes.activePollTitle : undefined}>
+              <span>
+                <HighlightedText text={name} patterns={searchPatterns} />
+              </span>
+              {dashboard.showPermissions && (
+                <PollAccessIndicatorWrapper
                   isMine={isMine}
+                  permissions={permissions}
+                  isActive={active}
+                  retest={checkPermissions}
+                />
+              )}
+            </h4>
+          )}
           <Arrow className={active ? classes.activePollArrow : classes.passivePollArrow} />
         </div>
         <div dangerouslySetInnerHTML={{ __html: highlightedDescription }} />
