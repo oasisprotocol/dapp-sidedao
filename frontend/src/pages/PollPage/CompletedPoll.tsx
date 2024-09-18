@@ -5,12 +5,14 @@ import { StringUtils } from '../../utils/string.utils'
 import { Card } from '../../components/Card'
 import { SocialShares } from '../../components/SocialShares'
 import { PollAccessIndicatorWrapper } from '../../components/PollCard/PollAccessIndicator'
+import { getVerdict } from '../../components/InputFields'
 
 export const CompletedPoll: FC<
   Pick<PollData, 'poll' | 'pollResults' | 'isMine' | 'permissions' | 'checkPermissions'>
 > = ({ poll, pollResults, isMine, permissions, checkPermissions }) => {
   const { name, description } = poll!.ipfsParams!
   const { choices, votes } = pollResults!
+  const { explanation: aclExplanation, canVote: aclCanVote } = permissions
 
   return (
     <Card>
@@ -23,6 +25,7 @@ export const CompletedPoll: FC<
             permissions={permissions}
             isActive={false}
             retest={checkPermissions}
+            hideClosedNoAccess={true}
           />
         </div>
       </h4>
@@ -43,6 +46,12 @@ export const CompletedPoll: FC<
           </div>
         ))}
       </>
+      {aclExplanation && (
+        <>
+          <h4>{aclExplanation}</h4>
+          {getVerdict(aclCanVote, false) ? <h4>You had access.</h4> : <h4>You didn't have access.</h4>}
+        </>
+      )}
       {!!votes?.out_count && (
         <div>
           <h4>Individual votes:</h4>

@@ -82,7 +82,7 @@ export const ActivePoll: FC<PollData> = ({
 
   const isPastDue = !!remainingTime?.isPastDue
 
-  const { canVote: canAclVote } = permissions
+  const { canVote: canAclVote, explanation: aclExplanation } = permissions
 
   // console.log("selected:", selectedChoice, "can select?", canSelect, "can Vote?", canVote, "voting?", isVoting)
   return (
@@ -95,6 +95,7 @@ export const ActivePoll: FC<PollData> = ({
             permissions={permissions}
             isActive={true}
             retest={checkPermissions}
+            hideClosedNoAccess={true}
           />
         </div>
       </h2>
@@ -132,11 +133,18 @@ export const ActivePoll: FC<PollData> = ({
           Voting results will be available when {isMine ? 'you close' : 'the owner formally closes'} the poll.
         </h4>
       )}
-      {hasWallet && !hasWalletOnWrongNetwork && !getVerdict(canAclVote, false) && (
-        <h4 className={'niceLine'}>
+      {hasWallet && !hasWalletOnWrongNetwork && !getVerdict(canAclVote, false) ? (
+        <>
           <WarningCircleIcon size={'large'} />
-          You can&apos;t vote on this poll, since {getReason(canAclVote)}.
-        </h4>
+          <h4>You can&apos;t vote on this poll, since {getReason(canAclVote)}.</h4>
+        </>
+      ) : (
+        aclExplanation && (
+          <>
+            <h4>{aclExplanation}</h4>
+            {getVerdict(canAclVote, false) && <h4>You have access.</h4>}
+          </>
+        )
       )}
       <div className={classes.buttons}>
         {hasWallet && getVerdict(canAclVote, false) && !isPastDue && (
