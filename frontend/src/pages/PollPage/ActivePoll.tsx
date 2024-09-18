@@ -12,6 +12,7 @@ import { SocialShares } from '../../components/SocialShares'
 import { getVerdict, getReason } from '../../components/InputFields'
 import { WarningCircleIcon } from '../../components/icons/WarningCircleIcon'
 import { PollAccessIndicatorWrapper } from '../../components/PollCard/PollAccessIndicator'
+import { designDecisions } from '../../constants/config'
 
 export const ActivePoll: FC<PollData> = ({
   hasWallet,
@@ -140,7 +141,13 @@ export const ActivePoll: FC<PollData> = ({
       <div className={classes.buttons}>
         {hasWallet && getVerdict(canAclVote, false) && !isPastDue && (
           <div className={'niceLine'}>
-            {gaslessPossible ? <NoGasRequiredIcon /> : <GasRequiredIcon />}
+            {gaslessPossible ? (
+              designDecisions.hideGaslessIndicator ? undefined : (
+                <NoGasRequiredIcon />
+              )
+            ) : (
+              <GasRequiredIcon />
+            )}
             <Button disabled={!canVote} onClick={vote} pending={isVoting}>
               {isVoting ? 'Submitting' : 'Submit vote'}
             </Button>
