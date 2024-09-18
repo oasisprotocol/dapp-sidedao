@@ -293,6 +293,19 @@ export const useDashboardData = () => {
     [myVisiblePollIds, otherVisiblePollIds],
   )
 
+  const hasFilters =
+    wantedPollType.value !== 'all' ||
+    !!searchPatterns.length ||
+    (showInaccessible.visible && !showInaccessible.value)
+
+  const clearFilters = () => {
+    wantedPollType.setValue('all')
+    pollSearchPatternInput.setValue('')
+    if (showInaccessible.visible) {
+      showInaccessible.setValue(true)
+    }
+  }
+
   return {
     userAddress,
     canCreatePoll,
@@ -306,5 +319,7 @@ export const useDashboardData = () => {
     otherVisibleCount: otherVisiblePollIds.length,
     allVisibleCount: allVisiblePollIds.length,
     searchPatterns,
+    hasFilters,
+    clearFilters,
   }
 }

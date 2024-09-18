@@ -7,6 +7,25 @@ import classes from './index.module.css'
 import { Button } from '../../components/Button'
 import { useNavigate } from 'react-router-dom'
 import { InputFieldGroup } from '../../components/InputFields'
+import { ProofOfStakeIcon } from '../../components/icons/ProofOfStake'
+
+const NoPolls: FC<{ hasFilters: boolean; clearFilters: () => void }> = ({ hasFilters, clearFilters }) => {
+  return (
+    <div className={classes.noPolls}>
+      <ProofOfStakeIcon />
+      <h4>No polls here</h4>
+      {hasFilters && (
+        <p>
+          You might want to{' '}
+          <a href="#" onClick={clearFilters}>
+            clean your filters
+          </a>{' '}
+          to see more.
+        </p>
+      )}
+    </div>
+  )
+}
 
 export const DashboardPage: FC = () => {
   const navigate = useNavigate()
@@ -20,7 +39,8 @@ export const DashboardPage: FC = () => {
     searchPatterns,
     myVisibleCount,
     otherVisibleCount,
-    // allVisibleCount,
+    hasFilters,
+    clearFilters,
   } = useDashboardData()
   const handleCreate = useCallback(() => navigate('/create'), [navigate])
 
@@ -50,7 +70,7 @@ export const DashboardPage: FC = () => {
                   searchPatterns={searchPatterns}
                 />
               ))}
-              {!myVisibleCount && <span>No matching polls</span>}
+              {!myVisibleCount && <NoPolls hasFilters={hasFilters} clearFilters={clearFilters} />}
             </>
           )}
         </div>
@@ -71,7 +91,7 @@ export const DashboardPage: FC = () => {
                   reportVisibility={reportVisibility}
                 />
               ))}
-              {!otherVisibleCount && <span>No matching polls</span>}
+              {!otherVisibleCount && <NoPolls hasFilters={hasFilters} clearFilters={clearFilters} />}
             </>
           )}
         </div>
