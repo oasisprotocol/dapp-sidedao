@@ -31,12 +31,13 @@ export const DashboardPage: FC = () => {
   const navigate = useNavigate()
   const {
     isLoadingPolls,
-    typeFilteredProposals,
+    allProposals,
     reportVisibility,
     shouldShowInaccessiblePolls,
     leftFilterInputs,
     rightFilterInputs,
     searchPatterns,
+    wantedStatus,
     myVisibleCount,
     otherVisibleCount,
     hasFilters,
@@ -60,11 +61,12 @@ export const DashboardPage: FC = () => {
             <Alert headerText="Please wait" type="loading" actions={<span>Fetching polls...</span>} />
           ) : (
             <>
-              {typeFilteredProposals.map(proposal => (
+              {allProposals.map(proposal => (
                 <PollCard
                   column={'mine'}
                   key={proposal.id}
                   proposal={proposal}
+                  wantedStatus={wantedStatus}
                   showInaccessible={shouldShowInaccessiblePolls}
                   reportVisibility={reportVisibility}
                   searchPatterns={searchPatterns}
@@ -81,11 +83,12 @@ export const DashboardPage: FC = () => {
             <Alert headerText="Please wait" type="loading" actions={<span>Fetching polls...</span>} />
           ) : (
             <>
-              {typeFilteredProposals.map(proposal => (
+              {allProposals.map(proposal => (
                 <PollCard
                   column={'others'}
                   key={proposal.id}
                   proposal={proposal}
+                  wantedStatus={wantedStatus}
                   showInaccessible={shouldShowInaccessiblePolls}
                   searchPatterns={searchPatterns}
                   reportVisibility={reportVisibility}

@@ -15,7 +15,13 @@ import { findTextMatches } from '../HighlightedText/text-matching'
 import { getHighlightedTextHtml, HighlightedText } from '../HighlightedText'
 import { dashboard, designDecisions } from '../../constants/config'
 import { WarningCircleIcon } from '../icons/WarningCircleIcon'
-import { Circumstances, Column, VisibilityReport } from '../../pages/DashboardPage/useDashboardData'
+import {
+  Circumstances,
+  Column,
+  isPollStatusAcceptable,
+  VisibilityReport,
+  WantedStatus,
+} from '../../pages/DashboardPage/useDashboardData'
 import { useEthereum } from '../../hooks/useEthereum'
 import { NOT_CHECKED } from '../../hooks/usePollPermissions'
 
@@ -67,7 +73,8 @@ export const PollCard: FC<{
   reportVisibility: (report: VisibilityReport) => void
   showInaccessible: boolean
   searchPatterns: string[]
-}> = ({ proposal, reportVisibility, column, showInaccessible, searchPatterns }) => {
+  wantedStatus: WantedStatus
+}> = ({ proposal, reportVisibility, column, showInaccessible, searchPatterns, wantedStatus }) => {
   const { userAddress } = useEthereum()
   const { poll, proposalId, gaslessPossible, isMine, permissions, checkPermissions, isLoading, error } =
     useExtendedPoll(proposal, {
@@ -112,12 +119,14 @@ export const PollCard: FC<{
     getReason(permissions.canVote) !== NOT_CHECKED
   const hiddenByPermissionIssues = !isMine && !showInaccessible && knownToBeInaccessible
   const correctColumn = (isMine && column === 'mine') || (!isMine && column === 'others')
+  const correctStatus = isPollStatusAcceptable(proposal, wantedStatus)
 
-  const visible = correctColumn && !hiddenByPermissionIssues && hasAllMatches
+  const visible = correctColumn && correctStatus && !hiddenByPermissionIssues && hasAllMatches
 
   useEffect(() => {
     // console.log('Will report visibility change')
     const circumstances: Circumstances = {
+      wantedStatus,
       searchPatterns,
       showInaccessible,
       userAddress,
@@ -128,7 +137,7 @@ export const PollCard: FC<{
       pollId: pollId!,
       visible,
     })
-  }, [searchPatterns, showInaccessible, userAddress, column, pollId, visible])
+  }, [wantedStatus, searchPatterns, showInaccessible, userAddress, column, pollId, visible])
 
   if (!visible) return
 

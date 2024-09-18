@@ -17,8 +17,21 @@ interface FetchProposalResult {
 }
 
 export type Column = 'mine' | 'others'
+export type WantedStatus = 'open' | 'completed' | 'all'
+
+export const isPollStatusAcceptable = (proposal: Proposal, wantedStatus: WantedStatus): boolean => {
+  switch (wantedStatus) {
+    case 'open':
+      return proposal.active
+    case 'completed':
+      return !proposal.active
+    case 'all':
+      return true
+  }
+}
 
 export type Circumstances = {
+  wantedStatus: WantedStatus
   searchPatterns: string[]
   showInaccessible: boolean
   userAddress: string
@@ -49,12 +62,12 @@ type VisibilityInCircumstances = Record<Column, Set<string>>
  * is loaded dynamically _within the cards themselves_, so it is not
  * available at the dashboard, so the filtering can not happen here.
  *
- * So here is what we do:
- * - We do the filtering for poll open/closed status normally, here.
- * - As for the 2. and 3. filtering criteria, we will just display all the cards,
- *   and they will hide themselves when appropriate, based on the data they loaded.
- * - For the distribution in two columns, likewise: we will just display everything everywhere,
- *   and the cards will hide themselves in the correct column.
+ * To solve this, we are doing the filtering within the poll cards themselves;
+ * the dashboard will just display all the card, and then
+ * they will hide themselves when appropriate, based on the data they loaded.
+ *
+ * For the distribution in two columns, likewise: we will just display everything everywhere,
+ * and the cards will hide themselves in the correct column.
  *
  * One challenge is that the dashboard _needs_ to know about which cards are visible,
  * in order to do some other stuff. To achieve this, the individual cards will feed information back
@@ -208,8 +221,8 @@ export const useDashboardData = () => {
     containerClassName: classes.showInaccessible,
   })
 
-  const wantedPollType = useOneOfField({
-    name: 'wantedPollType',
+  const wantedPollStatus = useOneOfField({
+    name: 'wantedPollStatus',
     choices: [
       { value: 'all', label: 'Both open and completed polls' },
       { value: 'open', label: 'Open polls' },
@@ -247,45 +260,26 @@ export const useDashboardData = () => {
 
   const currentCircumstances: Circumstances = useMemo(() => {
     return {
+      wantedStatus: wantedPollStatus.value,
       searchPatterns,
       showInaccessible: showInaccessible.value,
       userAddress,
     }
-  }, [searchPatterns, showInaccessible.value, userAddress])
+  }, [wantedPollStatus.value, searchPatterns, showInaccessible.value, userAddress])
 
   const reportVisibility = (report: VisibilityReport) => {
     const hasChanged = DashboardData.reportVisibility(report)
     if (hasChanged) setVisibilityInfoVersion(visibilityInfoVersion + 1)
   }
 
-  const typeFilters: Record<typeof wantedPollType.value, (proposal: Proposal) => boolean> = useMemo(
-    () => ({
-      open: proposal => proposal.active,
-      completed: proposal => !proposal.active,
-      all: () => true,
-    }),
-    [],
-  )
-
-  const typeFilteredProposals = useMemo(
-    () => allProposals.filter(typeFilters[wantedPollType.value]),
-    [allProposals, wantedPollType.value],
-  )
-
   const myVisiblePollIds = useMemo(
-    () =>
-      DashboardData.getVisibleCards(currentCircumstances, 'mine').filter(pollId =>
-        typeFilteredProposals.some(proposal => proposal.id === '0x' + pollId),
-      ),
-    [typeFilteredProposals, visibilityInfoVersion, currentCircumstances],
+    () => DashboardData.getVisibleCards(currentCircumstances, 'mine'),
+    [visibilityInfoVersion, currentCircumstances],
   )
 
   const otherVisiblePollIds = useMemo(
-    () =>
-      DashboardData.getVisibleCards(currentCircumstances, 'others').filter(pollId =>
-        typeFilteredProposals.some(proposal => proposal.id === '0x' + pollId),
-      ),
-    [typeFilteredProposals, visibilityInfoVersion, currentCircumstances],
+    () => DashboardData.getVisibleCards(currentCircumstances, 'others'),
+    [visibilityInfoVersion, currentCircumstances],
   )
 
   const allVisiblePollIds = useMemo(
@@ -294,12 +288,12 @@ export const useDashboardData = () => {
   )
 
   const hasFilters =
-    wantedPollType.value !== 'all' ||
+    wantedPollStatus.value !== 'all' ||
     !!searchPatterns.length ||
     (showInaccessible.visible && !showInaccessible.value)
 
   const clearFilters = () => {
-    wantedPollType.setValue('all')
+    wantedPollStatus.setValue('all')
     pollSearchPatternInput.setValue('')
     if (showInaccessible.visible) {
       showInaccessible.setValue(true)
@@ -310,15 +304,16 @@ export const useDashboardData = () => {
     userAddress,
     canCreatePoll,
     isLoadingPolls: isLoadingActive || isLoadingPast,
-    typeFilteredProposals,
+    allProposals,
     leftFilterInputs: [pollSearchPatternInput, showInaccessible],
-    rightFilterInputs: [wantedPollType],
+    rightFilterInputs: [wantedPollStatus],
     shouldShowInaccessiblePolls: showInaccessible.value,
     reportVisibility,
     myVisibleCount: myVisiblePollIds.length,
     otherVisibleCount: otherVisiblePollIds.length,
     allVisibleCount: allVisiblePollIds.length,
     searchPatterns,
+    wantedStatus: wantedPollStatus.value,
     hasFilters,
     clearFilters,
   }
