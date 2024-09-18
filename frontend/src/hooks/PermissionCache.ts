@@ -22,6 +22,7 @@ export abstract class PermissionCache {
     ],
     // debug: ['load', 'save'],
     storageKey: 'sideDAO.pollPermissions2',
+    dataVersion: 2,
     transformValues: {
       encode: data => JSON.stringify(data, bigNumberify.stringify),
       decode: stringData => JSON.parse(stringData, bigNumberify),
