@@ -42,12 +42,6 @@ importers:
 
   frontend:
     dependencies:
-      '@fontsource-variable/figtree':
-        specifier: ^5.0.20
-        version: 5.0.22
-      '@fontsource-variable/roboto-mono':
-        specifier: ^5.0.18
-        version: 5.0.20
       '@metamask/detect-provider':
         specifier: ^2.0.0
         version: 2.0.0
@@ -2588,14 +2582,6 @@ packages:
     resolution: {integrity: sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA==}
     engines: {node: '>=14'}
     dev: true
-
-  /@fontsource-variable/figtree@5.0.22:
-    resolution: {integrity: sha512-Kr4qYuE0mL0lcJV1IUS/qxzfQCiElUzxX9/v4GScwXBxl7LyvLz2lPhmUam+FmyPYcHQcX6IxjACjJ6/LJivow==}
-    dev: false
-
-  /@fontsource-variable/roboto-mono@5.0.20:
-    resolution: {integrity: sha512-c0lS38hfgGdhUZ2WQIwMxmdzaSz706iF3nOoAIYMTIZBYAFjP8QlHGGJNS/fPshSGMob4+/MfICsynFclQ9mDg==}
-    dev: false
 
   /@humanwhocodes/config-array@0.11.14:
     resolution: {integrity: sha512-3T8LkOmg45BV5FICb15QQMsyUSWrQ8AygVfC7ZG32zOalnqrilm018ZVCw0eapXux8FtA33q8PSRSstjee3jSg==}
@@ -6846,6 +6832,7 @@ packages:
       is-hex-prefixed: 1.0.0
       strip-hex-prefix: 1.0.0
     dev: true
+    bundledDependencies: false
 
   /eventemitter3@4.0.7:
     resolution: {integrity: sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw==}

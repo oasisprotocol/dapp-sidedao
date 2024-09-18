@@ -10,7 +10,7 @@
   user-select: none;
   text-transform: none;
   text-align: center;
-  font-family: 'Figtree Variable', system-ui, sans-serif;
+  font-family: sans-serif;
 
   > label {
     display: flex;
@@ -22,7 +22,7 @@
   }
 
   > * {
-    font-family: 'Figtree Variable', system-ui, sans-serif;
+    font-family: sans-serif;
   }
 
   &:not(.buttonDisabled) > * {

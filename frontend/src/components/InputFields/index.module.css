@@ -27,7 +27,6 @@
 }
 
 .fieldLabel {
-  font-family: 'Inter';
   font-style: normal;
   font-weight: 700;
   font-size: 13px;
@@ -35,7 +34,6 @@
 }
 
 .fieldDescription {
-  font-family: 'Inter';
   font-style: normal;
   font-weight: 400;
   font-size: 13px;
@@ -67,7 +65,6 @@
 }
 
 .boolValue {
-  font-family: 'Inter';
   font-style: normal;
   font-weight: 400;
   font-size: 13px;
@@ -88,7 +85,6 @@
     border-radius: 8px;
     padding: 0px 16px;
 
-    font-family: 'Inter';
     font-style: normal;
     font-weight: 400;
     font-size: 15px;

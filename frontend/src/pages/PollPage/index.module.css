@@ -16,7 +16,6 @@
   background: #e6e5ff;
   border-radius: 8px;
 
-  font-family: 'Inter';
   font-style: normal;
   font-weight: 700;
   font-size: 15px;
@@ -48,7 +47,6 @@
 }
 
 .percentage {
-  font-family: 'Inter';
   font-style: normal;
   font-weight: 700;
   font-size: 15px;
@@ -98,7 +96,6 @@
   height: 45px;
   text-align: center;
 
-  font-family: 'Inter';
   font-style: normal;
   font-weight: 700;
   font-size: 32px;
@@ -106,7 +103,6 @@
 }
 
 .countdownUnit {
-  font-family: 'Inter';
   font-style: normal;
   font-weight: 400;
   font-size: 11px;
