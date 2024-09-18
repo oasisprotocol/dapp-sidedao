@@ -60,7 +60,7 @@ export const usePollData = (pollId: string) => {
     checkPermissions,
   } = useExtendedPoll(proposal, { onDashboard: false })
 
-  const { now } = useTime(!!deadline)
+  const { now } = useTime()
   const { pollManagerWithSigner: signerDao, gaslessVoting } = useContracts(eth, poll?.proposal.params?.acl)
 
   const remainingTime = useMemo(

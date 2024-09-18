@@ -1,8 +1,3 @@
 import { useAppState } from './useAppState'
 
-export const useTime = (live: boolean) => {
-  const { state } = useAppState()
-  return {
-    now: live ? state.now : Date.now() / 1000,
-  }
-}
+export const useTime = () => ({ now: useAppState().state.now })

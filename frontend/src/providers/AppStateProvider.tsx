@@ -44,7 +44,7 @@ export const AppStateContextProvider: FC<PropsWithChildren> = ({ children }) => 
   const updateTime = () => {
     setState(prevState => ({
       ...prevState,
-      now: Date.now() / 1000,
+      now: Math.round(Date.now() / 1000),
     }))
 
     setTimeout(updateTime, 1000)

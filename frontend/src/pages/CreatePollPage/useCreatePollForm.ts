@@ -479,7 +479,7 @@ export const useCreatePollForm = () => {
     },
   })
 
-  const { now } = useTime(hasCloseDate.value)
+  const { now } = useTime()
 
   const pollCloseDate = useDateField({
     name: 'pollCloseDate',

@@ -29,7 +29,7 @@ export const useExtendedPoll = (
   const [winningChoice, setWinningChoice] = useState<bigint | undefined>(undefined)
   const [votes, setVotes] = useState<ListOfVotes>({ ...noVotes })
 
-  const { now } = useTime(!!deadline)
+  const { now } = useTime()
 
   const { gaslessEnabled, gaslessPossible, gvAddresses, gvBalances, invalidateGaslessStatus } =
     usePollGaslessStatus(proposalId, params.onDashboard)
