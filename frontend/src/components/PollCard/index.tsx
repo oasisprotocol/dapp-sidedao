@@ -24,6 +24,7 @@ import {
 } from '../../pages/DashboardPage/useDashboardData'
 import { useEthereum } from '../../hooks/useEthereum'
 import { NOT_CHECKED } from '../../hooks/usePollPermissions'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const Arrow: FC<{ className: string }> = ({ className }) => (
   <svg
@@ -139,49 +140,59 @@ export const PollCard: FC<{
     })
   }, [wantedStatus, searchPatterns, showInaccessible, userAddress, column, pollId, visible])
 
-  if (!visible) return
-
   const isPastDue = !!closeTimestamp && new Date().getTime() / 1000 > closeTimestamp
 
   return (
-    <Link to={`/polls/${pollId}`} style={{ textDecoration: 'none' }}>
-      <div className={classes.pollCard}>
-        <div className={classes.pollCardTop}>
-          {error && (
-            <div className={'niceLine'}>
-              <WarningCircleIcon size={'large'} />
-              {error}
+    <AnimatePresence initial={false}>
+      {visible && (
+        <motion.div
+          // key={pollId}
+          initial={{ maxHeight: 0, opacity: 0 }}
+          animate={{ maxHeight: 140, opacity: 1 }}
+          exit={{ maxHeight: 0, opacity: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Link to={`/polls/${pollId}`} style={{ textDecoration: 'none' }}>
+            <div className={classes.pollCard}>
+              <div className={classes.pollCardTop}>
+                {error && (
+                  <div className={'niceLine'}>
+                    <WarningCircleIcon size={'large'} />
+                    {error}
+                  </div>
+                )}
+                {isLoading && (
+                  <div className={'niceLine'}>
+                    <SpinnerIcon size={'medium'} spinning />
+                    <h4>Loading poll details...</h4>
+                  </div>
+                )}
+                {!isLoading && !error && (
+                  <h4 className={active ? classes.activePollTitle : undefined}>
+                    <span>
+                      <HighlightedText text={name} patterns={searchPatterns} />
+                    </span>
+                    {dashboard.showPermissions && (
+                      <PollAccessIndicatorWrapper
+                        isMine={isMine}
+                        permissions={permissions}
+                        isActive={active}
+                        retest={checkPermissions}
+                      />
+                    )}
+                  </h4>
+                )}
+                <Arrow className={active ? classes.activePollArrow : classes.passivePollArrow} />
+              </div>
+              <div dangerouslySetInnerHTML={{ __html: highlightedDescription }} />
+              <div className={classes.pollCardBottom}>
+                <PollStatusIndicator active={active} isPastDue={isPastDue} />
+                {dashboard.showGasless && <GaslessStatusIndicator possible={gaslessPossible} />}
+              </div>
             </div>
-          )}
-          {isLoading && (
-            <div className={'niceLine'}>
-              <SpinnerIcon size={'medium'} spinning />
-              <h4>Loading poll details...</h4>
-            </div>
-          )}
-          {!isLoading && !error && (
-            <h4 className={active ? classes.activePollTitle : undefined}>
-              <span>
-                <HighlightedText text={name} patterns={searchPatterns} />
-              </span>
-              {dashboard.showPermissions && (
-                <PollAccessIndicatorWrapper
-                  isMine={isMine}
-                  permissions={permissions}
-                  isActive={active}
-                  retest={checkPermissions}
-                />
-              )}
-            </h4>
-          )}
-          <Arrow className={active ? classes.activePollArrow : classes.passivePollArrow} />
-        </div>
-        <div dangerouslySetInnerHTML={{ __html: highlightedDescription }} />
-        <div className={classes.pollCardBottom}>
-          <PollStatusIndicator active={active} isPastDue={isPastDue} />
-          {dashboard.showGasless && <GaslessStatusIndicator possible={gaslessPossible} />}
-        </div>
-      </div>
-    </Link>
+          </Link>
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }

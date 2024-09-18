@@ -8,10 +8,16 @@ import { Button } from '../../components/Button'
 import { useNavigate } from 'react-router-dom'
 import { InputFieldGroup } from '../../components/InputFields'
 import { ProofOfStakeIcon } from '../../components/icons/ProofOfStake'
+import { motion } from 'framer-motion'
 
 const NoPolls: FC<{ hasFilters: boolean; clearFilters: () => void }> = ({ hasFilters, clearFilters }) => {
   return (
-    <div className={classes.noPolls}>
+    <motion.div
+      className={classes.noPolls}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 0.5 }}
+    >
       <ProofOfStakeIcon />
       <h4>No polls here</h4>
       {hasFilters && (
@@ -23,7 +29,7 @@ const NoPolls: FC<{ hasFilters: boolean; clearFilters: () => void }> = ({ hasFil
           to see more.
         </p>
       )}
-    </div>
+    </motion.div>
   )
 }
 
