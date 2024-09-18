@@ -148,16 +148,22 @@ export const usePollData = (pollId: string) => {
       if (choice === undefined) throw new Error('no choice selected')
 
       if (isDemo) {
-        if (
-          !confirm(
-            "Are you sure you want to submit your vote? (Normally you should see a MetaMask popup at this point, but this demo doesn't require any wallet, so this will have to do...)",
-          )
-        )
-          return
-        setExistingVote(choice)
-        setHasVoted(true)
-        moveDemoAfterVoting()
-        return
+        return new Promise<void>((resolve, reject) => {
+          setTimeout(() => {
+            if (
+              confirm(
+                "Are you sure you want to submit your vote? (Normally you should see a MetaMask popup at this point, but this demo doesn't require any wallet, so this will have to do...)",
+              )
+            ) {
+              setExistingVote(choice)
+              setHasVoted(true)
+              moveDemoAfterVoting()
+              resolve()
+            } else {
+              reject()
+            }
+          }, 1000)
+        })
       }
 
       if (!gaslessVoting) throw new Error('No Gasless Voting!')
