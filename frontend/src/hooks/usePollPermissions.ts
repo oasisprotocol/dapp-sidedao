@@ -7,10 +7,12 @@ import { CheckPermissionContext, CheckPermissionInputs, PollPermissions } from '
 import { PermissionCache } from './PermissionCache'
 import { dashboard } from '../constants/config'
 
+export const NOT_CHECKED = "Hasn't been checked yet"
+
 const blackPermissions: PollPermissions = {
   proof: '',
   explanation: undefined,
-  canVote: denyWithReason("Hasn't been checked yet"),
+  canVote: denyWithReason(NOT_CHECKED),
   tokenInfo: undefined,
   xChainOptions: undefined,
   canManage: false,

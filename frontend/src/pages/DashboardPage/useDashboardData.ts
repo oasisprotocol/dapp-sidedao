@@ -204,7 +204,7 @@ export const useDashboardData = () => {
     name: 'showInaccessible',
     label: "Show polls I don't have access to",
     visible: dashboard.showPermissions && designDecisions.showInaccessiblePollCheckbox,
-    initialValue: false,
+    initialValue: dashboard.showPermissions && designDecisions.showInaccessiblePollCheckbox,
     containerClassName: classes.showInaccessible,
   })
 

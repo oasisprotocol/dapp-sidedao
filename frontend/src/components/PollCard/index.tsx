@@ -1,5 +1,5 @@
 import { Proposal } from '../../types'
-import { FC, useEffect, useMemo } from 'react'
+import { FC, useEffect } from 'react'
 import { micromark } from 'micromark'
 import { Link } from 'react-router-dom'
 import classes from './index.module.css'
@@ -10,13 +10,14 @@ import { HourGlassIcon } from '../icons/HourGlassIcon'
 import { StringUtils } from '../../utils/string.utils'
 import { useExtendedPoll } from '../../hooks/useExtendedPoll'
 import { PollAccessIndicatorWrapper } from './PollAccessIndicator'
-import { getVerdict } from '../InputFields'
+import { getReason, getVerdict } from '../InputFields'
 import { findTextMatches } from '../HighlightedText/text-matching'
 import { getHighlightedTextHtml, HighlightedText } from '../HighlightedText'
 import { dashboard, designDecisions } from '../../constants/config'
 import { WarningCircleIcon } from '../icons/WarningCircleIcon'
 import { Circumstances, Column, VisibilityReport } from '../../pages/DashboardPage/useDashboardData'
 import { useEthereum } from '../../hooks/useEthereum'
+import { NOT_CHECKED } from '../../hooks/usePollPermissions'
 
 const Arrow: FC<{ className: string }> = ({ className }) => (
   <svg
@@ -105,30 +106,29 @@ export const PollCard: FC<{
       patterns: searchPatterns,
     }) ?? ''
 
-  const knownToBeInaccessible = !permissions.error && !getVerdict(permissions.canVote, true)
+  const knownToBeInaccessible =
+    !permissions.error &&
+    !getVerdict(permissions.canVote, true) &&
+    getReason(permissions.canVote) !== NOT_CHECKED
   const hiddenByPermissionIssues = !isMine && !showInaccessible && knownToBeInaccessible
   const correctColumn = (isMine && column === 'mine') || (!isMine && column === 'others')
 
   const visible = correctColumn && !hiddenByPermissionIssues && hasAllMatches
 
-  const circumstances: Circumstances = useMemo(
-    () => ({
+  useEffect(() => {
+    // console.log('Will report visibility change')
+    const circumstances: Circumstances = {
       searchPatterns,
       showInaccessible,
       userAddress,
-    }),
-    [searchPatterns, showInaccessible, userAddress],
-  )
-
-  useEffect(() => {
-    // console.log('Will report visibility change')
+    }
     reportVisibility({
       circumstances,
       column,
       pollId: pollId!,
       visible,
     })
-  }, [circumstances, column, pollId, visible])
+  }, [searchPatterns, showInaccessible, userAddress, column, pollId, visible])
 
   if (!visible) return
 

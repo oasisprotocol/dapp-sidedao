@@ -176,7 +176,7 @@ export const designDecisions = {
   hideOpenPollIndicator: true,
   hideClosePollHaveAccessIndicator: true,
   hideMyPollIndicator: true,
-  showInaccessiblePollCheckbox: false,
+  showInaccessiblePollCheckbox: true,
   hideDisabledSelectOptions: true,
   disableSelectsWithOnlyOneVisibleOption: true,
   showSubmitButton: false,
