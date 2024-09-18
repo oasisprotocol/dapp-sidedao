@@ -4,7 +4,6 @@ import { useIPFSData } from './useIPFSData'
 import { getBytes } from 'ethers'
 import { decryptJSON } from '../utils/crypto.demo'
 import { dashboard, demoSettings, getDemoPoll } from '../constants/config'
-import { useTime } from './useTime'
 import { usePollGaslessStatus } from './usePollGaslessStatus'
 import { usePollPermissions } from './usePollPermissions'
 import { useEthereum } from './useEthereum'
@@ -29,8 +28,6 @@ export const useExtendedPoll = (
   const [winningChoice, setWinningChoice] = useState<bigint | undefined>(undefined)
   const [votes, setVotes] = useState<ListOfVotes>({ ...noVotes })
 
-  const { now } = useTime()
-
   const { gaslessEnabled, gaslessPossible, gvAddresses, gvBalances, invalidateGaslessStatus } =
     usePollGaslessStatus(proposalId, params.onDashboard)
 
@@ -53,7 +50,7 @@ export const useExtendedPoll = (
       setVotes({ ...noVotes })
       if (isDemo) {
         setPoll(getDemoPoll())
-        setDeadline(now + demoSettings.timeForVoting)
+        setDeadline(Math.round(Date.now() / 1000) + demoSettings.timeForVoting)
         return
       }
       if (proposal && ipfsParams) {
