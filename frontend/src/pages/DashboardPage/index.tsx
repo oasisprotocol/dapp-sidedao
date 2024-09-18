@@ -12,14 +12,15 @@ export const DashboardPage: FC = () => {
   const navigate = useNavigate()
   const {
     isLoadingPolls,
-    myProposals,
-    otherProposals,
-    registerOwnership,
-    registerMatch,
+    typeFilteredProposals,
+    reportVisibility,
     shouldShowInaccessiblePolls,
     leftFilterInputs,
     rightFilterInputs,
     searchPatterns,
+    myVisibleCount,
+    otherVisibleCount,
+    // allVisibleCount,
   } = useDashboardData()
   const handleCreate = useCallback(() => navigate('/create'), [navigate])
 
@@ -38,16 +39,19 @@ export const DashboardPage: FC = () => {
           {isLoadingPolls ? (
             <Alert headerText="Please wait" type="loading" actions={<span>Fetching polls...</span>} />
           ) : (
-            myProposals.map(proposal => (
-              <PollCard
-                key={proposal.id}
-                proposal={proposal}
-                hideInaccessible={!shouldShowInaccessiblePolls}
-                registerOwnership={registerOwnership}
-                searchPatterns={searchPatterns}
-                registerMatch={registerMatch}
-              />
-            ))
+            <>
+              {typeFilteredProposals.map(proposal => (
+                <PollCard
+                  column={'mine'}
+                  key={proposal.id}
+                  proposal={proposal}
+                  showInaccessible={shouldShowInaccessiblePolls}
+                  reportVisibility={reportVisibility}
+                  searchPatterns={searchPatterns}
+                />
+              ))}
+              {!myVisibleCount && <span>No matching polls</span>}
+            </>
           )}
         </div>
         <div className={classes.dashboardOtherColumn}>
@@ -56,16 +60,19 @@ export const DashboardPage: FC = () => {
           {isLoadingPolls ? (
             <Alert headerText="Please wait" type="loading" actions={<span>Fetching polls...</span>} />
           ) : (
-            otherProposals.map(proposal => (
-              <PollCard
-                key={proposal.id}
-                proposal={proposal}
-                registerOwnership={registerOwnership}
-                hideInaccessible={!shouldShowInaccessiblePolls}
-                searchPatterns={searchPatterns}
-                registerMatch={registerMatch}
-              />
-            ))
+            <>
+              {typeFilteredProposals.map(proposal => (
+                <PollCard
+                  column={'others'}
+                  key={proposal.id}
+                  proposal={proposal}
+                  showInaccessible={shouldShowInaccessiblePolls}
+                  searchPatterns={searchPatterns}
+                  reportVisibility={reportVisibility}
+                />
+              ))}
+              {!otherVisibleCount && <span>No matching polls</span>}
+            </>
           )}
         </div>
       </div>

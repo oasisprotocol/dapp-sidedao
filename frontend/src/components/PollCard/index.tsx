@@ -1,5 +1,5 @@
 import { Proposal } from '../../types'
-import { FC, useEffect } from 'react'
+import { FC, useEffect, useMemo } from 'react'
 import { micromark } from 'micromark'
 import { Link } from 'react-router-dom'
 import classes from './index.module.css'
@@ -15,6 +15,8 @@ import { findTextMatches } from '../HighlightedText/text-matching'
 import { getHighlightedTextHtml, HighlightedText } from '../HighlightedText'
 import { dashboard, designDecisions } from '../../constants/config'
 import { WarningCircleIcon } from '../icons/WarningCircleIcon'
+import { Circumstances, Column, VisibilityReport } from '../../pages/DashboardPage/useDashboardData'
+import { useEthereum } from '../../hooks/useEthereum'
 
 const Arrow: FC<{ className: string }> = ({ className }) => (
   <svg
@@ -59,20 +61,17 @@ const GaslessStatusIndicator: FC<{ possible: boolean | undefined }> = ({ possibl
   )
 
 export const PollCard: FC<{
+  column: Column
   proposal: Proposal
-  registerOwnership: (id: string, mine: boolean) => void
-  registerMatch: (searchPatterns: string[], pollId: string) => void
-  hideInaccessible?: boolean
+  reportVisibility: (report: VisibilityReport) => void
+  showInaccessible: boolean
   searchPatterns: string[]
-}> = ({ proposal, registerOwnership, hideInaccessible, searchPatterns, registerMatch }) => {
+}> = ({ proposal, reportVisibility, column, showInaccessible, searchPatterns }) => {
+  const { userAddress } = useEthereum()
   const { poll, proposalId, gaslessPossible, isMine, permissions, checkPermissions, isLoading, error } =
     useExtendedPoll(proposal, {
       onDashboard: true,
     })
-
-  useEffect(() => {
-    if (proposalId && isMine !== undefined) registerOwnership(proposalId, isMine)
-  }, [proposalId, isMine])
 
   const {
     id: pollId,
@@ -99,9 +98,6 @@ export const PollCard: FC<{
     ? findTextMatches(`${name} ${renderedDescription}`, searchPatterns)
     : []
   const hasAllMatches = textMatches.length === searchPatterns.length
-  if (!hasAllMatches) return
-
-  registerMatch(searchPatterns, pollId!)
 
   const highlightedDescription =
     getHighlightedTextHtml({
@@ -109,7 +105,32 @@ export const PollCard: FC<{
       patterns: searchPatterns,
     }) ?? ''
 
-  if (hideInaccessible && !permissions.error && !getVerdict(permissions.canVote, false) && !isMine) return
+  const knownToBeInaccessible = !permissions.error && !getVerdict(permissions.canVote, true)
+  const hiddenByPermissionIssues = !isMine && !showInaccessible && knownToBeInaccessible
+  const correctColumn = (isMine && column === 'mine') || (!isMine && column === 'others')
+
+  const visible = correctColumn && !hiddenByPermissionIssues && hasAllMatches
+
+  const circumstances: Circumstances = useMemo(
+    () => ({
+      searchPatterns,
+      showInaccessible,
+      userAddress,
+    }),
+    [searchPatterns, showInaccessible, userAddress],
+  )
+
+  useEffect(() => {
+    // console.log('Will report visibility change')
+    reportVisibility({
+      circumstances,
+      column,
+      pollId: pollId!,
+      visible,
+    })
+  }, [circumstances, column, pollId, visible])
+
+  if (!visible) return
 
   const isPastDue = !!closeTimestamp && new Date().getTime() / 1000 > closeTimestamp
 
