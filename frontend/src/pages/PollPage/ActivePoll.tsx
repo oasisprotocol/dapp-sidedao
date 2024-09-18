@@ -156,9 +156,11 @@ export const ActivePoll: FC<PollData> = ({
             ) : (
               <GasRequiredIcon />
             )}
-            <Button disabled={!canVote} onClick={vote} pending={isVoting}>
-              {isVoting ? 'Submitting' : 'Submit vote'}
-            </Button>
+            {designDecisions.showSubmitButton && (
+              <Button disabled={!canVote} onClick={() => vote()} pending={isVoting}>
+                {isVoting ? 'Submitting' : 'Submit vote'}
+              </Button>
+            )}
           </div>
         )}
         {isMine && (

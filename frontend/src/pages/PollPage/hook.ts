@@ -6,7 +6,12 @@ import { DemoNetwork } from '../../utils/crypto.demo'
 import { useEthereum } from '../../hooks/useEthereum'
 import { DateUtils } from '../../utils/date.utils'
 import { closePoll as doClosePoll } from '../../utils/poll.utils'
-import { demoSettings, VITE_CONTRACT_POLLMANAGER, VITE_NETWORK_BIGINT } from '../../constants/config'
+import {
+  demoSettings,
+  designDecisions,
+  VITE_CONTRACT_POLLMANAGER,
+  VITE_NETWORK_BIGINT,
+} from '../../constants/config'
 import { useTime } from '../../hooks/useTime'
 import { tuneValue } from '../../utils/tuning'
 import { getVerdict } from '../../components/InputFields'
@@ -70,18 +75,33 @@ export const usePollData = (pollId: string) => {
 
   const isPastDue = !!remainingTime?.isPastDue
 
-  const canSelect =
-    !remainingTime?.isPastDue &&
-    winningChoice === undefined &&
-    (eth.state.address === undefined || existingVote === undefined)
+  let canSelect = false
+  let canVote = false
 
-  const canVote =
-    (!!eth.state.address || isDemo) &&
-    !isClosing &&
-    winningChoice === undefined &&
-    selectedChoice !== undefined &&
-    existingVote === undefined &&
-    getVerdict(permissions.canVote, false)
+  if (designDecisions.showSubmitButton) {
+    canSelect =
+      !remainingTime?.isPastDue &&
+      winningChoice === undefined &&
+      (eth.state.address === undefined || existingVote === undefined)
+
+    canVote =
+      (!!eth.state.address || isDemo) &&
+      !isClosing &&
+      winningChoice === undefined &&
+      selectedChoice !== undefined &&
+      existingVote === undefined &&
+      getVerdict(permissions.canVote, false)
+  } else {
+    canSelect =
+      (!!eth.state.address || isDemo) &&
+      !remainingTime?.isPastDue &&
+      winningChoice === undefined &&
+      // (eth.state.address === undefined || existingVote === undefined) &&
+      !isClosing &&
+      winningChoice === undefined &&
+      existingVote === undefined &&
+      getVerdict(permissions.canVote, false)
+  }
 
   const hasWallet = isDemo || (isHomeChain && userAddress !== ZeroAddress)
   const hasWalletOnWrongNetwork = !isDemo && !isHomeChain && userAddress !== ZeroAddress
@@ -123,146 +143,148 @@ export const usePollData = (pollId: string) => {
     }
   }
 
-  const doVote = useCallback(async (): Promise<void> => {
-    if (selectedChoice === undefined) throw new Error('no choice selected')
+  const doVote = useCallback(
+    async (choice: bigint | undefined): Promise<void> => {
+      if (choice === undefined) throw new Error('no choice selected')
 
-    const choice = selectedChoice
-
-    if (isDemo) {
-      if (
-        !confirm(
-          "Are you sure you want to submit your vote? (Normally you should see a MetaMask popup at this point, but this demo doesn't require any wallet, so this will have to do...)",
+      if (isDemo) {
+        if (
+          !confirm(
+            "Are you sure you want to submit your vote? (Normally you should see a MetaMask popup at this point, but this demo doesn't require any wallet, so this will have to do...)",
+          )
         )
-      )
+          return
+        setExistingVote(choice)
+        setHasVoted(true)
+        moveDemoAfterVoting()
         return
+      }
+
+      if (!gaslessVoting) throw new Error('No Gasless Voting!')
+      if (!signerDao) throw new Error('No Signer Dao')
+
+      let submitAndPay = true
+
+      if (gaslessPossible) {
+        if (!eth.state.signer) {
+          throw new Error('No signer!')
+        }
+
+        const request = {
+          dao: VITE_CONTRACT_POLLMANAGER,
+          voter: userAddress,
+          proposalId: proposalId,
+          choiceId: choice,
+        }
+
+        // Sign voting request
+        const signature = await eth.state.signer.signTypedData(
+          {
+            name: 'GaslessVoting',
+            version: '1',
+            chainId: VITE_NETWORK_BIGINT,
+            verifyingContract: await gaslessVoting.getAddress(),
+          },
+          {
+            VotingRequest: [
+              { name: 'voter', type: 'address' },
+              { name: 'dao', type: 'address' },
+              { name: 'proposalId', type: 'bytes32' },
+              { name: 'choiceId', type: 'uint256' },
+            ],
+          },
+          request,
+        )
+        const rsv = ethers.Signature.from(signature)
+
+        // Get nonce and random address
+        const submitAddr = randomchoice(gvAddresses)
+        const submitNonce = await eth.state.provider.getTransactionCount(submitAddr)
+        console.log(`Gasless voting, chose address:${submitAddr} (nonce: ${submitNonce})`)
+
+        // Submit voting request to get signed transaction
+        const feeData = await eth.state.provider.getFeeData()
+        console.log('doVote.gasless: constructing tx', 'gasPrice', feeData.gasPrice)
+        const tx = await gaslessVoting.makeVoteTransaction(
+          submitAddr,
+          submitNonce,
+          feeData.gasPrice!,
+          request,
+          permissions.proof,
+          rsv,
+        )
+
+        // Submit pre-signed signed transaction
+        let plain_resp
+        let receipt: TransactionReceipt | null = null
+        try {
+          const txDecoded = Transaction.from(tx)
+          const txDecodedGas = await eth.state.provider.estimateGas(txDecoded)
+          console.log('TxDecodedGas', txDecodedGas)
+          plain_resp = await eth.state.provider.broadcastTransaction(tx)
+          console.log('doVote.gasless: waiting for tx', plain_resp.hash)
+          receipt = await eth.state.provider.waitForTransaction(plain_resp.hash)
+        } catch (e: any) {
+          if ((e.message as string).includes('insufficient balance to pay fees')) {
+            submitAndPay = true
+            console.log('Insufficient balance!')
+          } else {
+            throw e
+          }
+        }
+
+        // Transaction fails... oh noes
+        if (receipt === null || receipt.status != 1) {
+          // TODO: how can we tell if it failed due to out of gas?
+          // Give them the option to re-submit their vote
+          let tx_hash: string = ''
+          if (receipt) {
+            tx_hash = `\n\nFailed tx: ${receipt.hash}`
+          }
+          console.log('Receipt is', receipt)
+          const result = confirm(
+            `Error submitting from subsidy account, submit from your own account? ${tx_hash}`,
+          )
+          if (result) {
+            submitAndPay = true
+          } else {
+            throw new Error(`gasless voting failed: ${receipt}`)
+          }
+        } else {
+          console.log('doVote.gasless: success')
+          submitAndPay = false
+        }
+      }
+
+      if (submitAndPay) {
+        console.log('doVote: casting vote using normal tx')
+        await eth.switchNetwork(DemoNetwork.FromConfig)
+        const tx = await signerDao.vote(proposalId, choice, permissions.proof)
+        const receipt = await tx.wait()
+
+        if (receipt!.status != 1) throw new Error('cast vote tx failed')
+      }
+
       setExistingVote(choice)
       setHasVoted(true)
-      moveDemoAfterVoting()
-      return
-    }
+    },
+    [
+      selectedChoice,
+      gaslessVoting,
+      signerDao,
+      gaslessPossible,
+      eth.state.signer,
+      eth.state.provider,
+      gvAddresses,
+      permissions.proof,
+    ],
+  )
 
-    if (!gaslessVoting) throw new Error('No Gasless Voting!')
-    if (!signerDao) throw new Error('No Signer Dao')
-
-    let submitAndPay = true
-
-    if (gaslessPossible) {
-      if (!eth.state.signer) {
-        throw new Error('No signer!')
-      }
-
-      const request = {
-        dao: VITE_CONTRACT_POLLMANAGER,
-        voter: userAddress,
-        proposalId: proposalId,
-        choiceId: choice,
-      }
-
-      // Sign voting request
-      const signature = await eth.state.signer.signTypedData(
-        {
-          name: 'GaslessVoting',
-          version: '1',
-          chainId: VITE_NETWORK_BIGINT,
-          verifyingContract: await gaslessVoting.getAddress(),
-        },
-        {
-          VotingRequest: [
-            { name: 'voter', type: 'address' },
-            { name: 'dao', type: 'address' },
-            { name: 'proposalId', type: 'bytes32' },
-            { name: 'choiceId', type: 'uint256' },
-          ],
-        },
-        request,
-      )
-      const rsv = ethers.Signature.from(signature)
-
-      // Get nonce and random address
-      const submitAddr = randomchoice(gvAddresses)
-      const submitNonce = await eth.state.provider.getTransactionCount(submitAddr)
-      console.log(`Gasless voting, chose address:${submitAddr} (nonce: ${submitNonce})`)
-
-      // Submit voting request to get signed transaction
-      const feeData = await eth.state.provider.getFeeData()
-      console.log('doVote.gasless: constructing tx', 'gasPrice', feeData.gasPrice)
-      const tx = await gaslessVoting.makeVoteTransaction(
-        submitAddr,
-        submitNonce,
-        feeData.gasPrice!,
-        request,
-        permissions.proof,
-        rsv,
-      )
-
-      // Submit pre-signed signed transaction
-      let plain_resp
-      let receipt: TransactionReceipt | null = null
-      try {
-        const txDecoded = Transaction.from(tx)
-        const txDecodedGas = await eth.state.provider.estimateGas(txDecoded)
-        console.log('TxDecodedGas', txDecodedGas)
-        plain_resp = await eth.state.provider.broadcastTransaction(tx)
-        console.log('doVote.gasless: waiting for tx', plain_resp.hash)
-        receipt = await eth.state.provider.waitForTransaction(plain_resp.hash)
-      } catch (e: any) {
-        if ((e.message as string).includes('insufficient balance to pay fees')) {
-          submitAndPay = true
-          console.log('Insufficient balance!')
-        } else {
-          throw e
-        }
-      }
-
-      // Transaction fails... oh noes
-      if (receipt === null || receipt.status != 1) {
-        // TODO: how can we tell if it failed due to out of gas?
-        // Give them the option to re-submit their vote
-        let tx_hash: string = ''
-        if (receipt) {
-          tx_hash = `\n\nFailed tx: ${receipt.hash}`
-        }
-        console.log('Receipt is', receipt)
-        const result = confirm(
-          `Error submitting from subsidy account, submit from your own account? ${tx_hash}`,
-        )
-        if (result) {
-          submitAndPay = true
-        } else {
-          throw new Error(`gasless voting failed: ${receipt}`)
-        }
-      } else {
-        console.log('doVote.gasless: success')
-        submitAndPay = false
-      }
-    }
-
-    if (submitAndPay) {
-      console.log('doVote: casting vote using normal tx')
-      await eth.switchNetwork(DemoNetwork.FromConfig)
-      const tx = await signerDao.vote(proposalId, choice, permissions.proof)
-      const receipt = await tx.wait()
-
-      if (receipt!.status != 1) throw new Error('cast vote tx failed')
-    }
-
-    setExistingVote(choice)
-    setHasVoted(true)
-  }, [
-    selectedChoice,
-    gaslessVoting,
-    signerDao,
-    gaslessPossible,
-    eth.state.signer,
-    eth.state.provider,
-    gvAddresses,
-    permissions.proof,
-  ])
-
-  async function vote(): Promise<void> {
+  async function vote(choice?: bigint): Promise<boolean> {
     try {
       setIsVoting(true)
-      await doVote()
+      await doVote(choice ?? selectedChoice)
+      return true
     } catch (e) {
       let errorString = `${e}`
       if (errorString.startsWith('Error: user rejected action')) {
@@ -270,6 +292,7 @@ export const usePollData = (pollId: string) => {
       }
       window.alert(`Failed to submit vote: ${errorString}`)
       console.log(e)
+      return false
     } finally {
       setIsVoting(false)
     }
@@ -332,8 +355,16 @@ export const usePollData = (pollId: string) => {
 
     selectedChoice: winningChoice ?? selectedChoice,
     canSelect,
-    setSelectedChoice,
-
+    setSelectedChoice: async (value: bigint | undefined) => {
+      if (designDecisions.showSubmitButton) {
+        setSelectedChoice(value)
+      } else {
+        setSelectedChoice(value)
+        if (value !== undefined) {
+          if (!(await vote(value))) setSelectedChoice(undefined)
+        }
+      }
+    },
     remainingTime,
     remainingTimeString,
 

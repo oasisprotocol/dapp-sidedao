@@ -179,4 +179,5 @@ export const designDecisions = {
   showInaccessiblePollCheckbox: false,
   hideDisabledSelectOptions: true,
   disableSelectsWithOnlyOneVisibleOption: true,
+  showSubmitButton: false,
 }
