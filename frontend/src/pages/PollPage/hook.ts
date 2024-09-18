@@ -284,6 +284,7 @@ export const usePollData = (pollId: string) => {
     try {
       setIsVoting(true)
       await doVote(choice ?? selectedChoice)
+      setIsVoting(false)
       return true
     } catch (e) {
       let errorString = `${e}`
@@ -292,9 +293,8 @@ export const usePollData = (pollId: string) => {
       }
       window.alert(`Failed to submit vote: ${errorString}`)
       console.log(e)
-      return false
-    } finally {
       setIsVoting(false)
+      return false
     }
   }
 
