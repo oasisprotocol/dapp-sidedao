@@ -348,16 +348,14 @@ export const checkPollPermission = async (
     const chainDefinition = getChainDefinition(chainId)
     try {
       tokenInfo = await getERC20TokenDetails(chainId, tokenAddress)
-      explanation = `This poll is only for those who have hold ${tokenInfo?.name} token on the ${chainDefinition.name} when the poll was created.`
+      explanation = `This poll is only for those who have hold ${tokenInfo?.name} token on ${chainDefinition.name} when the poll was created.`
       proof = await fetchStorageProof(provider, blockHash, tokenAddress, slot, userAddress)
       const result = await pollACL.canVoteOnPoll(daoAddress, proposalId, userAddress, proof)
       // console.log("xChainAcl check:", result, 0n != result)
       if (0n !== result) {
         canVote = true
       } else {
-        canVote = denyWithReason(
-          `you don't hold any ${tokenInfo.name} tokens on the ${chainDefinition} chain`,
-        )
+        canVote = denyWithReason(`you don't hold any ${tokenInfo.name} tokens on ${chainDefinition} chain`)
       }
     } catch (e) {
       const problem = e as any

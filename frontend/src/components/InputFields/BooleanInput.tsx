@@ -17,6 +17,7 @@ export const BooleanInput: FC<BooleanFieldControls> = props => {
     visible,
     enabled,
     whyDisabled,
+    containerClassName,
   } = props
 
   const handleChange = useCallback(
@@ -63,7 +64,7 @@ export const BooleanInput: FC<BooleanFieldControls> = props => {
   )
 
   return (
-    <div className={classes.fieldContainer}>
+    <div className={StringUtils.clsx(classes.fieldContainer, containerClassName)}>
       {description ? (
         <label>
           <div className={classes.fieldDescription}>{description}</div>

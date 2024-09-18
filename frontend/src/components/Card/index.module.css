@@ -27,6 +27,7 @@
     font-weight: 700;
     font-size: 32px;
     line-height: 140%;
+    text-align: center;
   }
 
   h3 {
@@ -35,6 +36,7 @@
     font-weight: 600;
     font-size: 32px;
     line-height: 140%;
+    text-align: center;
   }
 
   h4 {
@@ -43,6 +45,7 @@
     font-weight: 700;
     font-size: 18px;
     line-height: 24px;
+    text-align: center;
   }
 }
 

@@ -474,6 +474,9 @@ export const useCreatePollForm = () => {
   const hasCloseDate = useBooleanField({
     name: 'hasCloseDate',
     label: 'Fixed close date',
+    onValueChange: value => {
+      if (value) pollCloseDate.setValue(new Date(Date.now() + 1000 * 3600))
+    },
   })
 
   const { now } = useTime(hasCloseDate.value)
@@ -483,7 +486,6 @@ export const useCreatePollForm = () => {
     label: `Poll close date (Time zone: ${Intl.DateTimeFormat().resolvedOptions().timeZone})`,
     visible: hasCloseDate.value,
     validateOnChange: true,
-    initialValue: new Date(),
     showValidationStatus: false,
     validators: value => {
       const deadline = value.getTime() / 1000

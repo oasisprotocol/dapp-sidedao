@@ -148,16 +148,17 @@ export const useDashboardData = () => {
     name: 'showInaccessible',
     label: "Show polls I don't have access to",
     initialValue: false,
+    containerClassName: classes.showInaccessible,
   })
 
   const wantedPollType = useOneOfField({
     name: 'wantedPollType',
     choices: [
+      { value: 'all', label: 'Both open and completed polls' },
       { value: 'openOnly', label: 'Open polls' },
       { value: 'completedOnly', label: 'Completed polls' },
-      { value: 'all', label: 'Both open and completed polls' },
     ],
-    initialValue: 'all',
+    containerClassName: classes.openClosePolls,
   } as const)
 
   const navigate = useNavigate()
@@ -220,14 +221,23 @@ export const useDashboardData = () => {
     // console.log('Found:', newMine.length, newOthers.length, 'out of', allProposals.length)
   }, [version, allProposals, typeFilter])
 
-  const filterInputs = useMemo(() => {
+  const leftFilterInputs = useMemo(() => {
     return [
-      wantedPollType,
+      pollSearchPatternInput,
       ...(dashboard.showPermissions && designDecisions.showInaccessiblePollCheckbox
         ? [showInaccessible]
         : []),
     ]
-  }, [dashboard.showPermissions, wantedPollType.value, showInaccessible.value])
+  }, [
+    pollSearchPatternInput,
+    dashboard.showPermissions,
+    designDecisions.showInaccessiblePollCheckbox,
+    showInaccessible,
+  ])
+
+  const rightFilterInputs = useMemo(() => {
+    return [wantedPollType]
+  }, [wantedPollType])
 
   return {
     userAddress,
@@ -237,9 +247,10 @@ export const useDashboardData = () => {
     otherProposals,
     registerOwnership,
     registerMatch,
-    filterInputs,
+    leftFilterInputs,
+    rightFilterInputs,
     shouldShowInaccessiblePolls: !dashboard.showPermissions || showInaccessible.value,
-    pollSearchPatternInput,
+    // pollSearchPatternInput,
     searchPatterns,
   }
 }

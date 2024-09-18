@@ -11,6 +11,7 @@ import { designDecisions } from '../../constants/config'
 export const PollAccessIndicator: FC<{
   isOpen: boolean
   isClosed: boolean
+  hideClosedNoAccess?: boolean
   isPending: boolean
   isBroken: boolean
   explanation: string | undefined
@@ -18,13 +19,24 @@ export const PollAccessIndicator: FC<{
   isCompleted: boolean
   isMine: boolean | undefined
   retest: () => void
-}> = ({ isOpen, isBroken, isClosed, isPending, explanation, hasAccess, isCompleted, isMine, retest }) => {
+}> = ({
+  isOpen,
+  isBroken,
+  isClosed,
+  isPending,
+  explanation,
+  hasAccess,
+  isCompleted,
+  isMine,
+  retest,
+  hideClosedNoAccess,
+}) => {
   return (
     <>
       {isOpen && !designDecisions.hideOpenPollIndicator && (
         <OpenPollIcon completed={isCompleted} height={20} />
       )}
-      {isClosed && (
+      {isClosed && !(!hasAccess && hideClosedNoAccess) && (
         <ClosedPollIcon
           explanation={explanation ?? 'unknown restriction'}
           completed={isCompleted}
@@ -45,14 +57,16 @@ export const PollAccessIndicatorWrapper: FC<{
   isMine: boolean | undefined
   permissions: PollPermissions
   isActive: boolean
+  hideClosedNoAccess?: boolean
   retest: () => void
-}> = ({ isMine, permissions, isActive, retest }) => {
+}> = ({ isMine, permissions, isActive, hideClosedNoAccess, retest }) => {
   const { explanation, error, canVote } = permissions
   return (
     <PollAccessIndicator
       isOpen={explanation === ''}
       isBroken={!!error}
       isClosed={!!explanation && !error}
+      hideClosedNoAccess={hideClosedNoAccess}
       explanation={explanation}
       hasAccess={getVerdict(canVote, false)}
       isCompleted={!isActive}

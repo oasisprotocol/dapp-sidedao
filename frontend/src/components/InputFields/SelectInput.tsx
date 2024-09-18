@@ -17,6 +17,7 @@ export const SelectInput: FC<OneOfFieldControls<any>> = props => {
     visible,
     enabled,
     whyDisabled,
+    containerClassName,
   } = props
 
   const handleChange = useCallback(
@@ -60,7 +61,7 @@ export const SelectInput: FC<OneOfFieldControls<any>> = props => {
   )
 
   return (
-    <div className={classes.fieldContainer} title={whyDisabled}>
+    <div className={StringUtils.clsx(classes.fieldContainer, containerClassName)} title={whyDisabled}>
       {!!label || !!description ? (
         <label>
           <div className={classes.fieldLabel}>{label}</div>
