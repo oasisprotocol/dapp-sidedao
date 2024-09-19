@@ -6,6 +6,7 @@ import { ProblemList } from './ProblemDisplay'
 import { checkProblems } from './util'
 import { SpinnerIcon } from '../icons/SpinnerIcon'
 import { CheckCircleIcon } from '../icons/CheckCircleIcon'
+import { motion } from 'framer-motion'
 
 const convertToDateTimeLocalString = (date: Date) => {
   const year = date.getFullYear()
@@ -83,7 +84,14 @@ export const DateInput: FC<DateFieldControls> = ({
   )
 
   return (
-    <div className={classes.fieldContainer}>
+    <motion.div
+      layout
+      className={classes.fieldContainer}
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: 'auto' }}
+      exit={{ opacity: 0, height: 0 }}
+      transition={{ duration: 0.5 }}
+    >
       {!!label || !!description ? (
         <label>
           <div className={classes.fieldLabel}>{label}</div>
@@ -93,6 +101,6 @@ export const DateInput: FC<DateFieldControls> = ({
       ) : (
         wrappedField
       )}
-    </div>
+    </motion.div>
   )
 }

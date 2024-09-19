@@ -147,9 +147,9 @@ export const PollCard: FC<{
         <motion.div
           layout
           // key={pollId}
-          initial={{ maxHeight: 0, opacity: 0 }}
-          animate={{ maxHeight: 140, opacity: 1 }}
-          exit={{ maxHeight: 0, opacity: 0 }}
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: 'auto', opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
           transition={{ duration: 0.5 }}
         >
           <Link to={`/polls/${pollId}`} style={{ textDecoration: 'none' }}>
