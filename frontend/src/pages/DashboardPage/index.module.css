@@ -36,7 +36,7 @@
   height: 48px;
 }
 
-.search, .openClosePolls, .showInaccessible {
+.search, .openCompletePolls, .showInaccessible {
   width: 300px;
 }
 

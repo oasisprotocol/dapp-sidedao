@@ -25,12 +25,12 @@ const StatusInfo: FC<{
   remainingTimeString: string | undefined
   isMine: boolean | undefined
   canClose: boolean
-  closePoll: () => void
+  complete: () => void
   isClosing: boolean
-}> = ({ remainingTime, remainingTimeString, isMine, canClose, closePoll, isClosing }) => {
+}> = ({ remainingTime, remainingTimeString, isMine, canClose, complete, isClosing }) => {
   const handleClose = () => {
     if (canClose && window.confirm("Are you you you want to close this poll? This can't be undone.")) {
-      closePoll()
+      complete()
     }
   }
 
@@ -42,7 +42,7 @@ const StatusInfo: FC<{
             <h4>{remainingTimeString}</h4>
             <h4>Voting results will be available when you close the poll.</h4>
             <Button disabled={!canClose} onClick={handleClose} pending={isClosing}>
-              {isClosing ? 'Closing poll' : 'Close poll'}
+              {isClosing ? 'Completing poll' : 'Complete poll'}
             </Button>
           </>
         )
@@ -68,7 +68,7 @@ const StatusInfo: FC<{
         <>
           <h4>Voting results will be available when you close the poll.</h4>
           <Button disabled={!canClose} onClick={handleClose} pending={isClosing}>
-            {isClosing ? 'Closing poll' : 'Close poll'}
+            {isClosing ? 'Completing poll' : 'Complete poll'}
           </Button>
         </>
       )
@@ -87,7 +87,7 @@ export const ThanksForVote: FC<PollData> = ({
   permissions,
   checkPermissions,
   canClose,
-  closePoll,
+  completePoll,
   isClosing,
 }) => {
   const {
@@ -125,7 +125,7 @@ export const ThanksForVote: FC<PollData> = ({
         remainingTimeString={remainingTimeString}
         isMine={isMine}
         canClose={canClose}
-        closePoll={closePoll}
+        complete={completePoll}
         isClosing={isClosing}
       />
     </Card>

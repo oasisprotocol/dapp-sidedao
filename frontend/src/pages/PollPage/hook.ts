@@ -5,7 +5,7 @@ import { ethers, Transaction, TransactionReceipt, ZeroAddress } from 'ethers'
 import { DemoNetwork } from '../../utils/crypto.demo'
 import { useEthereum } from '../../hooks/useEthereum'
 import { DateUtils } from '../../utils/date.utils'
-import { closePoll as doClosePoll } from '../../utils/poll.utils'
+import { completePoll as doCompletePoll } from '../../utils/poll.utils'
 import {
   demoSettings,
   designDecisions,
@@ -110,11 +110,11 @@ export const usePollData = (pollId: string) => {
 
   // console.log("canAclManage?", canAclManage, "deadline:", deadline, "isPastDue?", isPastDue, "canClose?", canClose)
 
-  const closePoll = async () => {
-    if (!signerDao) throw new Error("Can't close poll with no poll manager.")
+  const completePoll = async () => {
+    if (!signerDao) throw new Error("Can't complete poll with no poll manager.")
     setIsClosing(true)
     try {
-      await doClosePoll(eth, signerDao, proposalId)
+      await doCompletePoll(eth, signerDao, proposalId)
       setHasClosed(true)
     } catch (e) {
       console.log('Error closing poll:', e)
@@ -409,7 +409,7 @@ export const usePollData = (pollId: string) => {
     topUp,
 
     canClose,
-    closePoll,
+    completePoll,
     isClosing,
     hasClosed,
 

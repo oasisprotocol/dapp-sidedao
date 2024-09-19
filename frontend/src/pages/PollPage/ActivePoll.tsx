@@ -37,7 +37,7 @@ export const ActivePoll: FC<PollData> = ({
   checkPermissions,
   canClose,
   isClosing,
-  closePoll,
+  completePoll,
   topUp,
 }) => {
   // console.log("hasWallet?", hasWallet, "hasWalletOnWrongNetwork?",hasWalletOnWrongNetwork)
@@ -65,7 +65,7 @@ export const ActivePoll: FC<PollData> = ({
 
   const handleClose = useCallback(() => {
     if (canClose && window.confirm("Are you sure you want to close this poll? This can't be undone.")) {
-      void closePoll()
+      void completePoll()
     }
   }, [close])
 
@@ -183,7 +183,7 @@ export const ActivePoll: FC<PollData> = ({
             onClick={handleClose}
             pending={isClosing}
           >
-            {isClosing ? 'Closing poll' : 'Close poll'}
+            {isClosing ? 'Completing poll' : 'Complete poll'}
           </Button>
         )}
         {!hasWallet && !isPastDue && <ConnectWallet mobileSticky={false} />}

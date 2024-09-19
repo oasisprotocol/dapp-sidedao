@@ -62,7 +62,7 @@ export const DashboardPage: FC = () => {
       <div className={classes.dashboardMain}>
         <div className={classes.dashboardMyColumn}>
           <InputFieldGroup fields={[leftFilterInputs]} />
-          <div className={classes.dashboardLabel}>My polls</div>
+          <div className={classes.dashboardLabel}>Polls created by me</div>
           {isLoadingPolls ? (
             <Alert headerText="Please wait" type="loading" actions={<span>Fetching polls...</span>} />
           ) : (

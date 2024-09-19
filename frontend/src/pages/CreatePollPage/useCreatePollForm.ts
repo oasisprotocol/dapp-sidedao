@@ -620,7 +620,7 @@ export const useCreatePollForm = () => {
           aclOptions,
           subsidizeAmount: gasFree.value ? parseEther(amountOfSubsidy.value) : undefined,
           publishVotes: resultDisplayType.value === 'percentages_and_votes',
-          closeTime: hasCloseDate.value ? pollCloseDate.value : undefined,
+          completionTime: hasCloseDate.value ? pollCloseDate.value : undefined,
         },
         logger,
       )

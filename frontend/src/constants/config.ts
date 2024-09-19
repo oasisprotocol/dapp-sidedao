@@ -192,7 +192,7 @@ type DashboardFeature = 'gaslessStatus' | 'permissions' | 'results'
  */
 const enabledDashboardFeatures: DashboardFeature[] = [
   'gaslessStatus', // Do we want to show the gasless status on each card?
-  'permissions', // Do we want to show the permissions on each card?
+  // 'permissions', // Do we want to show the permissions on each card?
   // 'results', // Do we want to show the results on each card?
 ]
 
@@ -208,7 +208,7 @@ export const dashboard = {
 export const designDecisions = {
   hideGaslessIndicator: true,
   hideOpenPollIndicator: true,
-  hideClosePollHaveAccessIndicator: true,
+  hideRestrictedPollHaveAccessIndicator: false,
   hideMyPollIndicator: true,
   showInaccessiblePollCheckbox: true,
   hideDisabledSelectOptions: true,

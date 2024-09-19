@@ -22,7 +22,7 @@ export const ClosedPollIcon: FC<
     [canRetest, onClick],
   )
 
-  if (designDecisions.hideClosePollHaveAccessIndicator && hasAccess) return
+  if (designDecisions.hideRestrictedPollHaveAccessIndicator && hasAccess) return
 
   return (
     <span

@@ -17,11 +17,11 @@ interface FetchProposalResult {
 }
 
 export type Column = 'mine' | 'others'
-export type WantedStatus = 'open' | 'completed' | 'all'
+export type WantedStatus = 'active' | 'completed' | 'all'
 
 export const isPollStatusAcceptable = (proposal: Proposal, wantedStatus: WantedStatus): boolean => {
   switch (wantedStatus) {
-    case 'open':
+    case 'active':
       return proposal.active
     case 'completed':
       return !proposal.active
@@ -224,11 +224,11 @@ export const useDashboardData = () => {
   const wantedPollStatus = useOneOfField({
     name: 'wantedPollStatus',
     choices: [
-      { value: 'all', label: 'Both open and completed polls' },
-      { value: 'open', label: 'Open polls' },
+      { value: 'all', label: 'All polls' },
+      { value: 'active', label: 'Active polls' },
       { value: 'completed', label: 'Completed polls' },
     ],
-    containerClassName: classes.openClosePolls,
+    containerClassName: classes.openCompletePolls,
   } as const)
 
   const navigate = useNavigate()

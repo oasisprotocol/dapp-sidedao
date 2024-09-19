@@ -180,12 +180,20 @@ export const createPoll = async (
     aclOptions: AclOptions
     subsidizeAmount: bigint | undefined
     publishVotes: boolean
-    closeTime: Date | undefined
+    completionTime: Date | undefined
   },
   updateStatus: (message: string) => void,
 ) => {
-  const { question, description, answers, aclData, aclOptions, subsidizeAmount, publishVotes, closeTime } =
-    props
+  const {
+    question,
+    description,
+    answers,
+    aclData,
+    aclOptions,
+    subsidizeAmount,
+    publishVotes,
+    completionTime,
+  } = props
 
   updateStatus('Compiling data')
   const poll: Poll = {
@@ -195,7 +203,7 @@ export const createPoll = async (
     choices: answers,
     options: {
       publishVotes,
-      closeTimestamp: closeTime ? closeTime.getTime() / 1000 : 0,
+      closeTimestamp: completionTime ? completionTime.getTime() / 1000 : 0,
     },
     acl: aclOptions,
   }
@@ -246,16 +254,16 @@ export const createPoll = async (
   return proposalId
 }
 
-export const closePoll = async (eth: EthereumContext, pollManager: PollManager, proposalId: string) => {
+export const completePoll = async (eth: EthereumContext, pollManager: PollManager, proposalId: string) => {
   await eth.switchNetwork() // ensure we're on the correct network first!
-  // console.log("Preparing close tx...")
+  // console.log("Preparing complete tx...")
 
   const tx = await pollManager.close(proposalId)
-  // console.log('Close proposal tx', tx);
+  // console.log('Complete proposal tx', tx);
 
   const receipt = await tx.wait()
 
-  if (receipt!.status != 1) throw new Error('close ballot tx failed')
+  if (receipt!.status != 1) throw new Error('Complete ballot tx failed')
 }
 
 export type PollPermissions = {
