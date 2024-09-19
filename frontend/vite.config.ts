@@ -1,30 +1,31 @@
-import { defineConfig, PluginOption, splitVendorChunkPlugin } from 'vite'
+import { defineConfig } from 'vite'
 import svgr from 'vite-plugin-svgr'
 import react from '@vitejs/plugin-react-swc'
+import { viteSingleFile } from "vite-plugin-singlefile"
 import { visualizer } from 'rollup-plugin-visualizer'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [svgr(), react(), splitVendorChunkPlugin(), visualizer() as PluginOption],
+  plugins: [
+    svgr(),
+    react(),
+    viteSingleFile({
+      useRecommendedBuildConfig: false,
+      inlinePattern: ['assets/style-*.css',]
+    }),
+    visualizer()
+  ],
+  base: './',
   build: {
     sourcemap: true,
+    cssCodeSplit: false,
     rollupOptions: {
       output: {
+        inlineDynamicImports: false,
         manualChunks(id: string) {
           if (id.includes('ethers')) {
-            return 'ethers'
+            return 'ethers';
           }
-          if (id.includes('recharts')) {
-            return 'recharts'
-          }
-          if (id.includes('lodash')) {
-            return 'lodash'
-          }
-          /*
-          if (id.includes('react-dom')) {
-            return 'react-dom'
-          }
-          */
         },
       },
     },

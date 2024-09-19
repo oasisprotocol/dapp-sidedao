@@ -4,6 +4,11 @@ build: node_modules
 	$(MAKE) -C frontend $@
 	$(MAKE) -C frontend.demo $@
 
+build-staging: node_modules
+	$(MAKE) -C hardhat build
+	$(MAKE) -C contracts build
+	$(MAKE) -C frontend build-staging
+
 clean:
 	$(MAKE) -C hardhat $@
 	$(MAKE) -C contracts $@

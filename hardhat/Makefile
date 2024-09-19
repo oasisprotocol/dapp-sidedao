@@ -16,8 +16,8 @@ test-localnet:
 
 .PHONY: deploy-testnet
 deploy-testnet:
-	$(NPM) hardhat --network sapphire-testnet deploy --viteenv ../frontend.demo/.env.production
-	cp ../frontend.demo/.env.development ../frontend/.env.development
+	$(NPM) hardhat --network sapphire-testnet deploy --viteenv ../frontend.demo/.env.staging
+	cp ../frontend.demo/.env.staging ../frontend/.env.staging
 
 .PHONY: test
 test:

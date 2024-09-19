@@ -17,7 +17,6 @@
   justify-content: space-between;
 
   h4 {
-    font-family: 'Inter';
     font-style: normal;
     font-weight: 500;
     font-size: 17px;
@@ -53,7 +52,6 @@ h4.activePollTitle {
 .pollStatusCompleted {
   padding: 4px 8px;
   border-radius: 8px;
-  font-family: 'Inter';
   font-style: normal;
   font-weight: 700;
   font-size: 11px;

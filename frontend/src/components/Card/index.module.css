@@ -22,7 +22,6 @@
   color: #01001f;
 
   h2 {
-    font-family: 'Inter';
     font-style: normal;
     font-weight: 700;
     font-size: 32px;
@@ -31,7 +30,6 @@
   }
 
   h3 {
-    font-family: 'Inter';
     font-style: normal;
     font-weight: 600;
     font-size: 32px;
@@ -40,7 +38,6 @@
   }
 
   h4 {
-    font-family: 'Inter';
     font-style: normal;
     font-weight: 700;
     font-size: 18px;

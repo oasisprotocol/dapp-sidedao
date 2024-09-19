@@ -1,6 +1,5 @@
 import { Proposal } from '../../types'
 import { FC, useEffect } from 'react'
-import { micromark } from 'micromark'
 import { Link } from 'react-router-dom'
 import classes from './index.module.css'
 import { GasRequiredIcon } from '../icons/GasRequiredIcon'
@@ -101,7 +100,7 @@ export const PollCard: FC<{
     },
   }
 
-  const renderedDescription = micromark(description)
+  const renderedDescription = description
 
   const textMatches = searchPatterns.length
     ? findTextMatches(`${name} ${renderedDescription}`, searchPatterns)
