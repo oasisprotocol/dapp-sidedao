@@ -108,6 +108,7 @@ export const ActivePoll: FC<PollData> = ({
           {choices.map((choice, index) =>
             !isVoting || selectedChoice === BigInt(index) ? (
               <motion.div
+                layout
                 initial={{ opacity: 0, height: 0, width: '50%' }}
                 animate={{ opacity: 1, height: 48, width: '100%' }}
                 exit={{ opacity: 0, height: 0 }}

@@ -34,6 +34,7 @@ export const CompletedPoll: FC<
       <>
         {Object.entries(choices).map(([index, entry]) => (
           <motion.div
+            layout
             className={StringUtils.clsx(
               classes.choice,
               classes.choiceWithResults,
@@ -54,6 +55,7 @@ export const CompletedPoll: FC<
             }}
           >
             <motion.div
+              layout
               className={classes.sizeBar}
               initial={{ width: '0%' }}
               animate={{ width: `${entry.rate}%` }}

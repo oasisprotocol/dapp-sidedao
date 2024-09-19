@@ -111,6 +111,7 @@ export const ThanksForVote: FC<PollData> = ({
       </h4>
       {/*<p>{description}</p>*/}
       <motion.div
+        layout
         className={`${classes.choice} ${classes.submitted}`}
         initial={{ opacity: 0, height: 0, width: '50%' }}
         animate={{ opacity: 1, height: 48, width: '100%' }}

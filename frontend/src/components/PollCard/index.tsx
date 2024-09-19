@@ -146,6 +146,7 @@ export const PollCard: FC<{
     <AnimatePresence initial={false}>
       {visible && (
         <motion.div
+          layout
           // key={pollId}
           initial={{ maxHeight: 0, opacity: 0 }}
           animate={{ maxHeight: 140, opacity: 1 }}
