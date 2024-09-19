@@ -54,7 +54,7 @@ export abstract class DateUtils {
     if (remaining.isPastDue) {
       return `Voting finished ${timeString} ago.`
     } else {
-      return `Poll closes in ${timeString}.`
+      return `Poll completes in ${timeString}.`
     }
   }
 }

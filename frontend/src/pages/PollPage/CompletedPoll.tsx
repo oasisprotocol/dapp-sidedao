@@ -26,7 +26,7 @@ export const CompletedPoll: FC<
             permissions={permissions}
             isActive={false}
             retest={checkPermissions}
-            hideClosedNoAccess={true}
+            hideRestrictedNoAccess={true}
           />
         </div>
       </h4>

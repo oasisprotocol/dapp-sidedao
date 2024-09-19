@@ -106,7 +106,7 @@ export {
   VITE_IPFS_GATEWAY,
 }
 
-export const MIN_CLOSE_TIME_MINUTES = 3
+export const MIN_COMPLETION_TIME_MINUTES = 3
 
 export const demoPoll1 = {
   id: 'demo',
@@ -180,8 +180,8 @@ export const getDemoPoll = (): ExtendedPoll => randomchoice([demoPoll1, demoPoll
 
 export const demoSettings = {
   timeForVoting: 610,
-  waitSecondsBeforeFormallyClosing: 5,
-  jumpToSecondsBeforeClosing: 5,
+  waitSecondsBeforeFormallyCompleting: 5,
+  jumpToSecondsBeforeCompletion: 5,
   timeContractionSeconds: 5,
 }
 

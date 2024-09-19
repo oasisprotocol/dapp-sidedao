@@ -50,7 +50,7 @@ const PollStatusIndicator: FC<{ active: boolean; isPastDue: boolean }> = ({ acti
       Active {isPastDue && <HourGlassIcon size={'small'} />}
     </div>
   ) : (
-    <div className={classes.pollStatusCompleted} title={'Poll is closed, results are available.'}>
+    <div className={classes.pollStatusCompleted} title={'Poll is completed, results are available.'}>
       Completed
     </div>
   )

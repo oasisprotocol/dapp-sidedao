@@ -52,7 +52,7 @@ type VisibilityInCircumstances = Record<Column, Set<string>>
  * Explanation about filtering on the dashboard
  *
  * The poll cards on the dashboard are filtered according to three criteria:
- * 1. Poll status: open or closed
+ * 1. Poll status: active or completed
  * 2. Text search (in name and description)
  * 3. Poll accessibility (i.e. permissions)
  *

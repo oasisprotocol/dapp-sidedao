@@ -36,7 +36,7 @@ import { useContracts } from '../../hooks/useContracts'
 import classes from './index.module.css'
 import { DateUtils } from '../../utils/date.utils'
 import { useTime } from '../../hooks/useTime'
-import { designDecisions, MIN_CLOSE_TIME_MINUTES } from '../../constants/config'
+import { designDecisions, MIN_COMPLETION_TIME_MINUTES } from '../../constants/config'
 import { AclOptions } from '../../types'
 import { renderAddress } from '../../components/Addresses'
 import { useNavigate } from 'react-router-dom'
@@ -383,7 +383,7 @@ export const useCreatePollForm = () => {
   const gasFreeExplanation = useLabel({
     name: 'gasFreeExplanation',
     initialValue:
-      'We calculate and suggest the amount of ROSE needed for gas based on the amount of users that are expected to vote. Any remaining ROSE from the gas sponsoring wallet will be refunded to you once the poll is closed.',
+      'We calculate and suggest the amount of ROSE needed for gas based on the amount of users that are expected to vote. Any remaining ROSE from the gas sponsoring wallet will be refunded to you once the poll is completed.',
     visible: gasFree.value,
     classnames: classes.explanation,
   })
@@ -472,51 +472,52 @@ export const useCreatePollForm = () => {
     disableIfOnlyOneVisibleChoice: designDecisions.disableSelectsWithOnlyOneVisibleOption,
   } as const)
 
-  const hasCloseDate = useBooleanField({
-    name: 'hasCloseDate',
-    label: 'Fixed close date',
+  const hasCompletionDate = useBooleanField({
+    name: 'hasCompletionDate',
+    label: 'Fixed completion date',
     onValueChange: value => {
-      if (value) pollCloseDate.setValue(new Date(Date.now() + 1000 * 3600))
+      if (value) pollCompletionDate.setValue(new Date(Date.now() + 1000 * 3600))
     },
   })
 
   const { now } = useTime()
 
-  const pollCloseDate = useDateField({
-    name: 'pollCloseDate',
-    label: `Poll close date (Time zone: ${Intl.DateTimeFormat().resolvedOptions().timeZone})`,
-    visible: hasCloseDate.value,
+  const pollCompletionDate = useDateField({
+    name: 'pollCompletionDate',
+    label: `Poll completion date (Time zone: ${Intl.DateTimeFormat().resolvedOptions().timeZone})`,
+    visible: hasCompletionDate.value,
     validateOnChange: true,
     showValidationStatus: false,
     validators: value => {
       const deadline = value.getTime() / 1000
       const remaining = DateUtils.calculateRemainingTimeFrom(deadline, now)
       const { isPastDue, totalSeconds } = remaining
-      if (isPastDue || totalSeconds < MIN_CLOSE_TIME_MINUTES * 60) {
-        return `Please set a time at least ${MIN_CLOSE_TIME_MINUTES} minutes in the future!`
+      if (isPastDue || totalSeconds < MIN_COMPLETION_TIME_MINUTES * 60) {
+        return `Please set a time at least ${MIN_COMPLETION_TIME_MINUTES} minutes in the future!`
       }
     },
   })
 
-  const hasValidCloseDate = hasCloseDate.value && !!pollCloseDate.value && !pollCloseDate.hasProblems
+  const hasValidCompletionDate =
+    hasCompletionDate.value && !!pollCompletionDate.value && !pollCompletionDate.hasProblems
 
-  const pollCloseLabel = useLabel({
-    name: 'pollCloseLabel',
-    visible: hasValidCloseDate,
+  const pollCompletionLabel = useLabel({
+    name: 'pollCompletionLabel',
+    visible: hasValidCompletionDate,
     initialValue: '??',
   })
 
   useEffect(() => {
-    void pollCloseDate.validate({ forceChange: true, reason: 'change' })
-  }, [hasCloseDate.value, now])
+    void pollCompletionDate.validate({ forceChange: true, reason: 'change' })
+  }, [hasCompletionDate.value, now])
 
   useEffect(() => {
-    if (hasValidCloseDate) {
-      const deadline = pollCloseDate.value.getTime() / 1000
+    if (hasValidCompletionDate) {
+      const deadline = pollCompletionDate.value.getTime() / 1000
       const remaining = DateUtils.calculateRemainingTimeFrom(deadline, now)
-      pollCloseLabel.setValue(DateUtils.getTextDescriptionOfTime(remaining) ?? '')
+      pollCompletionLabel.setValue(DateUtils.getTextDescriptionOfTime(remaining) ?? '')
     }
-  }, [hasCloseDate.value, hasValidCloseDate, now])
+  }, [hasCompletionDate.value, hasValidCompletionDate, now])
 
   const creationStatus = useLabel({
     name: 'creationStatus',
@@ -545,9 +546,9 @@ export const useCreatePollForm = () => {
     results: [
       resultDisplayType,
       authorResultDisplayType,
-      hasCloseDate,
-      pollCloseDate,
-      pollCloseLabel,
+      hasCompletionDate,
+      pollCompletionDate,
+      pollCompletionLabel,
       creationStatus,
     ],
   }
@@ -619,7 +620,7 @@ export const useCreatePollForm = () => {
         aclOptions,
         subsidizeAmount: gasFree.value ? parseEther(amountOfSubsidy.value) : undefined,
         publishVotes: resultDisplayType.value === 'percentages_and_votes',
-        completionTime: hasCloseDate.value ? pollCloseDate.value : undefined,
+        completionTime: hasCompletionDate.value ? pollCompletionDate.value : undefined,
       }
 
       // console.log('Will create poll with props:', pollProps)

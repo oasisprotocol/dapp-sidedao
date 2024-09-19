@@ -24,12 +24,12 @@ const StatusInfo: FC<{
   remainingTime: RemainingTime | undefined
   remainingTimeString: string | undefined
   isMine: boolean | undefined
-  canClose: boolean
+  canComplete: boolean
   complete: () => void
-  isClosing: boolean
-}> = ({ remainingTime, remainingTimeString, isMine, canClose, complete, isClosing }) => {
-  const handleClose = () => {
-    if (canClose && window.confirm("Are you you you want to close this poll? This can't be undone.")) {
+  isCompleting: boolean
+}> = ({ remainingTime, remainingTimeString, isMine, canComplete, complete, isCompleting }) => {
+  const handleComplete = () => {
+    if (canComplete && window.confirm("Are you you you want to complete this poll? This can't be undone.")) {
       complete()
     }
   }
@@ -40,9 +40,9 @@ const StatusInfo: FC<{
         return (
           <>
             <h4>{remainingTimeString}</h4>
-            <h4>Voting results will be available when you close the poll.</h4>
-            <Button size={'small'} disabled={!canClose} onClick={handleClose} pending={isClosing}>
-              {isClosing ? 'Completing poll' : 'Complete poll'}
+            <h4>Voting results will be available when you complete the poll.</h4>
+            <Button size={'small'} disabled={!canComplete} onClick={handleComplete} pending={isCompleting}>
+              {isCompleting ? 'Completing poll' : 'Complete poll'}
             </Button>
           </>
         )
@@ -50,14 +50,14 @@ const StatusInfo: FC<{
         return (
           <>
             <h4>{remainingTimeString}</h4>
-            <h4>Voting results will be available when the owner formally closes the poll.</h4>
+            <h4>Voting results will be available when the owner formally completes the poll.</h4>
           </>
         )
       }
     } else {
       return (
         <>
-          <h4>Poll closes in:</h4>
+          <h4>Poll completes in:</h4>
           <BigCountdown remainingTime={remainingTime} />
         </>
       )
@@ -66,14 +66,14 @@ const StatusInfo: FC<{
     if (isMine) {
       return (
         <>
-          <h4>Voting results will be available when you close the poll.</h4>
-          <Button size={'small'} disabled={!canClose} onClick={handleClose} pending={isClosing}>
-            {isClosing ? 'Completing poll' : 'Complete poll'}
+          <h4>Voting results will be available when you complete the poll.</h4>
+          <Button size={'small'} disabled={!canComplete} onClick={handleComplete} pending={isCompleting}>
+            {isCompleting ? 'Completing poll' : 'Complete poll'}
           </Button>
         </>
       )
     } else {
-      return <h4>Voting results will be available when the owner closes the poll.</h4>
+      return <h4>Voting results will be available when the owner completes the poll.</h4>
     }
   }
 }
@@ -86,9 +86,9 @@ export const ThanksForVote: FC<PollData> = ({
   isMine,
   permissions,
   checkPermissions,
-  canClose,
+  canComplete,
   completePoll,
-  isClosing,
+  isCompleting,
 }) => {
   const {
     name,
@@ -124,9 +124,9 @@ export const ThanksForVote: FC<PollData> = ({
         remainingTime={remainingTime}
         remainingTimeString={remainingTimeString}
         isMine={isMine}
-        canClose={canClose}
+        canComplete={canComplete}
         complete={completePoll}
-        isClosing={isClosing}
+        isCompleting={isCompleting}
       />
     </Card>
   )

@@ -20,7 +20,7 @@ const WaitingForResults: FC = () => {
   return (
     <Layout variation="light">
       <Alert
-        headerText="Poll closed, please wait"
+        headerText="Poll completed, please wait"
         type="loading"
         actions={<span>Waiting for results to land...</span>}
       />
@@ -31,7 +31,7 @@ const WaitingForResults: FC = () => {
 export const PollPage: FC = () => {
   const { pollId } = useParams()
   const pollData = usePollData(pollId!)
-  const { isLoading, error, poll, active, hasVoted, existingVote, hasClosed, pollResults } = pollData
+  const { isLoading, error, poll, active, hasVoted, existingVote, hasCompleted, pollResults } = pollData
   if (error) {
     return (
       <Layout variation={'landing'}>
@@ -40,8 +40,8 @@ export const PollPage: FC = () => {
     )
   }
 
-  // Closed poll, now waiting for results
-  if (hasClosed) return <WaitingForResults />
+  // Completed poll, now waiting for results
+  if (hasCompleted) return <WaitingForResults />
 
   // Currently loading stuff
   if (isLoading || !poll?.ipfsParams) return <PollLoading />

@@ -24,8 +24,8 @@ export const usePollData = (pollId: string) => {
 
   const [isVoting, setIsVoting] = useState(false)
   const [hasVoted, setHasVoted] = useState(false)
-  const [isClosing, setIsClosing] = useState(false)
-  const [hasClosed, setHasClosed] = useState(false)
+  const [isCompleting, setIsCompleting] = useState(false)
+  const [hasCompleted, setHasCompleted] = useState(false)
   const [selectedChoice, setSelectedChoice] = useState<bigint | undefined>()
   const [existingVote, setExistingVote] = useState<bigint | undefined>(undefined)
 
@@ -45,7 +45,7 @@ export const usePollData = (pollId: string) => {
     poll,
     deadline,
     setDeadline,
-    closeDemoPoll,
+    completeDemoPoll,
     votes,
     voteCounts,
     winningChoice,
@@ -86,7 +86,7 @@ export const usePollData = (pollId: string) => {
 
     canVote =
       (!!eth.state.address || isDemo) &&
-      !isClosing &&
+      !isCompleting &&
       winningChoice === undefined &&
       selectedChoice !== undefined &&
       existingVote === undefined &&
@@ -97,7 +97,7 @@ export const usePollData = (pollId: string) => {
       !remainingTime?.isPastDue &&
       winningChoice === undefined &&
       // (eth.state.address === undefined || existingVote === undefined) &&
-      !isClosing &&
+      !isCompleting &&
       winningChoice === undefined &&
       existingVote === undefined &&
       getVerdict(permissions.canVote, false)
@@ -106,20 +106,20 @@ export const usePollData = (pollId: string) => {
   const hasWallet = isDemo || (isHomeChain && userAddress !== ZeroAddress)
   const hasWalletOnWrongNetwork = !isDemo && !isHomeChain && userAddress !== ZeroAddress
 
-  const canClose = permissions.canManage && (!deadline || isPastDue)
+  const canComplete = permissions.canManage && (!deadline || isPastDue)
 
-  // console.log("canAclManage?", canAclManage, "deadline:", deadline, "isPastDue?", isPastDue, "canClose?", canClose)
+  // console.log("canAclManage?", canAclManage, "deadline:", deadline, "isPastDue?", isPastDue, "canComplete?", canComplete)
 
   const completePoll = async () => {
     if (!signerDao) throw new Error("Can't complete poll with no poll manager.")
-    setIsClosing(true)
+    setIsCompleting(true)
     try {
       await doCompletePoll(eth, signerDao, proposalId)
-      setHasClosed(true)
+      setHasCompleted(true)
     } catch (e) {
-      console.log('Error closing poll:', e)
+      console.log('Error completing poll:', e)
     } finally {
-      setIsClosing(false)
+      setIsCompleting(false)
     }
   }
 
@@ -128,14 +128,16 @@ export const usePollData = (pollId: string) => {
     if (
       !!deadline &&
       !!remainingSeconds &&
-      remainingSeconds > demoSettings.jumpToSecondsBeforeClosing + demoSettings.timeContractionSeconds
+      remainingSeconds > demoSettings.jumpToSecondsBeforeCompletion + demoSettings.timeContractionSeconds
     ) {
       // Let's quickly get rid of the remaining time.
       tuneValue({
         startValue: deadline,
         transitionTime: demoSettings.timeContractionSeconds,
         endValue:
-          Date.now() / 1000 + demoSettings.jumpToSecondsBeforeClosing + demoSettings.timeContractionSeconds,
+          Date.now() / 1000 +
+          demoSettings.jumpToSecondsBeforeCompletion +
+          demoSettings.timeContractionSeconds,
         stepInMs: 100,
         setValue: setDeadline,
         easing: true,
@@ -146,7 +148,7 @@ export const usePollData = (pollId: string) => {
       } else if (!remainingSeconds) {
         console.log('Not speeding up time, since there is are no remainingSeconds.')
       } else {
-        const threshold = demoSettings.jumpToSecondsBeforeClosing + demoSettings.timeContractionSeconds
+        const threshold = demoSettings.jumpToSecondsBeforeCompletion + demoSettings.timeContractionSeconds
         if (remainingSeconds <= threshold) {
           console.log(
             'Not speeding up time, since we would need at least',
@@ -334,16 +336,16 @@ export const usePollData = (pollId: string) => {
   }
 
   useEffect(
-    // Close the demo time if nothing more is going to happen
+    // Complete the demo time if nothing more is going to happen
     () => {
       if (
         isDemo &&
         poll?.proposal.active &&
         remainingTime?.isPastDue &&
-        remainingTime.totalSeconds < demoSettings.waitSecondsBeforeFormallyClosing + 5 &&
-        remainingTime.totalSeconds >= demoSettings.waitSecondsBeforeFormallyClosing
+        remainingTime.totalSeconds < demoSettings.waitSecondsBeforeFormallyCompleting + 5 &&
+        remainingTime.totalSeconds >= demoSettings.waitSecondsBeforeFormallyCompleting
       ) {
-        closeDemoPoll()
+        completeDemoPoll()
       }
     },
     [deadline, now],
@@ -352,22 +354,22 @@ export const usePollData = (pollId: string) => {
   // if (!isDemo && userAddress === "0x0000000000000000000000000000000000000000") {
 
   useEffect(() => {
-    // Reload poll after closing, expecting results
-    if (hasClosed) {
+    // Reload poll after completion, expecting results
+    if (hasCompleted) {
       if (!poll) {
         // console.log("No poll loaded, waiting to load")
       } else if (poll.proposal.active) {
-        // console.log("Apparently, we have closed a poll, but we still perceive it as active, so scheduling a reload...")
+        // console.log("Apparently, we have completed a poll, but we still perceive it as active, so scheduling a reload...")
         setTimeout(() => {
           // console.log("Reloading now")
           invalidateProposal()
         }, 5 * 1000)
       } else {
         // console.log("We no longer perceive it as active, so we can stop reloading")
-        setHasClosed(false)
+        setHasCompleted(false)
       }
     }
-  }, [hasClosed, poll])
+  }, [hasCompleted, poll])
 
   return {
     userAddress,
@@ -408,10 +410,10 @@ export const usePollData = (pollId: string) => {
     existingVote,
     topUp,
 
-    canClose,
+    canComplete,
     completePoll,
-    isClosing,
-    hasClosed,
+    isCompleting,
+    hasCompleted,
 
     voteCounts,
     winningChoice,

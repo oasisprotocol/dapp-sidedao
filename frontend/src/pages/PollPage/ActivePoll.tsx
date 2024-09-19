@@ -35,13 +35,13 @@ export const ActivePoll: FC<PollData> = ({
   isMine,
   permissions,
   checkPermissions,
-  canClose,
-  isClosing,
+  canComplete,
+  isCompleting,
   completePoll,
   topUp,
 }) => {
   // console.log("hasWallet?", hasWallet, "hasWalletOnWrongNetwork?",hasWalletOnWrongNetwork)
-  // console.log('isMine?', isMine, 'canClose?', canClose)
+  // console.log('isMine?', isMine, 'canComplete?', canComplete)
 
   const {
     name,
@@ -63,11 +63,11 @@ export const ActivePoll: FC<PollData> = ({
     [canSelect, selectedChoice, setSelectedChoice],
   )
 
-  const handleClose = useCallback(() => {
-    if (canClose && window.confirm("Are you sure you want to close this poll? This can't be undone.")) {
+  const handleComplete = useCallback(() => {
+    if (canComplete && window.confirm("Are you sure you want to complete this poll? This can't be undone.")) {
       void completePoll()
     }
-  }, [close])
+  }, [canComplete, completePoll])
 
   const handleTopup = (address: string) => {
     const amountString = window.prompt(
@@ -97,7 +97,7 @@ export const ActivePoll: FC<PollData> = ({
             permissions={permissions}
             isActive={true}
             retest={checkPermissions}
-            hideClosedNoAccess={true}
+            hideRestrictedNoAccess={true}
           />
         </div>
       </h2>
@@ -140,10 +140,11 @@ export const ActivePoll: FC<PollData> = ({
           </div>
         ))}
       {remainingTimeString && <h4>{remainingTimeString}</h4>}
-      {publishVotes && <div>Votes will be made public when the poll is closed.</div>}
+      {publishVotes && <div>Votes will be made public when the poll is completed.</div>}
       {isPastDue && (
         <h4>
-          Voting results will be available when {isMine ? 'you close' : 'the owner formally closes'} the poll.
+          Voting results will be available when {isMine ? 'you compplete' : 'the owner formally completes'}{' '}
+          the poll.
         </h4>
       )}
       {hasWallet && !hasWalletOnWrongNetwork && !getVerdict(canAclVote, false) ? (
@@ -179,12 +180,12 @@ export const ActivePoll: FC<PollData> = ({
         {isMine && (
           <Button
             size={'small'}
-            disabled={!canClose}
+            disabled={!canComplete}
             color={isMine && isPastDue ? 'primary' : 'secondary'}
-            onClick={handleClose}
-            pending={isClosing}
+            onClick={handleComplete}
+            pending={isCompleting}
           >
-            {isClosing ? 'Completing poll' : 'Complete poll'}
+            {isCompleting ? 'Completing poll' : 'Complete poll'}
           </Button>
         )}
         {!hasWallet && !isPastDue && <ConnectWallet mobileSticky={false} />}

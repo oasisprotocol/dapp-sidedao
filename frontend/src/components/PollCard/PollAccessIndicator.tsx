@@ -11,7 +11,7 @@ import { designDecisions } from '../../constants/config'
 export const PollAccessIndicator: FC<{
   isOpen: boolean
   isRestricted: boolean
-  hideClosedNoAccess?: boolean
+  hideRestrictedNoAccess?: boolean
   isPending: boolean
   isBroken: boolean
   explanation: string | undefined
@@ -29,14 +29,14 @@ export const PollAccessIndicator: FC<{
   isCompleted,
   isMine,
   retest,
-  hideClosedNoAccess,
+  hideRestrictedNoAccess,
 }) => {
   return (
     <>
       {isOpen && !designDecisions.hideOpenPollIndicator && (
         <OpenPollIcon completed={isCompleted} height={20} />
       )}
-      {isRestricted && !(!hasAccess && hideClosedNoAccess) && (
+      {isRestricted && !(!hasAccess && hideRestrictedNoAccess) && (
         <RestrictedPollIcon
           explanation={explanation ?? 'unknown restriction'}
           completed={isCompleted}
@@ -57,16 +57,16 @@ export const PollAccessIndicatorWrapper: FC<{
   isMine: boolean | undefined
   permissions: PollPermissions
   isActive: boolean
-  hideClosedNoAccess?: boolean
+  hideRestrictedNoAccess?: boolean
   retest: () => void
-}> = ({ isMine, permissions, isActive, hideClosedNoAccess, retest }) => {
+}> = ({ isMine, permissions, isActive, hideRestrictedNoAccess, retest }) => {
   const { explanation, error, canVote } = permissions
   return (
     <PollAccessIndicator
       isOpen={explanation === ''}
       isBroken={!!error}
       isRestricted={!!explanation && !error}
-      hideClosedNoAccess={hideClosedNoAccess}
+      hideRestrictedNoAccess={hideRestrictedNoAccess}
       explanation={explanation}
       hasAccess={getVerdict(canVote, false)}
       isCompleted={!isActive}

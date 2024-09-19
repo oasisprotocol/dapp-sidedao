@@ -115,9 +115,9 @@ export const useExtendedPoll = (
     return results
   }, [poll, voteCounts, winningChoice, votes])
 
-  const closeDemoPoll = () => {
+  const completeDemoPoll = () => {
     if (!poll) return
-    // Let's formally close the poll
+    // Let's formally complete the poll
     setPoll({
       ...poll,
       proposal: {
@@ -153,7 +153,7 @@ export const useExtendedPoll = (
     pollResults,
     deadline,
     setDeadline,
-    closeDemoPoll,
+    completeDemoPoll,
     gaslessEnabled,
     gaslessPossible,
     gvAddresses,
