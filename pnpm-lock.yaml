@@ -14,12 +14,9 @@ importers:
 
   contracts:
     dependencies:
-      '@ethereumjs/block':
-        specifier: ^5.1.1
-        version: 5.3.0
-      '@ethereumjs/common':
-        specifier: ^4.2.0
-        version: 4.4.0
+      '@ethereumjs/rlp':
+        specifier: ^5.0.2
+        version: 5.0.2
       ethers:
         specifier: ^6.10.0
         version: 6.10.0
@@ -75,9 +72,6 @@ importers:
       lru-cache:
         specifier: 10.1.0
         version: 10.1.0
-      micromark:
-        specifier: ^4.0.0
-        version: 4.0.0
       react:
         specifier: ^18.2.0
         version: 18.3.1

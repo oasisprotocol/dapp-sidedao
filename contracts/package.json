@@ -22,8 +22,7 @@
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "@ethereumjs/block": "^5.1.1",
-    "@ethereumjs/common": "^4.2.0",
+    "@ethereumjs/rlp": "^5.0.2",
     "ethers": "^6.10.0"
   },
   "exports": {

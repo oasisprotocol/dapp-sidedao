@@ -13,7 +13,7 @@ export interface ChainDefinition {
     slip44?: number;  // https://github.com/satoshilabs/slips/blob/master/slip-0044.md
     rpcUrls: string[];
     features?: {name:string}[];
-    hardfork: string;
+    hardfork: 'cancun' | 'london';
     explorers?: {name:string;url:string;standard:string;icon?:IconT;}[];
     faucets?: string[];
     ens?: {registry:string};

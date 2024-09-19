@@ -1,4 +1,4 @@
-import { defineConfig, PluginOption } from 'vite'
+import { defineConfig } from 'vite'
 import svgr from 'vite-plugin-svgr'
 import react from '@vitejs/plugin-react-swc'
 import { viteSingleFile } from "vite-plugin-singlefile"
@@ -11,9 +11,9 @@ export default defineConfig({
     react(),
     viteSingleFile({
       useRecommendedBuildConfig: false,
-      inlinePattern: ['assets/style-*.css']
+      inlinePattern: ['assets/style-*.css',]
     }),
-    visualizer() as PluginOption
+    visualizer()
   ],
   base: './',
   build: {
@@ -25,9 +25,6 @@ export default defineConfig({
         manualChunks(id: string) {
           if (id.includes('ethers')) {
             return 'ethers';
-          }
-          if (id.includes('ethereumjs')) {
-            return 'ethereumjs';
           }
         },
       },

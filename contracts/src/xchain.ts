@@ -1,11 +1,13 @@
 import { Contract, JsonRpcProvider, toBeHex, ZeroHash, solidityPackedKeccak256,
-         zeroPadValue, formatUnits, encodeRlp, decodeRlp, BytesLike, hexlify
+         zeroPadValue, formatUnits, encodeRlp, decodeRlp, BytesLike, hexlify,
+         getUint,
+         getBytes,
 } from "ethers"
 
 import { GetProofResponse, TokenInfo } from "./types.js";
 import { chain_info } from './chains.js';
-import { Block, BlockOptions, JsonRpcBlock } from "@ethereumjs/block";
-import { Common, CustomChain } from "@ethereumjs/common";
+import { BIGINT_0, bigIntToUnpaddedBytes, PrefixedHexString } from "./utils.js";
+import { RLP } from "@ethereumjs/rlp";
 
 export function randomchoice<T>(array:T[]):T {
   return array[Math.floor(Math.random() * array.length)];
@@ -195,6 +197,77 @@ export async function fetchAccountProof(provider: JsonRpcProvider, blockHash: st
   return encodeRlp(response.accountProof.map(decodeRlp));
 }
 
+export interface JsonRpcBlock {
+  number: PrefixedHexString | string // the block number. null when pending block.
+  hash: PrefixedHexString | string // hash of the block. null when pending block.
+  parentHash: PrefixedHexString | string // hash of the parent block.
+  mixHash?: PrefixedHexString | string // bit hash which proves combined with the nonce that a sufficient amount of computation has been carried out on this block.
+  nonce: PrefixedHexString | string // hash of the generated proof-of-work. null when pending block.
+  sha3Uncles: PrefixedHexString | string // SHA3 of the uncles data in the block.
+  logsBloom: PrefixedHexString | string // the bloom filter for the logs of the block. null when pending block.
+  transactionsRoot: PrefixedHexString | string // the root of the transaction trie of the block.
+  stateRoot: PrefixedHexString | string // the root of the final state trie of the block.
+  receiptsRoot: PrefixedHexString | string // the root of the receipts trie of the block.
+  miner: PrefixedHexString | string // the address of the beneficiary to whom the mining rewards were given.
+  difficulty: PrefixedHexString | string // integer of the difficulty for this block.
+  totalDifficulty: PrefixedHexString | string // integer of the total difficulty of the chain until this block.
+  extraData: PrefixedHexString | string // the “extra data” field of this block.
+  size: PrefixedHexString | string // integer the size of this block in bytes.
+  gasLimit: PrefixedHexString | string // the maximum gas allowed in this block.
+  gasUsed: PrefixedHexString | string // the total used gas by all transactions in this block.
+  timestamp: PrefixedHexString | string // the unix timestamp for when the block was collated.
+  transactions: Array<any> //<JsonRpcTx | PrefixedHexString | string> // Array of transaction objects, or 32 Bytes transaction hashes depending on the last given parameter.
+  uncles: PrefixedHexString[] | string[] // Array of uncle hashes
+  baseFeePerGas?: PrefixedHexString | string // If EIP-1559 is enabled for this block, returns the base fee per gas
+  withdrawals?: Array<any> //<JsonRpcWithdrawal> // If EIP-4895 is enabled for this block, array of withdrawals
+  withdrawalsRoot?: PrefixedHexString | string // If EIP-4895 is enabled for this block, the root of the withdrawal trie of the block.
+  blobGasUsed?: PrefixedHexString | string // If EIP-4844 is enabled for this block, returns the blob gas used for the block
+  excessBlobGas?: PrefixedHexString | string // If EIP-4844 is enabled for this block, returns the excess blob gas for the block
+  parentBeaconBlockRoot?: PrefixedHexString | string // If EIP-4788 is enabled for this block, returns parent beacon block root
+  executionWitness?: unknown //VerkleExecutionWitness | null // If Verkle is enabled for this block
+  requestsRoot?: PrefixedHexString | string // If EIP-7685 is enabled for this block, returns the requests root
+  requests?: Array<PrefixedHexString | string> // If EIP-7685 is enabled for this block, array of serialized CL requests
+}
+
+function getBlockHeaderItems(b: JsonRpcBlock, hardfork: string) {
+  const rawItems = [
+    getBytes(b.parentHash),
+    getBytes(b.sha3Uncles),
+    getBytes(b.miner),
+    getBytes(b.stateRoot),
+    getBytes(b.transactionsRoot),
+    getBytes(b.receiptsRoot),
+    getBytes(b.logsBloom),
+    bigIntToUnpaddedBytes(getUint(b.difficulty)),
+    bigIntToUnpaddedBytes(getUint(b.number)),
+    bigIntToUnpaddedBytes(getUint(b.gasLimit)),
+    bigIntToUnpaddedBytes(getUint(b.gasUsed)),
+    bigIntToUnpaddedBytes(getUint(b.timestamp) ?? BIGINT_0),
+    getBytes(b.extraData),
+    getBytes(b.mixHash!),
+    getBytes(b.nonce),
+  ];
+
+  if ( hardfork === 'cancun' || hardfork === 'london' ) {
+    rawItems.push(bigIntToUnpaddedBytes(getUint(b.baseFeePerGas!)));
+  }
+
+  if ( hardfork === 'cancun' ) {
+    rawItems.push(bigIntToUnpaddedBytes(getUint(b.withdrawalsRoot!)));
+  }
+
+  if ( hardfork === 'cancun' ) {
+    rawItems.push(bigIntToUnpaddedBytes(getUint(b.blobGasUsed!)));
+    rawItems.push(bigIntToUnpaddedBytes(getUint(b.excessBlobGas!)));
+  }
+
+  if ( hardfork === 'cancun' ) {
+    rawItems.push(bigIntToUnpaddedBytes(getUint(b.parentBeaconBlockRoot!)));
+  }
+
+  return rawItems
+}
+
 /// Retrieve RLP encoded block header
 export async function getBlockHeaderRLP(
   provider: JsonRpcProvider,
@@ -214,21 +287,7 @@ export async function getBlockHeaderRLP(
     throw new Error("Unknown hardfork for chain!");
   }
 
-  const opts = {
-    common: Common.custom(CustomChain.PolygonMainnet, {
-      hardfork: chain.hardfork,
-    }),
-    skipConsensusFormatValidation: true
-  } as BlockOptions;
-
-  // Some chains need specific EIPs enabled
-  if( chain.customEIPs ) {
-    const customEIPs: number[] = chain.customEIPs;
-    opts.common!.setEIPs(customEIPs);
-  }
-
   const result = await provider.send('eth_getBlockByHash', [blockHash, false]) as JsonRpcBlock;
-
-  const b = Block.fromRPC(result, [], opts);
-  return hexlify(b.header.serialize());
+  const headerItems = getBlockHeaderItems(result, chain.hardfork);
+  return hexlify(RLP.encode(headerItems));
 }
