@@ -178,6 +178,7 @@ export const ActivePoll: FC<PollData> = ({
         )}
         {isMine && (
           <Button
+            size={'small'}
             disabled={!canClose}
             color={isMine && isPastDue ? 'primary' : 'secondary'}
             onClick={handleClose}

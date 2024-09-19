@@ -41,7 +41,7 @@ const StatusInfo: FC<{
           <>
             <h4>{remainingTimeString}</h4>
             <h4>Voting results will be available when you close the poll.</h4>
-            <Button disabled={!canClose} onClick={handleClose} pending={isClosing}>
+            <Button size={'small'} disabled={!canClose} onClick={handleClose} pending={isClosing}>
               {isClosing ? 'Completing poll' : 'Complete poll'}
             </Button>
           </>
@@ -67,7 +67,7 @@ const StatusInfo: FC<{
       return (
         <>
           <h4>Voting results will be available when you close the poll.</h4>
-          <Button disabled={!canClose} onClick={handleClose} pending={isClosing}>
+          <Button size={'small'} disabled={!canClose} onClick={handleClose} pending={isClosing}>
             {isClosing ? 'Completing poll' : 'Complete poll'}
           </Button>
         </>
