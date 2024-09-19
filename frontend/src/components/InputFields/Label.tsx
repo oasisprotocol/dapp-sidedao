@@ -4,6 +4,7 @@ import classes from './index.module.css'
 import { StringUtils } from '../../utils/string.utils'
 import { checkProblems } from './util'
 import { ProblemList } from './ProblemDisplay'
+import { motion } from 'framer-motion'
 
 export const Label: FC<LabelControls> = props => {
   const {
@@ -43,7 +44,13 @@ export const Label: FC<LabelControls> = props => {
   )
 
   return (
-    <div className={StringUtils.clsx(classes.fieldContainer, containerClassName)}>
+    <motion.div
+      layout
+      className={StringUtils.clsx(classes.fieldContainer, containerClassName)}
+      initial={{ opacity: 0, maxHeight: 0 }}
+      animate={{ opacity: 1, maxHeight: '5em' }} // TODO: could be insufficient
+      transition={{ duration: 0.5 }}
+    >
       {!!label || !!description ? (
         <label>
           <div className={classes.fieldLabel}>{label}</div>
@@ -53,6 +60,6 @@ export const Label: FC<LabelControls> = props => {
       ) : (
         wrappedField
       )}
-    </div>
+    </motion.div>
   )
 }

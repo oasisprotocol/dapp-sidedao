@@ -25,7 +25,7 @@ export const CreatePollPage = () => {
       <Card>
         <h2>{stepTitle}</h2>
         <p>Once created, your poll will be live immediately and responses will start being recorded.</p>
-        <InputFieldGroup fields={fields} />
+        <InputFieldGroup key={`page-${stepIndex}`} fields={fields} />
         <div className={classes.buttons}>
           {stepIndex > 0 && (
             <Button onClick={previousStep} color={'secondary'} variant={'outline'}>

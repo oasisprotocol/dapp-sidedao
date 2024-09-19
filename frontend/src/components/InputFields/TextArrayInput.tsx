@@ -6,6 +6,7 @@ import { ProblemList } from './ProblemDisplay'
 import { checkProblems } from './util'
 import { SpinnerIcon } from '../icons/SpinnerIcon'
 import { CheckCircleIcon } from '../icons/CheckCircleIcon'
+import { AnimatePresence, motion } from 'framer-motion'
 
 const TrashIcon: FC<{
   label: string
@@ -97,62 +98,68 @@ export const TextArrayInput: FC<TextArrayControls> = ({
           <SpinnerIcon width={24} height={24} spinning={true} />
         </div>
       )}
-      {value.map((value, index) => {
-        const itemProblems = allProblems[`value-${index}`] || []
-        const { hasError, hasWarning } = checkProblems(itemProblems)
+      <AnimatePresence initial={false}>
+        {value.map((value, index) => {
+          const itemProblems = allProblems[`value-${index}`] || []
+          const { hasError, hasWarning } = checkProblems(itemProblems)
 
-        // Determine if we can be sure that this item is fully OK
+          // Determine if we can be sure that this item is fully OK
 
-        // The difficulty here is that when finding an error,
-        // we stop executing the validators, so this means that
-        // having no problems reported locally can also be the result of
-        // not all validators being executed.
-        // For now, the best we can do is look at _all_ errors, not only local errors.
-        // This way, we can only checkmark items when all items are OK.
-        //
-        // Improving this would entitle:
-        // - Extending the validator type with meta-info about which items
-        //   will a validator check
-        // - Executing the validators in a sorted order, so that we
-        //   can completely check some fields before going into others
-        // - Pass info as part of the controls about which fields have been
-        //   completely validated
+          // The difficulty here is that when finding an error,
+          // we stop executing the validators, so this means that
+          // having no problems reported locally can also be the result of
+          // not all validators being executed.
+          // For now, the best we can do is look at _all_ errors, not only local errors.
+          // This way, we can only checkmark items when all items are OK.
+          //
+          // Improving this would entitle:
+          // - Extending the validator type with meta-info about which items
+          //   will a validator check
+          // - Executing the validators in a sorted order, so that we
+          //   can completely check some fields before going into others
+          // - Pass info as part of the controls about which fields have been
+          //   completely validated
 
-        const knownGood = isValidated && !hasProblems
+          const knownGood = isValidated && !hasProblems
 
-        return (
-          <div
-            key={`edit-${index}`}
-            className={StringUtils.clsx(
-              classes.textValue,
-              hasError ? classes.fieldWithError : hasWarning ? classes.fieldWithWarning : '',
-            )}
-          >
-            <div className={'niceLine'}>
-              <input
-                name={name}
-                key={`edit-${index}`}
-                placeholder={placeholders[index]}
-                value={value}
-                onChange={event => handleChange(index, event)}
-                className={classes.textValue}
-                disabled={!enabled}
-                title={whyDisabled}
-              />
-              {pendingValidationIndex === index && <SpinnerIcon width={24} height={24} spinning={true} />}
-              {indicateValidationSuccess && knownGood && <CheckCircleIcon />}
-              {canRemoveItem(index) && (
-                <TrashIcon
-                  enabled={enabled}
-                  label={whyDisabled ?? removeItemLabel}
-                  remove={() => removeItem(index)}
-                />
+          return (
+            <motion.div
+              layout
+              key={`edit-${index}`}
+              className={StringUtils.clsx(
+                classes.textValue,
+                hasError ? classes.fieldWithError : hasWarning ? classes.fieldWithWarning : '',
               )}
-            </div>
-            <ProblemList problems={itemProblems} onRemove={clearProblem} />
-          </div>
-        )
-      })}
+              initial={{ maxHeight: 0 }}
+              animate={{ maxHeight: '10em' }} // TODO Could be insufficient
+              exit={{ maxHeight: 0 }}
+            >
+              <div className={'niceLine'}>
+                <input
+                  name={name}
+                  key={`edit-${index}`}
+                  placeholder={placeholders[index]}
+                  value={value}
+                  onChange={event => handleChange(index, event)}
+                  className={classes.textValue}
+                  disabled={!enabled}
+                  title={whyDisabled}
+                />
+                {pendingValidationIndex === index && <SpinnerIcon width={24} height={24} spinning={true} />}
+                {indicateValidationSuccess && knownGood && <CheckCircleIcon />}
+                {canRemoveItem(index) && (
+                  <TrashIcon
+                    enabled={enabled}
+                    label={whyDisabled ?? removeItemLabel}
+                    remove={() => removeItem(index)}
+                  />
+                )}
+              </div>
+              <ProblemList problems={itemProblems} onRemove={clearProblem} />
+            </motion.div>
+          )
+        })}
+      </AnimatePresence>
       {canAddItem && <AddIcon label={addItemLabel} add={addItem} enabled={enabled} title={whyDisabled} />}
     </div>
   )

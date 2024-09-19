@@ -4,6 +4,7 @@ import classes from './index.module.css'
 import { checkProblems } from './util'
 import { StringUtils } from '../../utils/string.utils'
 import { ProblemList } from './ProblemDisplay'
+import { motion } from 'framer-motion'
 
 export const BooleanInput: FC<BooleanFieldControls> = props => {
   const {
@@ -64,7 +65,13 @@ export const BooleanInput: FC<BooleanFieldControls> = props => {
   )
 
   return (
-    <div className={StringUtils.clsx(classes.fieldContainer, containerClassName)}>
+    <motion.div
+      layout
+      className={StringUtils.clsx(classes.fieldContainer, containerClassName)}
+      initial={{ opacity: 0, maxHeight: 0 }}
+      animate={{ opacity: 1, maxHeight: '5em' }} // TODO: could be insufficient
+      transition={{ duration: 0.5 }}
+    >
       {description ? (
         <label>
           <div className={classes.fieldDescription}>{description}</div>
@@ -73,6 +80,6 @@ export const BooleanInput: FC<BooleanFieldControls> = props => {
       ) : (
         wrappedField
       )}
-    </div>
+    </motion.div>
   )
 }

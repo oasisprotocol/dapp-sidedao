@@ -4,6 +4,7 @@ import { checkProblems, getReasonForDenial, getVerdict } from './util'
 import classes from './index.module.css'
 import { StringUtils } from '../../utils/string.utils'
 import { ProblemList } from './ProblemDisplay'
+import { motion } from 'framer-motion'
 
 export const SelectInput: FC<OneOfFieldControls<any>> = props => {
   const {
@@ -61,7 +62,14 @@ export const SelectInput: FC<OneOfFieldControls<any>> = props => {
   )
 
   return (
-    <div className={StringUtils.clsx(classes.fieldContainer, containerClassName)} title={whyDisabled}>
+    <motion.div
+      layout
+      className={StringUtils.clsx(classes.fieldContainer, containerClassName)}
+      title={whyDisabled}
+      initial={{ opacity: 0, maxHeight: 0 }}
+      animate={{ opacity: 1, maxHeight: '5em' }} // TODO: could be insufficient
+      transition={{ duration: 0.5 }}
+    >
       {!!label || !!description ? (
         <label>
           <div className={classes.fieldLabel}>{label}</div>
@@ -71,6 +79,6 @@ export const SelectInput: FC<OneOfFieldControls<any>> = props => {
       ) : (
         wrappedField
       )}
-    </div>
+    </motion.div>
   )
 }

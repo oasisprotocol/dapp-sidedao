@@ -6,6 +6,7 @@ import { ProblemList } from './ProblemDisplay'
 import { checkProblems } from './util'
 import { SpinnerIcon } from '../icons/SpinnerIcon'
 import { CheckCircleIcon } from '../icons/CheckCircleIcon'
+import { motion } from 'framer-motion'
 
 export const TextInput: FC<TextFieldControls> = ({
   name,
@@ -85,7 +86,13 @@ export const TextInput: FC<TextFieldControls> = ({
   )
 
   return (
-    <div className={StringUtils.clsx(classes.fieldContainer, containerClassName)}>
+    <motion.div
+      layout
+      className={StringUtils.clsx(classes.fieldContainer, containerClassName)}
+      initial={{ opacity: 0, maxHeight: 0 }}
+      animate={{ opacity: 1, maxHeight: '5em' }} // TODO: could be insufficient
+      transition={{ duration: 0.5 }}
+    >
       {!!label || !!description ? (
         <label>
           <div className={classes.fieldLabel}>{label}</div>
@@ -95,6 +102,6 @@ export const TextInput: FC<TextFieldControls> = ({
       ) : (
         wrappedField
       )}
-    </div>
+    </motion.div>
   )
 }

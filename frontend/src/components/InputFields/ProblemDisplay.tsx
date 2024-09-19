@@ -1,6 +1,7 @@
 import { FC } from 'react'
 import { Problem, ProblemLevel } from './util'
 import classes from './index.module.css'
+import { AnimatePresence, motion } from 'framer-motion'
 
 const problemClass: Record<ProblemLevel, string> = {
   error: classes.fieldError,
@@ -12,9 +13,26 @@ export const ProblemDisplay: FC<{
   onRemove: (id: string) => void
 }> = ({ problem, onRemove }) => {
   return (
-    <div className={problemClass[problem.level]} onClick={() => onRemove(problem.id)}>
+    <motion.div
+      layout
+      className={problemClass[problem.level]}
+      onClick={() => onRemove(problem.id)}
+      initial={{
+        opacity: 0,
+        maxHeight: 0,
+      }}
+      animate={{
+        opacity: 1,
+        maxHeight: '5em', // TODO: could be insufficient
+      }}
+      exit={{
+        opacity: 0,
+        maxHeight: 0,
+      }}
+      transition={{ duration: 1 }}
+    >
       {problem.message}
-    </div>
+    </motion.div>
   )
 }
 
@@ -22,9 +40,9 @@ export const ProblemList: FC<{
   problems: Problem[] | undefined
   onRemove: (id: string) => void
 }> = ({ problems = [], onRemove }) => (
-  <>
+  <AnimatePresence>
     {problems.map(p => (
       <ProblemDisplay key={p.id} problem={p} onRemove={onRemove} />
     ))}
-  </>
+  </AnimatePresence>
 )
