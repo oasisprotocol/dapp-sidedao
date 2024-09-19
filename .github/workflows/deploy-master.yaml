@@ -37,10 +37,7 @@ jobs:
         with:
           version: 8
       - name: Build
-        run: make
-        env:
-          VITE_PINATA_JWT: ${{ secrets.VITE_PINATA_JWT }}
-          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+        run: make build-staging
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
