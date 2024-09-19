@@ -7,6 +7,7 @@ import { RemainingTime } from '../../types'
 import { Card } from '../../components/Card'
 import { SocialShares } from '../../components/SocialShares'
 import { PollAccessIndicatorWrapper } from '../../components/PollCard/PollAccessIndicator'
+import { motion } from 'framer-motion'
 
 const VoteIcon: FC = () => {
   return (
@@ -109,10 +110,14 @@ export const ThanksForVote: FC<PollData> = ({
         </div>
       </h4>
       {/*<p>{description}</p>*/}
-      <div className={`${classes.choice} ${classes.submitted}`}>
+      <motion.div
+        className={`${classes.choice} ${classes.submitted}`}
+        initial={{ opacity: 0, height: 0, width: '50%' }}
+        animate={{ opacity: 1, height: 48, width: '100%' }}
+      >
         <VoteIcon />
         {choices[Number(myVote)]}
-      </div>
+      </motion.div>
       <SocialShares label={'Share vote on'} name={name} introText={'I just voted on this poll:'} />
       <StatusInfo
         remainingTime={remainingTime}

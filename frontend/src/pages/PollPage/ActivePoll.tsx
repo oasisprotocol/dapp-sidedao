@@ -13,6 +13,8 @@ import { getVerdict, getReason } from '../../components/InputFields'
 import { WarningCircleIcon } from '../../components/icons/WarningCircleIcon'
 import { PollAccessIndicatorWrapper } from '../../components/PollCard/PollAccessIndicator'
 import { designDecisions } from '../../constants/config'
+import { SpinnerIcon } from '../../components/icons/SpinnerIcon'
+import { AnimatePresence, motion } from 'framer-motion'
 
 export const ActivePoll: FC<PollData> = ({
   hasWallet,
@@ -101,16 +103,26 @@ export const ActivePoll: FC<PollData> = ({
       </h2>
       <h4>{description}</h4>
 
-      {(hasWallet || isPastDue) &&
-        choices.map((choice, index) => (
-          <div
-            key={`choice-${index}`}
-            className={`${classes.choice} ${classes.darkChoice} ${canSelect ? classes.activeChoice : ''} ${selectedChoice?.toString() === index.toString() ? classes.selectedChoice : ''}`}
-            onClick={() => handleSelect(index)}
-          >
-            <div className={classes.above}>{choice}</div>
-          </div>
-        ))}
+      {(hasWallet || isPastDue) && (
+        <AnimatePresence initial={true}>
+          {choices.map((choice, index) =>
+            !isVoting || selectedChoice === BigInt(index) ? (
+              <motion.div
+                initial={{ opacity: 0, height: 0, width: '50%' }}
+                animate={{ opacity: 1, height: 48, width: '100%' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.5 }}
+                key={`choice-${index}`}
+                className={`${classes.choice} ${classes.darkChoice} ${canSelect ? classes.activeChoice : ''} ${selectedChoice?.toString() === index.toString() ? classes.selectedChoice : ''}`}
+                onClick={() => handleSelect(index)}
+              >
+                <div className={classes.above}>{choice}</div>
+                {!designDecisions.showSubmitButton && isVoting && <SpinnerIcon spinning height="30" />}
+              </motion.div>
+            ) : undefined,
+          )}
+        </AnimatePresence>
+      )}
       {!isPastDue &&
         !hasWallet &&
         (hasWalletOnWrongNetwork ? (

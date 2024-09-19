@@ -6,6 +6,7 @@ import { Card } from '../../components/Card'
 import { SocialShares } from '../../components/SocialShares'
 import { PollAccessIndicatorWrapper } from '../../components/PollCard/PollAccessIndicator'
 import { getVerdict } from '../../components/InputFields'
+import { motion } from 'framer-motion'
 
 export const CompletedPoll: FC<
   Pick<PollData, 'poll' | 'pollResults' | 'isMine' | 'permissions' | 'checkPermissions'>
@@ -32,18 +33,42 @@ export const CompletedPoll: FC<
       {!!description && <h4>{description}</h4>}
       <>
         {Object.entries(choices).map(([index, entry]) => (
-          <div
+          <motion.div
             className={StringUtils.clsx(
               classes.choice,
               classes.choiceWithResults,
               entry.winner ? classes.winner : '',
             )}
             key={`choice-${index}`}
+            initial={{
+              height: 48,
+              width: '100%',
+            }}
+            animate={{
+              borderColor: ['#a2a0ffff', '#a2a0ff00', '#a2a0ffff'],
+            }}
+            transition={{
+              duration: 1,
+              repeat: Infinity,
+              repeatDelay: 2,
+            }}
           >
-            <div className={classes.sizeBar} style={{ width: `${entry.rate}%` }} />
+            <motion.div
+              className={classes.sizeBar}
+              initial={{ width: '0%' }}
+              animate={{ width: `${entry.rate}%` }}
+              transition={{ delay: 0.5, duration: 0.5, ease: 'easeOut' }}
+            />
             <div className={classes.above}>{entry.choice}</div>
-            <div className={`${classes.percentage} ${classes.above}`}>{entry.rate}%</div>
-          </div>
+            <motion.div
+              className={`${classes.percentage} ${classes.above}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1, duration: 0.5 }}
+            >
+              {entry.rate}%
+            </motion.div>
+          </motion.div>
         ))}
       </>
       {aclExplanation && (
