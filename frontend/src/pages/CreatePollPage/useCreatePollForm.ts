@@ -492,7 +492,7 @@ export const useCreatePollForm = () => {
       const deadline = value.getTime() / 1000
       const remaining = DateUtils.calculateRemainingTimeFrom(deadline, now)
       const { isPastDue, totalSeconds } = remaining
-      if (isPastDue || totalSeconds < MIN_COMPLETION_TIME_MINUTES * 60) {
+      if (hasCompletionDate.value && (isPastDue || totalSeconds < MIN_COMPLETION_TIME_MINUTES * 60)) {
         return `Please set a time at least ${MIN_COMPLETION_TIME_MINUTES} minutes in the future!`
       }
     },
