@@ -142,7 +142,41 @@ export const demoPoll2 = {
   },
 } as ExtendedPoll
 
-export const getDemoPoll = (): ExtendedPoll => randomchoice([demoPoll1, demoPoll2])
+export const demoPoll3 = {
+  id: 'demo',
+  proposal: {
+    id: '0xdemo',
+    active: true,
+  },
+  ipfsParams: {
+    creator: 'demo',
+    name: 'What is your favorite movie?',
+    description: '',
+    choices: ['Terminator', 'The Matrix', 'Tron', 'The Godfather'],
+    options: {
+      publishVotes: false,
+    },
+  },
+} as ExtendedPoll
+
+export const demoPoll4 = {
+  id: 'demo',
+  proposal: {
+    id: '0xdemo',
+    active: true,
+  },
+  ipfsParams: {
+    creator: 'demo',
+    name: 'How should the change the laws?',
+    description: '',
+    choices: ['Ban strong cryptography', 'Ban blockchains', "Withdraw the FED's monopoly on money printing"],
+    options: {
+      publishVotes: false,
+    },
+  },
+} as ExtendedPoll
+
+export const getDemoPoll = (): ExtendedPoll => randomchoice([demoPoll1, demoPoll2, demoPoll3, demoPoll4])
 
 export const demoSettings = {
   timeForVoting: 610,
