@@ -22,10 +22,16 @@ export abstract class PermissionCache {
     ],
     // debug: ['load', 'save'],
     storageKey: 'sideDAO.pollPermissions2',
-    dataVersion: 2,
+    dataVersion: 3,
     transformValues: {
       encode: data => JSON.stringify(data, bigNumberify.stringify),
-      decode: stringData => JSON.parse(stringData, bigNumberify),
+      decode: (stringData): PollPermissions => {
+        const rawData = JSON.parse(stringData, bigNumberify) as PollPermissions
+        return {
+          ...rawData,
+          proof: new Uint8Array(Object.values(rawData.proof)),
+        }
+      },
     },
     fetcher: (input, _, { context }) => checkPollPermission(input, context),
   })
