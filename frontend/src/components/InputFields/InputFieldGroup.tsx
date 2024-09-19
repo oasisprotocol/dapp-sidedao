@@ -19,8 +19,9 @@ export const InputFieldGroup: FC<InputFieldGroupProps> = ({ fields, alignRight }
             layout
             className={alignRight ? classes.fieldRowRight : classes.fieldRow}
             key={`row-${index}`}
-            initial={{ maxHeight: 0 }}
-            animate={{ maxHeight: '5em' }} // TODO: could be insufficient
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.5 }}
           >
             {row.map(field => (

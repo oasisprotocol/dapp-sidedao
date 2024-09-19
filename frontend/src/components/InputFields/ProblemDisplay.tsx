@@ -17,19 +17,10 @@ export const ProblemDisplay: FC<{
       layout
       className={problemClass[problem.level]}
       onClick={() => onRemove(problem.id)}
-      initial={{
-        opacity: 0,
-        maxHeight: 0,
-      }}
-      animate={{
-        opacity: 1,
-        maxHeight: '5em', // TODO: could be insufficient
-      }}
-      exit={{
-        opacity: 0,
-        maxHeight: 0,
-      }}
-      transition={{ duration: 1 }}
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: 'auto' }}
+      exit={{ opacity: 0, height: 0 }}
+      transition={{ duration: 0.5 }}
     >
       {problem.message}
     </motion.div>

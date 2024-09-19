@@ -68,8 +68,9 @@ export const BooleanInput: FC<BooleanFieldControls> = props => {
     <motion.div
       layout
       className={StringUtils.clsx(classes.fieldContainer, containerClassName)}
-      initial={{ opacity: 0, maxHeight: 0 }}
-      animate={{ opacity: 1, maxHeight: '5em' }} // TODO: could be insufficient
+      initial={{ height: 0 }}
+      animate={{ height: 'auto' }}
+      exit={{ height: 0 }}
       transition={{ duration: 0.5 }}
     >
       {description ? (

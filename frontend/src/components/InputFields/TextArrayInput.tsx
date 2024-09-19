@@ -130,9 +130,9 @@ export const TextArrayInput: FC<TextArrayControls> = ({
                 classes.textValue,
                 hasError ? classes.fieldWithError : hasWarning ? classes.fieldWithWarning : '',
               )}
-              initial={{ maxHeight: 0 }}
-              animate={{ maxHeight: '10em' }} // TODO Could be insufficient
-              exit={{ maxHeight: 0 }}
+              initial={{ height: 0 }}
+              animate={{ height: 'auto' }}
+              exit={{ height: 0 }}
             >
               <div className={'niceLine'}>
                 <input

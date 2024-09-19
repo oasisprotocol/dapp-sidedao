@@ -89,8 +89,9 @@ export const TextInput: FC<TextFieldControls> = ({
     <motion.div
       layout
       className={StringUtils.clsx(classes.fieldContainer, containerClassName)}
-      initial={{ opacity: 0, maxHeight: 0 }}
-      animate={{ opacity: 1, maxHeight: '5em' }} // TODO: could be insufficient
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: 'auto' }}
+      exit={{ opacity: 0, height: 0 }}
       transition={{ duration: 0.5 }}
     >
       {!!label || !!description ? (
