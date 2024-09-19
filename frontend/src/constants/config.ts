@@ -208,7 +208,7 @@ export const dashboard = {
 export const designDecisions = {
   hideGaslessIndicator: true,
   hideOpenPollIndicator: true,
-  hideRestrictedPollHaveAccessIndicator: false,
+  hideRestrictedPollHaveAccessIndicator: true,
   hideMyPollIndicator: true,
   showInaccessiblePollCheckbox: true,
   hideDisabledSelectOptions: true,
