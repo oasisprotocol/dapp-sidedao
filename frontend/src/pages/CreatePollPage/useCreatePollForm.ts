@@ -28,6 +28,7 @@ import {
   isERC20Token,
   parseEther,
   getNftType,
+  CreatePollProps,
 } from '../../utils/poll.utils'
 import { useEthereum } from '../../hooks/useEthereum'
 import { useContracts } from '../../hooks/useContracts'
@@ -609,21 +610,21 @@ export const useCreatePollForm = () => {
     setIsCreating(true)
     try {
       const [aclData, aclOptions] = await getAclOptions(logger)
-      const newId = await doCreatePoll(
-        daoSigner,
-        eth.state.address,
-        {
-          question: question.value,
-          description: description.value,
-          answers: answers.value,
-          aclData,
-          aclOptions,
-          subsidizeAmount: gasFree.value ? parseEther(amountOfSubsidy.value) : undefined,
-          publishVotes: resultDisplayType.value === 'percentages_and_votes',
-          completionTime: hasCloseDate.value ? pollCloseDate.value : undefined,
-        },
-        logger,
-      )
+
+      const pollProps: CreatePollProps = {
+        question: question.value,
+        description: description.value,
+        answers: answers.value,
+        aclData,
+        aclOptions,
+        subsidizeAmount: gasFree.value ? parseEther(amountOfSubsidy.value) : undefined,
+        publishVotes: resultDisplayType.value === 'percentages_and_votes',
+        completionTime: hasCloseDate.value ? pollCloseDate.value : undefined,
+      }
+
+      // console.log('Will create poll with props:', pollProps)
+
+      const newId = await doCreatePoll(daoSigner, eth.state.address, pollProps, logger)
 
       if (newId) {
         navigate(`/polls/${newId.substring(2)}`)

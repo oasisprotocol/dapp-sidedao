@@ -169,19 +169,21 @@ export const getNftType = async (chainId: number, address: string): Promise<stri
 
 export const getLatestBlock = async (chainId: number) => await xchainRPC(chainId).getBlock('latest')
 
+export type CreatePollProps = {
+  question: string
+  description: string
+  answers: string[]
+  aclData: string
+  aclOptions: AclOptions
+  subsidizeAmount: bigint | undefined
+  publishVotes: boolean
+  completionTime: Date | undefined
+}
+
 export const createPoll = async (
   pollManager: PollManager,
   creator: string,
-  props: {
-    question: string
-    description: string
-    answers: string[]
-    aclData: string
-    aclOptions: AclOptions
-    subsidizeAmount: bigint | undefined
-    publishVotes: boolean
-    completionTime: Date | undefined
-  },
+  props: CreatePollProps,
   updateStatus: (message: string) => void,
 ) => {
   const {
@@ -203,10 +205,12 @@ export const createPoll = async (
     choices: answers,
     options: {
       publishVotes,
-      closeTimestamp: completionTime ? completionTime.getTime() / 1000 : 0,
+      closeTimestamp: completionTime ? Math.round(completionTime.getTime() / 1000) : 0,
     },
     acl: aclOptions,
   }
+
+  // console.log('Compiling poll', poll)
 
   const { key, cipherbytes } = encryptJSON(poll)
 
