@@ -1,6 +1,6 @@
 import { FC } from 'react'
 import { OpenPollIcon } from '../icons/OpenPollIcon'
-import { ClosedPollIcon } from '../icons/ClosedPollIcon'
+import { RestrictedPollIcon } from '../icons/RestrictedPollIcon'
 import { SpinnerIcon } from '../icons/SpinnerIcon'
 import { BrokenPollAccessIcon } from '../icons/BrokenPollAccessIcon'
 import { getVerdict } from '../InputFields'
@@ -10,7 +10,7 @@ import { designDecisions } from '../../constants/config'
 
 export const PollAccessIndicator: FC<{
   isOpen: boolean
-  isClosed: boolean
+  isRestricted: boolean
   hideClosedNoAccess?: boolean
   isPending: boolean
   isBroken: boolean
@@ -22,7 +22,7 @@ export const PollAccessIndicator: FC<{
 }> = ({
   isOpen,
   isBroken,
-  isClosed,
+  isRestricted,
   isPending,
   explanation,
   hasAccess,
@@ -36,8 +36,8 @@ export const PollAccessIndicator: FC<{
       {isOpen && !designDecisions.hideOpenPollIndicator && (
         <OpenPollIcon completed={isCompleted} height={20} />
       )}
-      {isClosed && !(!hasAccess && hideClosedNoAccess) && (
-        <ClosedPollIcon
+      {isRestricted && !(!hasAccess && hideClosedNoAccess) && (
+        <RestrictedPollIcon
           explanation={explanation ?? 'unknown restriction'}
           completed={isCompleted}
           hasAccess={hasAccess}
@@ -65,7 +65,7 @@ export const PollAccessIndicatorWrapper: FC<{
     <PollAccessIndicator
       isOpen={explanation === ''}
       isBroken={!!error}
-      isClosed={!!explanation && !error}
+      isRestricted={!!explanation && !error}
       hideClosedNoAccess={hideClosedNoAccess}
       explanation={explanation}
       hasAccess={getVerdict(canVote, false)}

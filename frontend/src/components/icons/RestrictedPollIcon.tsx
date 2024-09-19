@@ -4,7 +4,7 @@ import { IconProps } from '../../types'
 import classes from './index.module.css'
 import { designDecisions } from '../../constants/config'
 
-export const ClosedPollIcon: FC<
+export const RestrictedPollIcon: FC<
   IconProps & {
     explanation: string
     completed?: boolean
