@@ -9,8 +9,7 @@
   flex-direction: row;
   justify-content: center;
 
-  width: 100%;
-  height: 48px;
+  overflow: hidden;
 
   padding: 0em 2em;
 
@@ -38,7 +37,8 @@
 }
 
 .winner {
-  border: 3px solid #a2a0ff;
+  border: 5px solid #a2a0ff00;
+  border-radius: 12px;
 }
 
 .submitted {

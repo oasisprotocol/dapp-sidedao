@@ -2,6 +2,7 @@ import { FC } from 'react'
 import classes from './index.module.css'
 import { RemainingTime } from '../../types'
 import { StringUtils } from '../../utils/string.utils'
+import { AnimatePresence, motion } from 'framer-motion'
 
 type Cell = {
   number: number
@@ -28,8 +29,18 @@ export const BigCountdown: FC<{
     <div className={classes.countdownContainer}>
       {wantedCells.map(cell => (
         <div key={`cell-${cell.unit}`} className={classes.countdownCell}>
-          <div className={classes.countdownNumber}>{cell.number}</div>
-          <div className={classes.countdownUnit}>{cell.unit}</div>
+          <AnimatePresence mode={'popLayout'}>
+            <motion.div
+              className={classes.countdownNumber}
+              key={`number-${cell.number}`}
+              initial={{ y: 40, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -40, opacity: 0 }}
+            >
+              {cell.number}
+            </motion.div>
+            <div className={classes.countdownUnit}>{cell.unit}</div>
+          </AnimatePresence>
         </div>
       ))}
     </div>
