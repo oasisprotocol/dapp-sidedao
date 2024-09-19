@@ -123,7 +123,7 @@ export const usePollData = (pollId: string) => {
     }
   }
 
-  const moveDemoAfterVoting = () => {
+  const moveDemoAfterVoting = useCallback(() => {
     const remainingSeconds = remainingTime?.totalSeconds
     if (
       !!deadline &&
@@ -140,8 +140,26 @@ export const usePollData = (pollId: string) => {
         setValue: setDeadline,
         easing: true,
       })
+    } else {
+      if (!deadline) {
+        console.log('Not speeding up time, since there is no deadline.')
+      } else if (!remainingSeconds) {
+        console.log('Not speeding up time, since there is are no remainingSeconds.')
+      } else {
+        const threshold = demoSettings.jumpToSecondsBeforeClosing + demoSettings.timeContractionSeconds
+        if (remainingSeconds <= threshold) {
+          console.log(
+            'Not speeding up time, since we would need at least',
+            threshold,
+            'seconds, but we have only',
+            remainingSeconds,
+          )
+        } else {
+          console.log('i have no idea why are we not speeding up the time.')
+        }
+      }
     }
-  }
+  }, [deadline, remainingTime, setDeadline])
 
   const doVote = useCallback(
     async (choice: bigint | undefined): Promise<void> => {
@@ -283,6 +301,7 @@ export const usePollData = (pollId: string) => {
       eth.state.provider,
       gvAddresses,
       permissions.proof,
+      moveDemoAfterVoting,
     ],
   )
 
