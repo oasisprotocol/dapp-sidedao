@@ -137,7 +137,6 @@ export async function guessStorageSlot(
   const balance = await c.balanceOf(holder) as bigint;
   // TODO: if balance is zero, this won't be a useful 'holder' account for testing
 
-  console.log('Balance is', typeof balance, balance);
   const balanceInHex = toBeHex(balance, 32);
 
   // shortlist most frequently used slots, then do brute force
