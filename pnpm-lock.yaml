@@ -52,11 +52,11 @@ importers:
         specifier: ^0.0.6
         version: 0.0.6
       '@oasisprotocol/sapphire-ethers-v6':
-        specifier: ^6.0.0
-        version: 6.0.0(@oasisprotocol/sapphire-paratime@2.0.0)(ethers@6.10.0)(typescript@5.3.3)
+        specifier: ^6.0.1
+        version: 6.0.1(@oasisprotocol/sapphire-paratime@2.0.1)(ethers@6.10.0)(typescript@5.3.3)
       '@oasisprotocol/sapphire-paratime':
-        specifier: ^2.x
-        version: 2.0.0
+        specifier: ^2.0.1
+        version: 2.0.1
       '@oasisprotocol/side-dao-contracts':
         specifier: workspace:^
         version: link:../contracts
@@ -3128,19 +3128,17 @@ packages:
       '@openzeppelin/contracts': 5.0.2
     dev: true
 
-  /@oasisprotocol/sapphire-ethers-v6@6.0.0(@oasisprotocol/sapphire-paratime@2.0.0)(ethers@6.10.0)(typescript@5.3.3):
-    resolution: {integrity: sha512-81JIfaNVOcNeNa1ny5g1axH1VrRbon5bJWopK05LUxL9wZ32Ez02liRr9i/3Ez/L2CuQbtaqFtFpQM1HThTyug==}
+  /@oasisprotocol/sapphire-ethers-v6@6.0.1(@oasisprotocol/sapphire-paratime@2.0.1)(ethers@6.10.0)(typescript@5.3.3):
+    resolution: {integrity: sha512-JY1pKPByoboDNSQurP9Z0+QEvShK8Y9heqOjFQjhH6ZwYmiyJdhT+iJJvBtvsVzZ3SkFay0TXwQ+G5m+VBjJRA==}
     peerDependencies:
-      '@oasisprotocol/sapphire-paratime': ^2.0.0
+      '@oasisprotocol/sapphire-paratime': ^2.0.1
       ethers: 6.x
       typescript: '>=5.0.4'
     peerDependenciesMeta:
-      '@oasisprotocol/sapphire-paratime':
-        optional: true
       typescript:
         optional: true
     dependencies:
-      '@oasisprotocol/sapphire-paratime': 2.0.0
+      '@oasisprotocol/sapphire-paratime': 2.0.1
       ethers: 6.10.0
       typescript: 5.3.3
     dev: false
@@ -3170,8 +3168,8 @@ packages:
       - bufferutil
       - utf-8-validate
 
-  /@oasisprotocol/sapphire-paratime@2.0.0:
-    resolution: {integrity: sha512-wzGIf55R9hw/j+OKa3VEctn1ryuJsrF64VgrIDBeOG5eq9VxhqQLv6f4D/Bp3XBGebhOm8jQE8hG3XrCGSEHXw==}
+  /@oasisprotocol/sapphire-paratime@2.0.1:
+    resolution: {integrity: sha512-XmcXi+q8FJi31kLmFTzZH9ZILHEPbihucTH9/3eXyrkV0exi/w0CgCsfZ3ykHjgNCKciY+1RHYvJ/4h6F+Y2rw==}
     dependencies:
       '@noble/hashes': 1.4.0
       '@oasisprotocol/deoxysii': 0.0.6
