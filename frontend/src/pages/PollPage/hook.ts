@@ -82,7 +82,8 @@ export const usePollData = (pollId: string) => {
     canSelect =
       !remainingTime?.isPastDue &&
       winningChoice === undefined &&
-      (eth.state.address === undefined || existingVote === undefined)
+      (eth.state.address === undefined || existingVote === undefined) &&
+      !isVoting
 
     canVote =
       (!!eth.state.address || isDemo) &&
@@ -100,7 +101,8 @@ export const usePollData = (pollId: string) => {
       !isCompleting &&
       winningChoice === undefined &&
       existingVote === undefined &&
-      getVerdict(permissions.canVote, false)
+      getVerdict(permissions.canVote, false) &&
+      !isVoting
   }
 
   const hasWallet = isDemo || (isHomeChain && userAddress !== ZeroAddress)
