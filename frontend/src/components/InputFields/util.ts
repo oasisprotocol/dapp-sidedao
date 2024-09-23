@@ -1,21 +1,12 @@
 export type ProblemLevel = 'warning' | 'error'
 
-let idCounter = 0
-
-const getNewId = () => `problem-${idCounter++}`
-
-export type ProblemReport = {
-  location?: string
+export type Problem = {
+  signature?: string
   message: string
   level?: ProblemLevel
 }
 
-export type Problem = {
-  id: string
-  message: string
-  level: ProblemLevel
-}
-
+export type ProblemReport = Problem & { location?: string }
 export type ProblemAtLocation = Problem & { location: string }
 
 type ValidatorProduct = ProblemReport | string | undefined
@@ -24,22 +15,35 @@ export const wrapProblem = (
   problem: ValidatorProduct,
   defaultLocation: string,
   defaultLevel: ProblemLevel,
-): ProblemAtLocation | undefined =>
-  problem === undefined
-    ? undefined
-    : typeof problem === 'string'
-      ? {
-          id: getNewId(),
-          message: problem as string,
+): ProblemAtLocation | undefined => {
+  if (problem === undefined || problem === '') return undefined
+  if (typeof problem === 'string') {
+    const cutPos = problem.indexOf(':')
+    if (cutPos !== -1) {
+      let signature = problem.substring(0, cutPos)
+      if (!signature.includes(' ')) {
+        return {
+          signature,
+          message: problem.substring(cutPos + 1).trim(),
           level: defaultLevel,
           location: defaultLocation,
         }
-      : {
-          id: getNewId(),
-          message: (problem as ProblemReport).message,
-          level: (problem as ProblemReport).level ?? 'error',
-          location: (problem as ProblemReport).location ?? defaultLocation,
-        }
+      }
+    }
+    return {
+      message: problem,
+      level: defaultLevel,
+      location: defaultLocation,
+    }
+  } else {
+    const report = problem as ProblemReport
+    return {
+      ...report,
+      level: report.level ?? 'error',
+      location: report.location ?? defaultLocation,
+    }
+  }
+}
 
 export function flatten<Data>(array: Data[][]): Data[] {
   const result: Data[] = []

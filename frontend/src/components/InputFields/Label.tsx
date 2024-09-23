@@ -1,66 +1,28 @@
 import { LabelControls } from './useLabel'
 import { FC } from 'react'
 import classes from './index.module.css'
-import { StringUtils } from '../../utils/string.utils'
-import { checkProblems } from './util'
-import { ProblemList } from './ProblemDisplay'
-import { motion } from 'framer-motion'
+
+import { WithVisibility } from './WithVisibility'
+import { WithLabelAndDescription } from './WithLabelAndDescription'
+import { WithValidation } from './WithValidation'
 
 export const Label: FC<LabelControls> = props => {
-  const {
-    label,
-    description,
-    visible,
-    value,
-    allProblems,
-    clearProblem,
-    containerClassName,
-    formatter,
-    renderer,
-    classnames,
-  } = props
-  if (!visible) return
+  const { value, allProblems, formatter, renderer, classnames } = props
 
   const formattedValue = formatter ? formatter(value) : value
-
   const renderedValue = renderer ? renderer(formattedValue) : formattedValue
 
-  const field = <div className={StringUtils.clsx(...classnames)}>{renderedValue}</div>
-
-  const rootProblems = allProblems.root || []
-
-  const { hasWarning, hasError } = checkProblems(rootProblems)
-
-  const wrappedField = (
-    <div
-      className={StringUtils.clsx(
-        classes.textValue,
-        hasError ? classes.fieldWithError : hasWarning ? classes.fieldWithWarning : '',
-      )}
-    >
-      {field}
-      <ProblemList problems={rootProblems} onRemove={clearProblem} />
-    </div>
-  )
-
   return (
-    <motion.div
-      layout
-      className={StringUtils.clsx(classes.fieldContainer, containerClassName)}
-      initial={{ opacity: 0, height: 0 }}
-      animate={{ opacity: 1, height: 'auto' }}
-      exit={{ opacity: 0, height: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      {!!label || !!description ? (
-        <label>
-          <div className={classes.fieldLabel}>{label}</div>
-          <div className={classes.fieldDescription}>{description}</div>
-          {wrappedField}
-        </label>
-      ) : (
-        wrappedField
-      )}
-    </motion.div>
+    <WithVisibility field={props}>
+      <WithLabelAndDescription field={props}>
+        <WithValidation
+          field={props}
+          problems={allProblems.root}
+          fieldClasses={[classes.label, ...classnames]}
+        >
+          <span>{renderedValue}</span>
+        </WithValidation>
+      </WithLabelAndDescription>
+    </WithVisibility>
   )
 }

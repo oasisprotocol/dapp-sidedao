@@ -8,11 +8,12 @@ export type FieldConfiguration = SingleOrArray<FieldLike>[]
 export const findErrorsInFields = async (
   fields: FieldConfiguration,
   reason: ValidationReason,
+  isStillFresh: () => boolean,
 ): Promise<boolean> => {
   const visibleFields = fields.flatMap(config => getAsArray(config)).filter(field => field.visible)
   let hasError = false
   for (const field of visibleFields) {
-    const isFieldOK = await field.validate({ reason })
+    const isFieldOK = await field.validate({ reason, isStillFresh })
     hasError = hasError || !isFieldOK
   }
   return hasError

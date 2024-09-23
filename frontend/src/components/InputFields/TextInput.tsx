@@ -1,108 +1,43 @@
 import React, { FC, KeyboardEventHandler, useCallback } from 'react'
 import classes from './index.module.css'
-import { StringUtils } from '../../utils/string.utils'
 import { TextFieldControls } from './useTextField'
-import { ProblemList } from './ProblemDisplay'
-import { checkProblems } from './util'
-import { SpinnerIcon } from '../icons/SpinnerIcon'
-import { CheckCircleIcon } from '../icons/CheckCircleIcon'
-import { motion } from 'framer-motion'
+import { WithValidation } from './WithValidation'
+import { WithLabelAndDescription } from './WithLabelAndDescription'
+import { WithVisibility } from './WithVisibility'
 
-export const TextInput: FC<TextFieldControls> = ({
-  name,
-  label,
-  description,
-  value,
-  placeholder,
-  setValue,
-  allProblems,
-  hasProblems,
-  isValidated,
-  indicateValidationSuccess,
-  clearProblem,
-  validationPending,
-  validationStatusMessage,
-  visible,
-  enabled,
-  whyDisabled,
-  autoFocus,
-  onEnter,
-  containerClassName,
-}) => {
+export const TextInput: FC<TextFieldControls> = props => {
+  const { name, value, placeholder, setValue, allProblems, enabled, whyDisabled, autoFocus, onEnter } = props
   const handleChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => setValue(event.target.value),
     [setValue],
   )
 
-  if (!visible) return
-
-  const handleKeyPress: KeyboardEventHandler<HTMLInputElement> = event => {
-    if (event.key == 'Enter') {
-      if (onEnter) onEnter()
-    }
-  }
-
-  //<Field onKeyDown={this.handleKeyPress}
-
-  const field = (
-    <input
-      name={name}
-      placeholder={placeholder}
-      value={value}
-      onChange={handleChange}
-      className={classes.textValue}
-      disabled={!enabled}
-      title={whyDisabled}
-      autoFocus={autoFocus}
-      onKeyDown={handleKeyPress}
-    />
-  )
-
-  const rootProblems = allProblems.root || []
-
-  const hasNoProblems = !hasProblems
-
-  const { hasWarning, hasError } = checkProblems(rootProblems)
-
-  const wrappedField = (
-    <div
-      className={StringUtils.clsx(
-        classes.textValue,
-        hasError ? classes.fieldWithError : hasWarning ? classes.fieldWithWarning : '',
-      )}
-    >
-      <div className="niceLine">
-        {field}
-        {isValidated && indicateValidationSuccess && hasNoProblems && <CheckCircleIcon />}
-      </div>
-      <ProblemList problems={rootProblems} onRemove={clearProblem} />
-      {validationPending && (
-        <div className={'niceLine'}>
-          {validationStatusMessage}
-          <SpinnerIcon width={24} height={24} spinning={true} />
-        </div>
-      )}
-    </div>
+  const handleKeyPress: KeyboardEventHandler<HTMLInputElement> = useCallback(
+    event => {
+      if (event.key == 'Enter') {
+        if (onEnter) onEnter()
+      }
+    },
+    [onEnter],
   )
 
   return (
-    <motion.div
-      layout
-      className={StringUtils.clsx(classes.fieldContainer, containerClassName)}
-      initial={{ opacity: 0, height: 0 }}
-      animate={{ opacity: 1, height: 'auto' }}
-      exit={{ opacity: 0, height: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      {!!label || !!description ? (
-        <label>
-          <div className={classes.fieldLabel}>{label}</div>
-          <div className={classes.fieldDescription}>{description}</div>
-          {wrappedField}
-        </label>
-      ) : (
-        wrappedField
-      )}
-    </motion.div>
+    <WithVisibility field={props}>
+      <WithLabelAndDescription field={props}>
+        <WithValidation field={props} problems={allProblems.root} fieldClasses={[classes.textValue]}>
+          <input
+            name={name}
+            placeholder={placeholder}
+            value={value}
+            onChange={handleChange}
+            className={classes.textValue}
+            disabled={!enabled}
+            title={whyDisabled}
+            autoFocus={autoFocus}
+            onKeyDown={handleKeyPress}
+          />
+        </WithValidation>
+      </WithLabelAndDescription>
+    </WithVisibility>
   )
 }

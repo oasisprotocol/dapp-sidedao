@@ -6,6 +6,7 @@ import {
   FieldConfiguration,
   findErrorsInFields,
   getVerdict,
+  LabelProps,
   useBooleanField,
   useDateField,
   useLabel,
@@ -29,6 +30,7 @@ import {
   parseEther,
   getNftType,
   CreatePollProps,
+  getChainDefinition,
 } from '../../utils/poll.utils'
 import { useEthereum } from '../../hooks/useEthereum'
 import { useContracts } from '../../hooks/useContracts'
@@ -80,6 +82,14 @@ const hideDisabledIfNecessary = (choice: Choice): Choice => ({
   hidden: choice.hidden || (designDecisions.hideDisabledSelectOptions && !getVerdict(choice.enabled, true)),
 })
 
+const sleep = (time: number) => new Promise<string>(resolve => setTimeout(() => resolve(''), time))
+
+const addMockValidation: Partial<LabelProps> = {
+  showValidationSuccess: true,
+  validators: () => sleep(500),
+  validateOnChange: true,
+}
+
 export const useCreatePollForm = () => {
   const eth = useEthereum()
   const { pollManagerWithSigner: daoSigner } = useContracts(eth)
@@ -120,9 +130,6 @@ export const useCreatePollForm = () => {
     allowEmptyItems: [false, 'Please either fill this in, or remove this answer.'],
     minItemLength: [1, minLength => `Please use at least ${minLength} characters for this answer.`],
     // maxItemLength: [10, maxLength => `Please don't use more than ${maxLength} characters for this answer.`],
-
-    // Only the last item can be removed
-    // canRemoveElement: (index, field) => index === field.numberOfValues - 1,
   })
 
   const customCSS = useBooleanField({
@@ -236,9 +243,9 @@ export const useCreatePollForm = () => {
     label: 'Chain',
     visible: accessControlMethod.value === 'acl_xchain',
     choices: chainChoices,
-    onValueChange: () => {
+    onValueChange: (_, isStillFresh) => {
       if (xchainTokenAddress.isValidated) {
-        void xchainTokenAddress.validate({ forceChange: true, reason: 'change' })
+        void xchainTokenAddress.validate({ forceChange: true, reason: 'change', isStillFresh })
       }
     },
   })
@@ -251,13 +258,14 @@ export const useCreatePollForm = () => {
     required: [true, 'Please specify the address on the other chain that is the key to this poll!'],
     validators: [
       value => (isValidAddress(value) ? undefined : "This doesn't seem to be a valid address."),
-      async (value, changed) => {
+      async (value, changed, controls) => {
         if (!changed) return
+        controls.updateStatus({ message: 'Checking out token...' })
         if (await isERC20Token(chain.value, value)) return undefined
         const nftType = await getNftType(chain.value, value)
         if (nftType)
           return `This seems to be an ${nftType} NFT, not an ERC-20 token. Support is coming, but we are not there yet.`
-        return "The address is valid, but this doesn't seem to be an ERC-20 token."
+        return `The address is valid, but this doesn't seem to be an ERC-20 token on ${getChainDefinition(chain.value).name}.`
       },
       async (value, changed, controls) => {
         if (!changed) return
@@ -326,10 +334,11 @@ export const useCreatePollForm = () => {
 
   const xchainWalletBalance = useLabel({
     name: 'xchainWalletBalance',
-    label: 'Tokens confirmed:',
+    label: 'Token balance:',
     visible: hasValidXchainWallet,
     initialValue: '',
     classnames: classes.explanation,
+    ...addMockValidation,
   })
 
   const xchainWalletSlotNumber = useLabel({
@@ -339,6 +348,7 @@ export const useCreatePollForm = () => {
     initialValue: '',
     classnames: classes.explanation,
     formatter: slot => `Slot #${slot}`,
+    ...addMockValidation,
   })
 
   const xchainBlockHash = useLabel({
@@ -348,6 +358,7 @@ export const useCreatePollForm = () => {
     initialValue: 'unknown',
     classnames: classes.explanation,
     renderer: renderAddress,
+    ...addMockValidation,
   })
 
   const xchainBlockHeight = useLabel({
@@ -356,6 +367,7 @@ export const useCreatePollForm = () => {
     visible: hasValidXchainWallet,
     initialValue: 'unknown',
     classnames: classes.explanation,
+    ...addMockValidation,
   })
 
   const voteWeighting = useOneOfField({
@@ -487,7 +499,7 @@ export const useCreatePollForm = () => {
     label: `Poll completion date (Time zone: ${Intl.DateTimeFormat().resolvedOptions().timeZone})`,
     visible: hasCompletionDate.value,
     validateOnChange: true,
-    showValidationStatus: false,
+    showValidationPending: false,
     validators: value => {
       const deadline = value.getTime() / 1000
       const remaining = DateUtils.calculateRemainingTimeFrom(deadline, now)
@@ -508,7 +520,7 @@ export const useCreatePollForm = () => {
   })
 
   useEffect(() => {
-    void pollCompletionDate.validate({ forceChange: true, reason: 'change' })
+    void pollCompletionDate.validate({ reason: 'change', isStillFresh: () => true })
   }, [hasCompletionDate.value, now])
 
   useEffect(() => {
@@ -562,7 +574,7 @@ export const useCreatePollForm = () => {
   const goToNextStep = async () => {
     if (stepIndex === numberOfSteps - 1) return
     setValidationPending(true)
-    const hasErrors = await findErrorsInFields(stepFields[step], 'submit')
+    const hasErrors = await findErrorsInFields(stepFields[step], 'submit', () => true)
     setValidationPending(false)
     if (hasErrors) return
     setStep(process[stepIndex + 1])
@@ -597,7 +609,7 @@ export const useCreatePollForm = () => {
 
   const createPoll = async () => {
     setValidationPending(true)
-    const hasErrors = await findErrorsInFields(stepFields[step], 'submit')
+    const hasErrors = await findErrorsInFields(stepFields[step], 'submit', () => true)
     setValidationPending(false)
     if (hasErrors) return
 

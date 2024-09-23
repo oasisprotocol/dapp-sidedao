@@ -74,9 +74,5 @@ export function useDateField(props: DateFieldProps): DateFieldControls {
     ...controls,
     minDate,
     maxDate,
-    setValue: value => {
-      controls.clearAllProblems()
-      controls.setValue(value)
-    },
   }
 }

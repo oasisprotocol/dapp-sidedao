@@ -27,9 +27,5 @@ export function useBooleanField(props: BoolFieldProps): BooleanFieldControls {
   return {
     ...controls,
     label,
-    setValue: value => {
-      controls.clearAllProblems()
-      controls.setValue(value)
-    },
   }
 }

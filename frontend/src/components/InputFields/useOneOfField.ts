@@ -53,10 +53,6 @@ export function useOneOfField<DataType>(props: OneOfFieldProps<DataType>): OneOf
 
   return {
     ...controls,
-    setValue: value => {
-      controls.setValue(value)
-      controls.clearAllProblems()
-    },
     choices,
   }
 }

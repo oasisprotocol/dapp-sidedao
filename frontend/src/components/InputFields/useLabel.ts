@@ -6,31 +6,25 @@ export type FormatterFunction<DataType> = (rawValue: DataType) => string
 
 export type RendererFunction<DataType> = (rawValue: DataType) => ReactNode
 
-type LabelProps = Pick<
+export type LabelProps = Pick<
   InputFieldProps<string>,
-  'name' | 'label' | 'description' | 'visible' | 'hidden' | 'containerClassName' | 'initialValue'
+  | 'name'
+  | 'label'
+  | 'description'
+  | 'visible'
+  | 'hidden'
+  | 'containerClassName'
+  | 'initialValue'
+  | 'validators'
+  | 'validateOnChange'
+  | 'showValidationSuccess'
 > & {
   classnames?: SingleOrArray<string>
   formatter?: FormatterFunction<string>
   renderer?: RendererFunction<string>
 }
 
-export type LabelControls = Pick<
-  InputFieldControls<string>,
-  | 'name'
-  | 'label'
-  | 'description'
-  | 'type'
-  | 'visible'
-  | 'value'
-  | 'setValue'
-  | 'validate'
-  | 'hasProblems'
-  | 'allProblems'
-  | 'clearProblem'
-  | 'clearAllProblems'
-  | 'containerClassName'
-> & {
+export type LabelControls = Omit<InputFieldControls<string>, 'placeholder' | 'enabled' | 'whyDisabled'> & {
   classnames: string[]
   formatter: FormatterFunction<string> | undefined
   renderer: RendererFunction<string> | undefined

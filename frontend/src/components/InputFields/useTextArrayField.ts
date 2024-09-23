@@ -203,6 +203,7 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
       (value, index): ValidatorFunction<string[]> =>
         async (_, changed, controls, reason) => {
           setPendingValidationIndex(index)
+          controls.updateStatus({ message: undefined })
           const reports = getAsArray(await itemValidator(value, changed, controls, reason))
             .map(rep => wrapProblem(rep, `value-${index}`, 'error'))
             .filter((p): p is ProblemAtLocation => !!p)
@@ -225,10 +226,11 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
           : (values, _changed, _control, reason) =>
               reason === 'change'
                 ? []
-                : values.map((value, index) =>
+                : values.map((value, index): ProblemAtLocation | undefined =>
                     value
                       ? undefined
                       : {
+                          signature: 'empty:',
                           message: emptyItemMessage,
                           location: `value-${index}`,
                         },
@@ -239,7 +241,7 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
           ? (values, _changed, _control, reason) => {
               const currentCount = values.filter(v => !!v).length
               return currentCount < minItemCount && reason !== 'change'
-                ? `${getNumberMessage(tooFewItemsMessage, minItemCount)} (Currently, ${thereIsOnly(currentCount)}.)`
+                ? `tooFew:${getNumberMessage(tooFewItemsMessage, minItemCount)} (Currently, ${thereIsOnly(currentCount)}.)`
                 : undefined
             }
           : undefined,
@@ -249,7 +251,7 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
           ? values => {
               const currentCount = values.filter(v => !!v).length
               return currentCount > maxItemCount
-                ? `${getNumberMessage(tooManyItemsMessage, maxItemCount)} (Currently, there are ${currentCount}.)`
+                ? `tooMany:${getNumberMessage(tooManyItemsMessage, maxItemCount)} (Currently, there are ${currentCount}.)`
                 : undefined
             }
           : undefined,
@@ -257,9 +259,10 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
         // Check minimum length on all items
         minLength
           ? values =>
-              values.map((value, index) =>
+              values.map((value, index): ProblemAtLocation | undefined =>
                 !!value && value.length < minLength
                   ? {
+                      signature: 'tooShort',
                       message: `${getNumberMessage(tooShortItemMessage, minLength)} (Currently: ${value.length})`,
                       location: `value-${index}`,
                     }
@@ -270,9 +273,10 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
         // Check maximum length on all items
         maxLength
           ? values =>
-              values.map((value, index) =>
+              values.map((value, index): ProblemAtLocation | undefined =>
                 !!value && value.length > maxLength
                   ? {
+                      signature: 'tooLong',
                       message: `${getNumberMessage(tooLongItemMessage, maxLength)} (Currently: ${value.length})`,
                       location: `value-${index}`,
                     }
@@ -286,11 +290,14 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
           : values =>
               findDuplicates(values).flatMap((list, listIndex) => {
                 const realList = list.filter(index => !!values[index])
-                return realList.map(index => ({
-                  message: duplicatesErrorMessages[listIndex],
-                  location: `value-${index}`,
-                  level: ['warning', 'error'][listIndex],
-                }))
+                return realList.map(
+                  (index): ProblemAtLocation => ({
+                    signature: 'duplicate',
+                    message: duplicatesErrorMessages[listIndex],
+                    location: `value-${index}`,
+                    level: (['warning', 'error'] as const)[listIndex],
+                  }),
+                )
               }),
 
         // Specified custom per-item validators
@@ -323,13 +330,11 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
 
     addItemLabel: addItemLabel,
     addItem: () => {
-      controls.clearAllProblems()
       controls.setValue([...controls.value, ''])
     },
     canRemoveItem: () => false, // This will be overwritten
     removeItemLabel: removeItemLabel,
     removeItem: index => {
-      controls.clearAllProblems()
       controls.setValue(controls.value.filter((_oldValue, oldIndex) => oldIndex !== index))
     },
 
@@ -344,7 +349,7 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
   }
 
   newControls.setItem = (index, value) => {
-    controls.clearProblemsAt(`value-${index}`)
+    // controls.clearProblemsAt(`value-${index}`)
     controls.setValue(controls.value.map((oldValue, oldIndex) => (oldIndex === index ? value : oldValue)))
     if (onItemEdited) {
       onItemEdited(index, value, newControls)

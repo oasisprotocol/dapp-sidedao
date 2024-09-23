@@ -68,7 +68,7 @@ export function useTextField(props: TextFieldProps): TextFieldControls {
         minLength
           ? () =>
               value !== '' && value.length < minLength!
-                ? `${getNumberMessage(tooShortMessage, minLength)} (Currently: ${value.length})`
+                ? `tooShort: ${getNumberMessage(tooShortMessage, minLength)} (Currently: ${value.length})`
                 : undefined
           : undefined,
 
@@ -76,7 +76,7 @@ export function useTextField(props: TextFieldProps): TextFieldControls {
         maxLength
           ? () =>
               value !== '' && value.length > maxLength!
-                ? `${getNumberMessage(tooLongMessage, maxLength)} (Currently: ${value.length})`
+                ? `tooLong: ${getNumberMessage(tooLongMessage, maxLength)} (Currently: ${value.length})`
                 : undefined
           : undefined,
 
@@ -91,10 +91,6 @@ export function useTextField(props: TextFieldProps): TextFieldControls {
   )
   return {
     ...controls,
-    setValue: value => {
-      controls.clearAllProblems()
-      controls.setValue(value)
-    },
     autoFocus,
     onEnter,
   }
