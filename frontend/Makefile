@@ -5,6 +5,9 @@ all: build
 dev:
 	$(NPM) $@
 
+dev-staging:
+	$(NPM) dev -m staging
+
 build:
 	$(NPM) $@
 
