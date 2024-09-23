@@ -1,5 +1,5 @@
 import { Proposal } from '../../types'
-import { FC, useEffect } from 'react'
+import { FC, MouseEventHandler, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import classes from './index.module.css'
 import { GasRequiredIcon } from '../icons/GasRequiredIcon'
@@ -24,6 +24,7 @@ import {
 import { useEthereum } from '../../hooks/useEthereum'
 import { NOT_CHECKED } from '../../hooks/usePollPermissions'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Button } from '../Button'
 
 const Arrow: FC<{ className: string }> = ({ className }) => (
   <svg
@@ -76,10 +77,19 @@ export const PollCard: FC<{
   wantedStatus: WantedStatus
 }> = ({ proposal, reportVisibility, column, showInaccessible, searchPatterns, wantedStatus }) => {
   const { userAddress } = useEthereum()
-  const { poll, proposalId, gaslessPossible, isMine, permissions, checkPermissions, isLoading, error } =
-    useExtendedPoll(proposal, {
-      onDashboard: true,
-    })
+  const {
+    poll,
+    proposalId,
+    gaslessPossible,
+    isMine,
+    permissions,
+    checkPermissions,
+    isLoading,
+    error,
+    correctiveAction,
+  } = useExtendedPoll(proposal, {
+    onDashboard: true,
+  })
 
   const {
     id: pollId,
@@ -141,6 +151,11 @@ export const PollCard: FC<{
 
   const isPastDue = !!closeTimestamp && new Date().getTime() / 1000 > closeTimestamp
 
+  const handleRetryClick: MouseEventHandler<any> = event => {
+    event.preventDefault()
+    if (correctiveAction) correctiveAction()
+  }
+
   return (
     <AnimatePresence initial={false}>
       {visible && (
@@ -159,6 +174,11 @@ export const PollCard: FC<{
                   <div className={'niceLine'}>
                     <WarningCircleIcon size={'large'} />
                     {error}
+                    {correctiveAction && (
+                      <Button size={'small'} color={'secondary'} variant={'text'} onClick={handleRetryClick}>
+                        Retry
+                      </Button>
+                    )}
                   </div>
                 )}
                 {isLoading && (
