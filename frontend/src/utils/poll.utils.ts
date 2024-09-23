@@ -141,7 +141,7 @@ export const getXchainAclOptions = async (
 }
 
 export const isERC20Token = async (chainId: number, address: string) =>
-  isERC20TokenContract(xchainRPC(chainId), address)
+  isERC20TokenContract(address, xchainRPC(chainId))
 
 export const getERC20TokenDetails = async (chainId: number, address: string) => {
   const rpc = xchainRPC(chainId)

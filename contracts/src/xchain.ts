@@ -139,8 +139,8 @@ export function getMapSlot(holderAddress: string, mappingPosition: number): stri
 }
 
 export async function isERC20TokenContract(
-  provider: JsonRpcProvider,
   address: string,
+  provider: JsonRpcProvider,
 ): Promise<boolean> {
   try {
     await erc20TokenDetailsFromProvider(address, provider);
