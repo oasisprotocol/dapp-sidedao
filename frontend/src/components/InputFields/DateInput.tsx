@@ -1,12 +1,10 @@
 import React, { FC, useCallback } from 'react'
 import classes from './index.module.css'
-import { StringUtils } from '../../utils/string.utils'
 import { DateFieldControls } from './useDateField'
-import { ProblemList } from './ProblemDisplay'
-import { checkProblems } from './util'
-import { SpinnerIcon } from '../icons/SpinnerIcon'
-import { CheckCircleIcon } from '../icons/CheckCircleIcon'
-import { motion } from 'framer-motion'
+
+import { WithVisibility } from './WithVisibility'
+import { WithLabelAndDescription } from './WithLabelAndDescription'
+import { WithValidation } from './WithValidation'
 
 const convertToDateTimeLocalString = (date: Date) => {
   const year = date.getFullYear()
@@ -18,89 +16,29 @@ const convertToDateTimeLocalString = (date: Date) => {
   return `${year}-${month}-${day}T${hours}:${minutes}`
 }
 
-export const DateInput: FC<DateFieldControls> = ({
-  name,
-  label,
-  description,
-  value,
-  placeholder,
-  setValue,
-  allProblems,
-  hasProblems,
-  isValidated,
-  indicateValidationSuccess,
-  clearProblem,
-  validationPending,
-  validationStatusMessage,
-  visible,
-  enabled,
-  whyDisabled,
-}) => {
+export const DateInput: FC<DateFieldControls> = props => {
+  const { name, value, placeholder, setValue, allProblems, enabled, whyDisabled } = props
   const handleChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => setValue(new Date(event.target.value)),
     [setValue],
   )
 
-  if (!visible) return
-
-  const field = (
-    <input
-      name={name}
-      placeholder={placeholder}
-      type={'datetime-local'}
-      value={value ? convertToDateTimeLocalString(value) : undefined}
-      onChange={handleChange}
-      className={classes.textValue}
-      disabled={!enabled}
-      title={whyDisabled}
-    />
-  )
-
-  const rootProblems = allProblems.root || []
-
-  const hasNoProblems = !hasProblems
-
-  const { hasWarning, hasError } = checkProblems(rootProblems)
-
-  const wrappedField = (
-    <div
-      className={StringUtils.clsx(
-        classes.textValue,
-        hasError ? classes.fieldWithError : hasWarning ? classes.fieldWithWarning : '',
-      )}
-    >
-      <div className="niceLine">
-        {field}
-        {isValidated && indicateValidationSuccess && hasNoProblems && <CheckCircleIcon />}
-      </div>
-      <ProblemList problems={rootProblems} onRemove={clearProblem} />
-      {validationPending && (
-        <div className={'niceLine'}>
-          {validationStatusMessage}
-          <SpinnerIcon width={24} height={24} spinning={true} />
-        </div>
-      )}
-    </div>
-  )
-
   return (
-    <motion.div
-      layout
-      className={classes.fieldContainer}
-      initial={{ opacity: 0, height: 0 }}
-      animate={{ opacity: 1, height: 'auto' }}
-      exit={{ opacity: 0, height: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      {!!label || !!description ? (
-        <label>
-          <div className={classes.fieldLabel}>{label}</div>
-          <div className={classes.fieldDescription}>{description}</div>
-          {wrappedField}
-        </label>
-      ) : (
-        wrappedField
-      )}
-    </motion.div>
+    <WithVisibility field={props}>
+      <WithLabelAndDescription field={props}>
+        <WithValidation field={props} problems={allProblems.root}>
+          <input
+            name={name}
+            placeholder={placeholder}
+            type={'datetime-local'}
+            value={value ? convertToDateTimeLocalString(value) : undefined}
+            onChange={handleChange}
+            className={classes.textValue}
+            disabled={!enabled}
+            title={whyDisabled}
+          />
+        </WithValidation>
+      </WithLabelAndDescription>
+    </WithVisibility>
   )
 }

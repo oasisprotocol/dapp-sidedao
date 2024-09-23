@@ -1,86 +1,48 @@
 import { ChangeEvent, FC, useCallback } from 'react'
 import { BooleanFieldControls } from './useBoolField'
 import classes from './index.module.css'
-import { checkProblems } from './util'
 import { StringUtils } from '../../utils/string.utils'
-import { ProblemList } from './ProblemDisplay'
-import { motion } from 'framer-motion'
+
+import { WithVisibility } from './WithVisibility'
+import { WithDescription } from './WithDescription'
+import { WithValidation } from './WithValidation'
 
 export const BooleanInput: FC<BooleanFieldControls> = props => {
-  const {
-    name,
-    label,
-    description,
-    value,
-    setValue,
-    allProblems,
-    clearProblem,
-    visible,
-    enabled,
-    whyDisabled,
-    containerClassName,
-  } = props
+  const { name, label, value, setValue, allProblems, enabled, whyDisabled } = props
 
+  // Clicking on the checkbox itself
   const handleChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => setValue(event.target.checked),
     [setValue],
   )
 
-  const handleLabelClick = () => {
+  // Clicking on the label
+  const handleLabelClick = useCallback(() => {
+    console.log('label click')
     if (enabled) setValue(!value)
-  }
-
-  if (!visible) return
-
-  const rootProblems = allProblems.root || []
-
-  const { hasWarning, hasError } = checkProblems(rootProblems)
-
-  const field = (
-    <input
-      type={'checkbox'}
-      name={name}
-      checked={value}
-      onChange={handleChange}
-      size={32}
-      disabled={!enabled}
-    />
-  )
-
-  const wrappedField = (
-    <div
-      className={StringUtils.clsx(
-        classes.boolValue,
-        hasError ? classes.fieldWithError : hasWarning ? classes.fieldWithWarning : '',
-      )}
-    >
-      <div className={'niceLine'} title={whyDisabled}>
-        {field}{' '}
-        <span className={enabled ? classes.pointer : classes.disabled} onClick={handleLabelClick}>
-          {label}
-        </span>
-      </div>
-      <ProblemList problems={rootProblems} onRemove={clearProblem} />
-    </div>
-  )
+  }, [enabled, setValue, value])
 
   return (
-    <motion.div
-      layout
-      className={StringUtils.clsx(classes.fieldContainer, containerClassName)}
-      initial={{ height: 0 }}
-      animate={{ height: 'auto' }}
-      exit={{ height: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      {description ? (
-        <label>
-          <div className={classes.fieldDescription}>{description}</div>
-          {wrappedField}
-        </label>
-      ) : (
-        wrappedField
-      )}
-    </motion.div>
+    <WithVisibility field={props}>
+      <WithDescription field={props}>
+        <WithValidation field={props} problems={allProblems.root}>
+          <div
+            className={StringUtils.clsx('niceLine', enabled ? classes.pointer : classes.disabled)}
+            title={whyDisabled}
+            onClick={handleLabelClick}
+          >
+            <input
+              type={'checkbox'}
+              name={name}
+              checked={value}
+              onChange={handleChange}
+              size={32}
+              disabled={!enabled}
+            />
+            {label}
+          </div>
+        </WithValidation>
+      </WithDescription>
+    </WithVisibility>
   )
 }

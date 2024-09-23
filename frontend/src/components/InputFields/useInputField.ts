@@ -49,6 +49,8 @@ export type InputFieldProps<DataType> = {
   /**
    * Should this field be shown?
    *
+   * Default is true.
+   *
    * You can also use the "hidden" field for the same effect,
    * just avoid contradictory values.
    */
@@ -56,6 +58,8 @@ export type InputFieldProps<DataType> = {
 
   /**
    * Should this field be hidden?
+   *
+   * Default is false.
    *
    * You can also use the "visible" field for the same effect,
    * just avoid contradictory values.
@@ -65,7 +69,9 @@ export type InputFieldProps<DataType> = {
   /**
    * Is this field enabled, that is, editable?
    *
-   * Optionally, you can also specify why not.
+   * Default is true.
+   *
+   * Optionally, you can also specify why it's currently disabled.
    *
    * You can also use the "disabled" field for the same effect,
    * just avoid contradictory values.
@@ -75,7 +81,9 @@ export type InputFieldProps<DataType> = {
   /**
    * Is this field disabled, that is, read only?
    *
-   * Optionally, you can also specify why.
+   * Default is false.
+   *
+   * Optionally, you can also specify why is it disabled.
    *
    * You can also use the "enabled" field for the same effect,
    * just avoid contradictory values.
@@ -83,35 +91,43 @@ export type InputFieldProps<DataType> = {
   disabled?: Decision
 
   /**
-   * Extra classes to add to the container
+   * Extra classes to apply to the container div
    */
   containerClassName?: string
 
   /**
    * Should this field be validated after every change?
+   *
+   * Default is false.
    */
   validateOnChange?: boolean
 
   /**
    * Should we indicate when validation is running?
+   *
+   * Default is true.
    */
-  showValidationStatus?: boolean
+  showValidationPending?: boolean
 
   /**
    * Besides errors, should we also indicate successful validation status?
+   *
+   * Default is false.
    */
   showValidationSuccess?: boolean
 
   /**
    * Effects to run after the value changed
    */
-  onValueChange?: (value: DataType) => void
+  onValueChange?: (value: DataType, isStillFresh: () => boolean) => void
 }
 
 export type ValidationReason = 'change' | 'submit'
 export type ValidationParams = {
   forceChange?: boolean
   reason: ValidationReason
+  // A way to check if this validation request is still valid, or is it now stale (because of changed value)
+  isStillFresh: () => boolean
 }
 
 /**
@@ -133,8 +149,9 @@ export type InputFieldControls<DataType> = Pick<
   isValidated: boolean
   validate: (params: ValidationParams) => Promise<boolean>
   validationPending: boolean
-  validationStatusMessage: string
+  validationStatusMessage: string | undefined
   validatorProgress: number | undefined
+  indicateValidationPending: boolean
   indicateValidationSuccess: boolean
   clearProblem: (id: string) => void
   clearProblemsAt: (location: string) => void
@@ -213,15 +230,15 @@ export function useInputField<DataType>(
     validatorsGenerator,
     containerClassName,
     validateOnChange,
-    showValidationStatus = true,
+    showValidationPending = true,
     showValidationSuccess = false,
     onValueChange,
   } = props
 
   const [required, requiredMessage] = expandCoupledData(props.required, [false, 'This field is required'])
 
-  const [pristine, setPristine] = useState(true)
   const [value, setValue] = useState<DataType>(initialValue)
+  const cleanValue = cleanUp ? cleanUp(value) : value
   const [problems, setProblems] = useState<ProblemAtLocation[]>([])
   const allProblems = useMemo(() => {
     const problemTree: AllProblems = {}
@@ -248,30 +265,25 @@ export function useInputField<DataType>(
   const isEnabled = getVerdict(enabled, true)
 
   const [validatorProgress, setValidatorProgress] = useState<number>()
-  const [validatorStatusMessage, setValidatorStatusMessage] = useState<string>()
+  const [validationStatusMessage, setValidationStatusMessage] = useState<string | undefined>()
 
   const validatorControls: ValidatorControls = {
     updateStatus: ({ progress, message }) => {
       if (progress) setValidatorProgress(progress)
-      if (message) setValidatorStatusMessage(message)
+      if (message) setValidationStatusMessage(message)
     },
   }
 
   const validate = async (params: ValidationParams): Promise<boolean> => {
-    const { forceChange = false, reason } = params
+    const { forceChange = false, reason, isStillFresh } = params
     const wasOK = isValidated && !hasProblems
 
-    // Clear any previous problems
-    if (showValidationStatus) {
-      setProblems([])
-    }
     setValidationPending(true)
     setIsValidated(false)
-    setValidatorStatusMessage(undefined)
+    setValidationStatusMessage(undefined)
     setValidatorProgress(undefined)
 
     // Clean up the value
-    const cleanValue = cleanUp ? cleanUp(value) : value
     const different = !isEqual(cleanValue, value)
     if (different && reason !== 'change') {
       setValue(cleanValue)
@@ -296,14 +308,15 @@ export function useInputField<DataType>(
     for (const validator of realValidators) {
       // Do we have anything to worry about from this validator?
       try {
-        const validatorReport = hasError
-          ? [] // If we already have an error, don't even bother with any more validators
-          : await validator(
-              cleanValue,
-              forceChange || !wasOK || lastValidatedData !== cleanValue,
-              validatorControls,
-              params.reason,
-            ) // Execute the current validators
+        const validatorReport =
+          hasError || !isStillFresh()
+            ? [] // If we already have an error, don't even bother with any more validators
+            : await validator(
+                cleanValue,
+                forceChange || !wasOK || lastValidatedData !== cleanValue,
+                validatorControls,
+                params.reason,
+              ) // Execute the current validators
 
         getAsArray(validatorReport) // Maybe we have a single report, maybe an array. Receive it as an array.
           .map(report => wrapProblem(report, 'root', 'error')) // Wrap single strings to proper reports
@@ -319,32 +332,52 @@ export function useInputField<DataType>(
       }
     }
 
-    setProblems(currentProblems)
-    setValidationPending(false)
-    setIsValidated(true)
-    setLastValidatedData(cleanValue)
+    if (isStillFresh()) {
+      setProblems(currentProblems)
+      setValidationPending(false)
+      setIsValidated(true)
+      setLastValidatedData(cleanValue)
 
-    // Do we have any actual errors?
-    return !currentProblems.some(problem => problem.level === 'error')
+      // Do we have any actual errors?
+      return !currentProblems.some(problem => problem.level === 'error')
+    } else {
+      return false
+    }
   }
 
-  const clearProblem = (id: string) => {
-    setProblems(problems.filter(p => p.id !== id))
+  const clearProblem = (message: string) => {
+    setProblems(problems.filter(p => p.message !== message))
+    setIsValidated(false)
   }
 
   const clearProblemsAt = (location: string): void => {
     setProblems(problems.filter(p => p.location !== location))
+    setIsValidated(false)
   }
 
   const clearAllProblems = () => {
     setProblems([])
+    setIsValidated(false)
   }
 
   useEffect(() => {
-    if (visible && validateOnChange && !pristine) {
-      void validate({ reason: 'change' })
+    let fresh = true
+    if (onValueChange) {
+      onValueChange(value, () => fresh)
     }
-  }, [visible, value, validateOnChange])
+    if (visible) {
+      if (validateOnChange && !isEmpty(cleanValue)) {
+        void validate({ reason: 'change', isStillFresh: () => fresh })
+      } else {
+        clearAllProblems()
+        setIsValidated(false)
+      }
+    }
+    return () => {
+      fresh = false
+      return
+    }
+  }, [visible, JSON.stringify(cleanValue), validateOnChange])
 
   return {
     type,
@@ -353,14 +386,7 @@ export function useInputField<DataType>(
     label,
     placeholder,
     value,
-    setValue: newValue => {
-      if (newValue === value) return
-      setPristine(false)
-      // clearError();
-      setValue(newValue)
-      setIsValidated(false)
-      if (onValueChange) onValueChange(newValue)
-    },
+    setValue,
     allProblems,
     hasProblems,
     isValidated,
@@ -368,9 +394,10 @@ export function useInputField<DataType>(
     clearProblemsAt,
     clearAllProblems,
     indicateValidationSuccess: showValidationSuccess,
+    indicateValidationPending: showValidationPending,
     validate,
-    validationPending: showValidationStatus && validationPending,
-    validationStatusMessage: validatorStatusMessage ?? 'Checking ...',
+    validationPending: showValidationPending && validationPending,
+    validationStatusMessage,
     validatorProgress,
     visible,
     enabled: isEnabled,
