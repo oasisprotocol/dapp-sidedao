@@ -33,14 +33,30 @@ export const useExtendedPoll = (
 
   const ipfsHash = proposal?.params?.ipfsHash
 
-  const { isLoading: isIpfsLoading, error: ipfsError, data: ipfsData } = useIPFSData(ipfsHash)
+  const {
+    isLoading: isIpfsLoading,
+    error: ipfsError,
+    data: ipfsData,
+    refetch: ipfsRefetch,
+  } = useIPFSData(ipfsHash)
 
   const ipfsSecret = proposal?.params?.ipfsSecret
 
-  const ipfsParams = useMemo(
-    () => (ipfsSecret && ipfsData ? (decryptJSON(getBytes(ipfsSecret), ipfsData) as Poll) : undefined),
-    [ipfsData, ipfsSecret],
-  )
+  let correctiveAction: (() => void) | undefined
+
+  const [ipfsParams, ipfsDecodingError] = useMemo((): [Poll | undefined, string | undefined] => {
+    if (!ipfsSecret || !ipfsData) return [undefined, undefined]
+    try {
+      const poll = decryptJSON(getBytes(ipfsSecret), ipfsData) as Poll
+      return [poll, undefined]
+    } catch (error) {
+      return [undefined, 'Filed to load poll data.']
+    }
+  }, [ipfsData, ipfsSecret])
+
+  if (ipfsError || ipfsDecodingError) {
+    correctiveAction = ipfsRefetch
+  }
 
   useEffect(
     // Update poll object
@@ -145,7 +161,8 @@ export const useExtendedPoll = (
     isActive,
     isDemo,
     isLoading: isIpfsLoading,
-    error: ipfsError,
+    error: ipfsError ?? ipfsDecodingError,
+    correctiveAction,
     poll,
     voteCounts,
     winningChoice,
@@ -162,6 +179,5 @@ export const useExtendedPoll = (
     isMine,
     permissions,
     checkPermissions,
-    // error,
   }
 }
