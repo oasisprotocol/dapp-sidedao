@@ -19,6 +19,9 @@ export abstract class Pinata {
       const gw = Pinata.GATEWAY_URL ?? 'https://w3s.link/ipfs'
       const url = `${gw}/${hash}`
       const resp = await fetch(url)
+      if (resp.status !== 200 || !resp.ok) {
+        throw new Error('Failed to fetch data from Pinata')
+      }
       const buffer = await resp.arrayBuffer()
       return new Uint8Array(buffer)
     },
@@ -44,5 +47,6 @@ export abstract class Pinata {
     return resBody.IpfsHash as string
   }
 
-  static fetchData = (ipfsHash: string) => Pinata.#cache.fetch(ipfsHash, {})
+  static fetchData = (ipfsHash: string, forceRefresh?: boolean) =>
+    Pinata.#cache.fetch(ipfsHash, { forceRefresh })
 }
