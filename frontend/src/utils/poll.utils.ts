@@ -5,7 +5,6 @@ import {
   erc20TokenDetailsFromProvider,
   xchainRPC,
   AclOptions,
-  isERC20TokenContract,
   guessStorageSlot,
   getBlockHeaderRLP,
   fetchAccountProof,
@@ -17,7 +16,12 @@ import {
   IPollACL__factory,
   TokenInfo,
   fetchStorageValue,
+  NFTInfo,
+  nftDetailsFromProvider,
+  ContractType,
 } from '@oasisprotocol/side-dao-contracts'
+export type { ContractType, NftType } from '@oasisprotocol/side-dao-contracts'
+export { isToken } from '@oasisprotocol/side-dao-contracts'
 import {
   VITE_CONTRACT_ACL_ALLOWALL,
   VITE_CONTRACT_ACL_STORAGEPROOF,
@@ -140,25 +144,48 @@ export const getXchainAclOptions = async (
   ]
 }
 
-export const isERC20Token = async (chainId: number, address: string) =>
-  isERC20TokenContract(address, xchainRPC(chainId))
-
 export const getERC20TokenDetails = async (chainId: number, address: string) => {
   const rpc = xchainRPC(chainId)
-  return await erc20TokenDetailsFromProvider(getAddress(address), rpc)
+  try {
+    return await erc20TokenDetailsFromProvider(getAddress(address), rpc)
+  } catch {
+    return undefined
+  }
 }
+
+export const getNftDetails = async (chainId: number, address: string) => {
+  const rpc = xchainRPC(chainId)
+  try {
+    return await nftDetailsFromProvider(getAddress(address), rpc)
+  } catch {
+    return undefined
+  }
+}
+
+export const getContractDetails = async (chainId: number, address: string) =>
+  (await getERC20TokenDetails(chainId, address)) ?? (await getNftDetails(chainId, address))
 
 export const getChainDefinition = (chainId: number): ChainDefinition => chain_info[chainId]
 
 export const checkXchainTokenHolder = async (
   chainId: number,
   tokenAddress: string,
+  contractType: ContractType,
   holderAddress: string,
+  isStillFresh: () => boolean = () => true,
   progressCallback?: (progress: string) => void,
 ) => {
   const rpc = xchainRPC(chainId)
   try {
-    return await guessStorageSlot(rpc, tokenAddress, holderAddress, 'latest', progressCallback)
+    return await guessStorageSlot(
+      rpc,
+      tokenAddress,
+      contractType,
+      holderAddress,
+      'latest',
+      isStillFresh,
+      progressCallback,
+    )
   } catch (_) {
     return undefined
   }
@@ -277,7 +304,7 @@ export type PollPermissions = {
   explanation: string | undefined
   canVote: DecisionWithReason
   canManage: boolean
-  tokenInfo: TokenInfo | undefined
+  tokenInfo: TokenInfo | NFTInfo | undefined
   xChainOptions: AclOptionsXchain | undefined
   error: string
 }
@@ -308,7 +335,7 @@ export const checkPollPermission = async (
   let canVote: DecisionWithReason = true
   const canManage = await pollACL.canManagePoll(daoAddress, proposalId, userAddress)
   let error = ''
-  let tokenInfo: TokenInfo | undefined = undefined
+  let tokenInfo: TokenInfo | NFTInfo | undefined = undefined
   let xChainOptions: AclOptionsXchain | undefined = undefined
 
   const isAllowAll = 'allowAll' in options
@@ -360,7 +387,8 @@ export const checkPollPermission = async (
     const provider = xchainRPC(chainId)
     const chainDefinition = getChainDefinition(chainId)
     try {
-      tokenInfo = await getERC20TokenDetails(chainId, tokenAddress)
+      tokenInfo = await getContractDetails(chainId, tokenAddress)
+      if (!tokenInfo) throw new Error("Can't load token details")
       explanation = `This poll is only for those who have hold ${tokenInfo?.name} token on ${chainDefinition.name} when the poll was created.`
       let isBalancePositive = false
       const holderBalance = getUint(

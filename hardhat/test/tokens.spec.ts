@@ -51,7 +51,7 @@ describe('Tokens', function () {
         const balance = await getHolderBalance(token_address, info.holder, rpc);
         expect(balance > 0n).eq(true);
 
-        const storageSlot = await guessStorageSlot(rpc, token_address, info.holder);
+        const storageSlot = await guessStorageSlot(rpc, token_address, 'ERC-20', info.holder);
         expect(storageSlot).not.null;
         if (storageSlot !== null) {
           expect(storageSlot.index).eq(info.slot);

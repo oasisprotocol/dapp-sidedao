@@ -375,7 +375,13 @@ describe('PollManager', function () {
     const holderBalance = await getHolderBalance(tokenAddress, signerAddress, mumbai);
     //console.log('Holder balance is', holderBalance);
 
-    const storageMapInfo = await guessStorageSlot(mumbai, tokenAddress, signerAddress, mumbai_hash);
+    const storageMapInfo = await guessStorageSlot(
+      mumbai,
+      tokenAddress,
+      'ERC-20',
+      signerAddress,
+      mumbai_hash,
+    );
     if (!storageMapInfo) {
       throw new Error("Couldn't find storage map!");
     }

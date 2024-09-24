@@ -15,7 +15,7 @@ import {
   BigNumberish,
 } from 'ethers';
 
-import { GetProofResponse, TokenInfo } from './types.js';
+import { ContractType, GetProofResponse, NFTInfo, NftType, TokenInfo } from './types.js';
 import { chain_info } from './chains.js';
 import { BIGINT_0, bigIntToUnpaddedBytes, PrefixedHexString } from './utils.js';
 import { RLP } from '@ethereumjs/rlp';
@@ -90,6 +90,101 @@ export async function erc20TokenDetailsFromProvider(
     symbol: await c.symbol(),
     decimals: await c.decimals(),
     totalSupply: await c.totalSupply(),
+    type: 'ERC-20',
+  };
+}
+
+const ERC721Abi = [
+  'function balanceOf(address _owner) external view returns (uint256)',
+  'function ownerOf(uint256 _tokenId) external view returns (address)',
+  'function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes data) external payable',
+  'function safeTransferFrom(address _from, address _to, uint256 _tokenId) external payable',
+  'function transferFrom(address _from, address _to, uint256 _tokenId) external payable',
+  'function approve(address _approved, uint256 _tokenId) external payable',
+  'function setApprovalForAll(address _operator, bool _approved) external',
+  'function getApproved(uint256 _tokenId) external view returns (address)',
+  'function isApprovedForAll(address _owner, address _operator) external view returns (bool)',
+  // Optional metadata
+  'function name() public view returns (string)',
+  'function symbol() external view returns (string _symbol)',
+  'function tokenURI(uint256 _tokenId) external view returns (string)',
+];
+
+export async function erc712NftDetailsFromProvider(
+  addr: string,
+  provider: JsonRpcProvider,
+): Promise<NFTInfo> {
+  const c = new Contract(addr, ERC721Abi, provider);
+  const network = await provider.getNetwork();
+
+  const getName = async () => {
+    try {
+      return await c.name();
+    } catch {
+      return undefined;
+    }
+  };
+
+  const getSymbol = async () => {
+    try {
+      return await c.symbol();
+    } catch {
+      return undefined;
+    }
+  };
+
+  return {
+    addr: addr,
+    chainId: network.chainId,
+    name: await getName(),
+    symbol: await getSymbol(),
+    type: 'ERC-721',
+  };
+}
+
+const ERC1155Abi = [
+  'function balanceOf(address _owner, uint256 _id) external view returns (uint256)',
+  'function balanceOfBatch(address[] calldata _owners, uint256[] calldata _ids) external view returns (uint256[] memory)',
+  'function setApprovalForAll(address _operator, bool _approved) external',
+  'function isApprovedForAll(address _owner, address _operator) external view returns (bool)',
+  'safeTransferFrom(address _from, address _to, uint256 _id, uint256 _value, bytes calldata _data) external',
+  'function safeBatchTransferFrom(address _from, address _to, uint256[] calldata _ids, uint256[] calldata _values, bytes calldata _data) external',
+  // Optional metadata
+  'function name() public view returns (string)',
+  'function symbol() external view returns (string _symbol)',
+  'function decimals() public view returns (uint8)',
+  'function tokenURI(uint256 _tokenId) external view returns (string)',
+]; // TODO: add support for metadata JSON
+
+export async function erc1155NftDetailsFromProvider(
+  addr: string,
+  provider: JsonRpcProvider,
+): Promise<NFTInfo> {
+  const c = new Contract(addr, ERC1155Abi, provider);
+  const network = await provider.getNetwork();
+
+  const getName = async () => {
+    try {
+      return await c.name();
+    } catch {
+      return undefined;
+    }
+  };
+
+  const getSymbol = async () => {
+    try {
+      return await c.symbol();
+    } catch {
+      return undefined;
+    }
+  };
+
+  return {
+    addr: addr,
+    chainId: network.chainId,
+    name: await getName(),
+    symbol: await getSymbol(),
+    type: 'ERC-1155',
   };
 }
 
@@ -100,7 +195,7 @@ const ERC1155InterfaceId: string = '0xd9b67a26';
 export async function getNftContractType(
   addr: string,
   provider: JsonRpcProvider,
-): Promise<string | undefined> {
+): Promise<NftType | undefined> {
   try {
     const c = new Contract(addr, ERC165Abi, provider);
     const isERC721 = await c.supportsInterface(ERC721InterfaceId);
@@ -117,6 +212,21 @@ export async function isNFTTokenContract(
   provider: JsonRpcProvider,
 ): Promise<boolean> {
   return !!(await getNftContractType(addr, provider));
+}
+
+export async function nftDetailsFromProvider(
+  addr: string,
+  provider: JsonRpcProvider,
+): Promise<NFTInfo | undefined> {
+  const nftType = await getNftContractType(addr, provider);
+  switch (nftType) {
+    case 'ERC-721':
+      return await erc712NftDetailsFromProvider(addr, provider);
+    case 'ERC-1155':
+      return await erc1155NftDetailsFromProvider(addr, provider);
+    default:
+      console.log('Unknown NFT type:', nftType);
+  }
 }
 
 export async function getHolderBalance(
@@ -154,17 +264,72 @@ export async function isERC20TokenContract(
 export async function guessStorageSlot(
   provider: JsonRpcProvider,
   account: string,
+  contractType: ContractType,
   holder: string,
   blockHash = 'latest',
+  isStillFresh: () => boolean = () => true,
   progressCallback?: (progress: string) => void | undefined,
-): Promise<{ index: number; balance: bigint; balanceDecimal: string } | null> {
-  const tokenDetails = await erc20TokenDetailsFromProvider(account, provider);
-  const abi = ['function balanceOf(address account) view returns (uint256)'];
-  const c = new Contract(account, abi, provider);
-  const balance = (await c.balanceOf(holder)) as bigint;
-  // TODO: if balance is zero, this won't be a useful 'holder' account for testing
+): Promise<{
+  index: number;
+  balance: bigint;
+  balanceDecimal?: string;
+} | null> {
+  let tokenDetails: TokenInfo | undefined;
+  let nftDetails: NFTInfo | undefined;
+  let balance: bigint = 0n;
 
-  const balanceInHex = toBeHex(balance, 32);
+  const getERC20Storage = async () => {
+    tokenDetails = await erc20TokenDetailsFromProvider(account, provider);
+    const abi = ['function balanceOf(address account) view returns (uint256)'];
+    const c = new Contract(account, abi, provider);
+    balance = (await c.balanceOf(holder)) as bigint;
+    const balanceInHex = toBeHex(balance, 32);
+    // TODO: if balance is zero, this won't be a useful 'holder' account for testing
+    return balanceInHex;
+  };
+
+  const getERC721Storage = async () => {
+    nftDetails = await erc712NftDetailsFromProvider(account, provider);
+    const abi = ['function balanceOf(address _owner) external view returns (uint256)'];
+    const c = new Contract(account, abi, provider);
+    balance = (await c.balanceOf(holder)) as bigint;
+    console.log('Balance seems to be', balance);
+    // TODO: how is this stored?
+    const balanceInHex = toBeHex(balance, 32);
+    console.log('Should (maybe) look for', balanceInHex);
+    return balanceInHex;
+  };
+
+  const getERC1155Storage = async () => {
+    nftDetails = await erc1155NftDetailsFromProvider(account, provider);
+    const abi = ['function balanceOf(address _owner, uint256 _id) external view returns (uint256)'];
+    const c = new Contract(account, abi, provider);
+    balance = (await c.balanceOf(holder, account)) as bigint;
+    console.log('Balance seems to be', balance);
+    // TODO: how is this stored?
+    const balanceInHex = toBeHex(balance, 32);
+    console.log('Should (maybe) look for', balanceInHex);
+    return balanceInHex;
+  };
+
+  const getWantedStorage = async (): Promise<string> => {
+    switch (contractType) {
+      case 'ERC-20':
+        tokenDetails = await erc20TokenDetailsFromProvider(account, provider);
+        return await getERC20Storage();
+      case 'ERC-721':
+        return await getERC721Storage();
+      case 'ERC-1155':
+        return await getERC1155Storage();
+      default:
+        throw new Error('not yet implemented');
+    }
+  };
+
+  const wantedStorage = await getWantedStorage();
+
+  // console.log('Looking for', wantedStorage);
+  // if (!!tokenDetails) return null;
 
   // shortlist most frequently used slots, then do brute force
   let shortlist = [
@@ -180,6 +345,7 @@ export async function guessStorageSlot(
   const allSlots = shortlist.concat(restOfList);
   // Query most likely range of slots
   for (const i of allSlots) {
+    if (!isStillFresh()) break;
     if (progressCallback)
       progressCallback(`Checking slot #${i} (${allSlots.indexOf(i) + 1} of ${allSlots.length})`);
     const result = await provider.send('eth_getStorageAt', [
@@ -188,12 +354,21 @@ export async function guessStorageSlot(
       blockHash,
     ]);
 
-    if (result == balanceInHex && result != ZeroHash) {
-      return {
-        index: i,
-        balance,
-        balanceDecimal: formatUnits(balance, tokenDetails.decimals),
-      };
+    if (result == wantedStorage && result != ZeroHash) {
+      switch (contractType) {
+        case 'ERC-20':
+          return {
+            index: i,
+            balance,
+            balanceDecimal: formatUnits(balance, tokenDetails!.decimals),
+          };
+        case 'ERC-721':
+          return {
+            index: i,
+            balance,
+            balanceDecimal: formatUnits(balance, 0),
+          };
+      }
     }
   }
 
