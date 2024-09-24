@@ -201,10 +201,10 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
   ): ValidatorFunction<string[]>[] =>
     values.map(
       (value, index): ValidatorFunction<string[]> =>
-        async (_, changed, controls, reason) => {
+        async (_, controls, reason) => {
           setPendingValidationIndex(index)
           controls.updateStatus({ message: undefined })
-          const reports = getAsArray(await itemValidator(value, changed, controls, reason))
+          const reports = getAsArray(await itemValidator(value, controls, reason))
             .map(rep => wrapProblem(rep, `value-${index}`, 'error'))
             .filter((p): p is ProblemAtLocation => !!p)
           setPendingValidationIndex(undefined)
@@ -223,7 +223,7 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
         // No empty elements, please
         allowEmptyItems
           ? undefined
-          : (values, _changed, _control, reason) =>
+          : (values, _control, reason) =>
               reason === 'change'
                 ? []
                 : values.map((value, index): ProblemAtLocation | undefined =>
@@ -238,7 +238,7 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
 
         // Do we have enough elements?
         minItemCount
-          ? (values, _changed, _control, reason) => {
+          ? (values, _control, reason) => {
               const currentCount = values.filter(v => !!v).length
               return currentCount < minItemCount && reason !== 'change'
                 ? `tooFew:${getNumberMessage(tooFewItemsMessage, minItemCount)} (Currently, ${thereIsOnly(currentCount)}.)`

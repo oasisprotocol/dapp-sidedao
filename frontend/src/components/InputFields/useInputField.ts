@@ -309,14 +309,9 @@ export function useInputField<DataType>(
       // Do we have anything to worry about from this validator?
       try {
         const validatorReport =
-          hasError || !isStillFresh()
+          hasError || !isStillFresh() || (!forceChange && wasOK && lastValidatedData === cleanValue)
             ? [] // If we already have an error, don't even bother with any more validators
-            : await validator(
-                cleanValue,
-                forceChange || !wasOK || lastValidatedData !== cleanValue,
-                { ...validatorControls, isStillFresh },
-                params.reason,
-              ) // Execute the current validators
+            : await validator(cleanValue, { ...validatorControls, isStillFresh }, params.reason) // Execute the current validators
 
         getAsArray(validatorReport) // Maybe we have a single report, maybe an array. Receive it as an array.
           .map(report => wrapProblem(report, 'root', 'error')) // Wrap single strings to proper reports
