@@ -6,7 +6,7 @@ import { WithVisibility } from './WithVisibility'
 import { WithLabelAndDescription } from './WithLabelAndDescription'
 import { WithValidation } from './WithValidation'
 
-export const Label: FC<LabelControls> = props => {
+export const Label: FC<LabelControls<any>> = props => {
   const { value, allProblems, formatter, renderer, classnames } = props
 
   const formattedValue = formatter ? formatter(value) : value

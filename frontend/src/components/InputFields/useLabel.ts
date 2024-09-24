@@ -6,8 +6,8 @@ export type FormatterFunction<DataType> = (rawValue: DataType) => string
 
 export type RendererFunction<DataType> = (rawValue: DataType) => ReactNode
 
-export type LabelProps = Pick<
-  InputFieldProps<string>,
+export type LabelProps<DataType = string> = Pick<
+  InputFieldProps<DataType>,
   | 'name'
   | 'label'
   | 'description'
@@ -24,13 +24,16 @@ export type LabelProps = Pick<
   renderer?: RendererFunction<string>
 }
 
-export type LabelControls = Omit<InputFieldControls<string>, 'placeholder' | 'enabled' | 'whyDisabled'> & {
+export type LabelControls<DataType> = Omit<
+  InputFieldControls<DataType>,
+  'placeholder' | 'enabled' | 'whyDisabled'
+> & {
   classnames: string[]
   formatter: FormatterFunction<string> | undefined
   renderer: RendererFunction<string> | undefined
 }
 
-export const useLabel = (props: LabelProps): LabelControls => {
+export function useLabel<DataType = string>(props: LabelProps<DataType>): LabelControls<DataType> {
   const { classnames = [], formatter, renderer } = props
 
   const controls = useInputField(
