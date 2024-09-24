@@ -267,7 +267,7 @@ export function useInputField<DataType>(
   const [validatorProgress, setValidatorProgress] = useState<number>()
   const [validationStatusMessage, setValidationStatusMessage] = useState<string | undefined>()
 
-  const validatorControls: ValidatorControls = {
+  const validatorControls: Pick<ValidatorControls, 'updateStatus'> = {
     updateStatus: ({ progress, message }) => {
       if (progress) setValidatorProgress(progress)
       if (message) setValidationStatusMessage(message)
@@ -314,7 +314,7 @@ export function useInputField<DataType>(
             : await validator(
                 cleanValue,
                 forceChange || !wasOK || lastValidatedData !== cleanValue,
-                validatorControls,
+                { ...validatorControls, isStillFresh },
                 params.reason,
               ) // Execute the current validators
 

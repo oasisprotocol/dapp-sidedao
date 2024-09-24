@@ -54,6 +54,7 @@ export function flatten<Data>(array: Data[][]): Data[] {
 export type AllProblems = Record<string, Problem[]>
 
 export type ValidatorControls = {
+  isStillFresh: () => boolean
   updateStatus: (status: { message?: string; progress?: number }) => void
 }
 
