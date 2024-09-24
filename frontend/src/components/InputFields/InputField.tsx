@@ -24,7 +24,7 @@ export const InputField: FC<{ controls: InputFieldControls<any> }> = ({ controls
     case 'oneOf':
       return <SelectInput {...(controls as OneOfFieldControls<any>)} />
     case 'label':
-      return <Label {...(controls as unknown as LabelControls)} />
+      return <Label {...(controls as unknown as LabelControls<any>)} />
     case 'date':
       return <DateInput {...(controls as DateFieldControls)} />
     default:
