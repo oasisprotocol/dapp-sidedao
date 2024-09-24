@@ -16,6 +16,8 @@ export const WithValidation: FC<
       | 'isValidated'
       | 'validationStatusMessage'
       | 'clearProblem'
+      | 'compact'
+      | 'label'
     >
     fieldClasses?: string[]
     problems: Problem[] | undefined
@@ -24,6 +26,7 @@ export const WithValidation: FC<
 > = props => {
   const { field, fieldClasses = [], problems = [], children, extraWidget } = props
   const { hasWarning, hasError } = checkProblems(problems)
+  const { compact, label } = field
   return (
     <div
       className={StringUtils.clsx(
@@ -33,6 +36,7 @@ export const WithValidation: FC<
       )}
     >
       <div key="field-and-status" className="niceLine">
+        {compact && <div className={classes.fieldLabel}>{label}</div>}
         {children}
         <FieldStatusIndicators key={'status'} {...field} problems={problems} />
         {extraWidget}

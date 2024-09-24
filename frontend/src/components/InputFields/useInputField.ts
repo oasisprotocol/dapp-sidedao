@@ -21,9 +21,28 @@ type ValidatorBundle<DataType> = SingleOrArray<undefined | ValidatorFunction<Dat
  * Data type for describing a field
  */
 export type InputFieldProps<DataType> = {
+  /**
+   * The name of this field.
+   *
+   * Only used for debugging.
+   */
   name: string
+
+  /**
+   * Optional description of this field.
+   */
   description?: string
+
+  /**
+   * Optional label to use for this field.
+   */
   label?: string
+
+  /**
+   * Do we normally want to have the label on the same line as the value?
+   */
+  compact?: boolean
+
   placeholder?: string
   initialValue: DataType
 
@@ -135,7 +154,7 @@ export type ValidationParams = {
  */
 export type InputFieldControls<DataType> = Pick<
   InputFieldProps<DataType>,
-  'label' | 'description' | 'placeholder' | 'name'
+  'label' | 'compact' | 'description' | 'placeholder' | 'name'
 > & {
   type: string
   visible: boolean
@@ -222,6 +241,7 @@ export function useInputField<DataType>(
   const {
     name,
     label,
+    compact,
     placeholder,
     description,
     initialValue,
@@ -379,6 +399,7 @@ export function useInputField<DataType>(
     name,
     description,
     label,
+    compact,
     placeholder,
     value,
     setValue,
