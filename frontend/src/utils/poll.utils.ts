@@ -1,4 +1,4 @@
-import { AbiCoder, BytesLike, getAddress, JsonRpcProvider, ParamType } from 'ethers'
+import { AbiCoder, BytesLike, getAddress, getUint, JsonRpcProvider, ParamType } from 'ethers'
 
 import {
   chain_info,
@@ -16,6 +16,7 @@ import {
   fetchStorageProof,
   IPollACL__factory,
   TokenInfo,
+  fetchStorageValue,
 } from '@oasisprotocol/side-dao-contracts'
 import {
   VITE_CONTRACT_ACL_ALLOWALL,
@@ -103,10 +104,10 @@ export const getTokenHolderAclOptions = (tokenAddress: string): [string, AclOpti
 
 export const getXchainAclOptions = async (
   props: {
-    chainId: number
-    contractAddress: string
-    slotNumber: number
-    blockHash: string
+    chainId: number;
+    contractAddress: string;
+    slotNumber: number;
+    blockHash: string;
   },
   updateStatus?: ((status: string | undefined) => void) | undefined,
 ): Promise<[string, AclOptions]> => {
@@ -114,7 +115,7 @@ export const getXchainAclOptions = async (
   const showStatus = updateStatus ?? ((message?: string | undefined) => console.log(message))
   const rpc = xchainRPC(chainId)
   showStatus('Getting block header RLP')
-  const headerRlpBytes = await getBlockHeaderRLP(rpc, blockHash)
+  const headerRlpBytes = await getBlockHeaderRLP(rpc, blockHash);
   // console.log('headerRlpBytes', headerRlpBytes);
   showStatus('Fetching account proof')
   const rlpAccountProof = await fetchAccountProof(rpc, blockHash, contractAddress)
@@ -322,7 +323,8 @@ export const checkPollPermission = async (
     } else {
       canVote = denyWithReason('some unknown reason')
     }
-  } else if (isWhitelist) {
+  }
+  else if (isWhitelist) {
     proof = new Uint8Array()
     explanation = 'This poll is only for a predefined list of addresses.'
     const result = 0n !== (await pollACL.canVoteOnPoll(daoAddress, proposalId, userAddress, proof))
@@ -332,12 +334,11 @@ export const checkPollPermission = async (
     } else {
       canVote = denyWithReason('you are not on the list of allowed addresses')
     }
-  } else if (isTokenHolder) {
+  }
+  else if (isTokenHolder) {
     const tokenAddress = (options as AclOptionsToken).token
     tokenInfo = await getSapphireTokenDetails(tokenAddress)
     explanation = `You need to hold some ${tokenInfo?.name ?? 'specific'} token (on the Sapphire network) to vote.`
-
-    // console.log("loaded token details", tokenDetails?.name)
     proof = new Uint8Array()
     try {
       const result = 0n !== (await pollACL.canVoteOnPoll(daoAddress, proposalId, userAddress, proof))
@@ -350,7 +351,8 @@ export const checkPollPermission = async (
     } catch {
       canVote = denyWithReason(`you don't hold any ${tokenInfo?.name} tokens`)
     }
-  } else if (isXChain) {
+  }
+  else if (isXChain) {
     xChainOptions = options as AclOptionsXchain
 
     const {
@@ -361,23 +363,29 @@ export const checkPollPermission = async (
     try {
       tokenInfo = await getERC20TokenDetails(chainId, tokenAddress)
       explanation = `This poll is only for those who have hold ${tokenInfo?.name} token on ${chainDefinition.name} when the poll was created.`
-      proof = await fetchStorageProof(provider, blockHash, tokenAddress, slot, userAddress)
-      const result = await pollACL.canVoteOnPoll(daoAddress, proposalId, userAddress, proof)
-      // console.log("xChainAcl check:", result, 0n != result)
-      if (0n !== result) {
-        canVote = true
-      } else {
-        canVote = denyWithReason(`you don't hold any ${tokenInfo.name} tokens on ${chainDefinition} chain`)
+      let isBalancePositive = false;
+      const holderBalance = getUint(await fetchStorageValue(provider, blockHash, tokenAddress, slot, userAddress));
+      if( holderBalance > BigInt(0) ) {
+        proof = await fetchStorageProof(provider, blockHash, tokenAddress, slot, userAddress)
+        const result = await pollACL.canVoteOnPoll(daoAddress, proposalId, userAddress, proof)
+        if (0n !== result) {
+          isBalancePositive = true;
+          canVote = true
+        }
       }
-    } catch (e) {
+      if( ! isBalancePositive ) {
+        canVote = denyWithReason(`you don't hold any ${tokenInfo.name} tokens on ${chainDefinition.name}`);
+      }
+    }
+    catch (e) {
       const problem = e as any;
       error = problem.error?.message ?? problem.reason ?? problem.code ?? problem;
       console.error('Error when testing permission to vote on', proposalId, ':', error);
-      console.error('proof:', proof);
       canVote = denyWithReason(`there was a technical problem verifying your permissions`);
       return;
     }
-  } else {
+  }
+  else {
     canVote = denyWithReason(
       'this poll has some unknown access control settings. (Poll created by newer version of software?)',
     )

@@ -72,7 +72,8 @@ library MerklePatriciaProofVerifier {
       // Root hash of empty Merkle-Patricia-Trie
       require(
         rootHash ==
-          0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421
+          0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421,
+        "extractProofValue.1"
       );
       return new bytes(0);
     }
@@ -85,12 +86,12 @@ library MerklePatriciaProofVerifier {
 
       // The root node is hashed with Keccak-256 ...
       if (i == 0 && rootHash != stack[i].rlpBytesKeccak256()) {
-        revert();
+        revert("extractProofValue.2");
       }
       // ... whereas all other nodes are hashed with the MPT
       // hash function.
       if (i != 0 && nodeHashHash != _mptHashHash(stack[i])) {
-        revert();
+        revert("extractProofValue.3");
       }
       // We verified that stack[i] has the correct hash, so we
       // may safely decode it.
@@ -135,7 +136,7 @@ library MerklePatriciaProofVerifier {
           // Sanity check
           if (i < stack.length - 1) {
             // leaf node must come last in proof
-            revert();
+            revert("extractProofValue.4");
           }
 
           if (mptKeyOffset < mptKey.length) {
@@ -149,7 +150,7 @@ library MerklePatriciaProofVerifier {
           // Sanity check
           if (i == stack.length - 1) {
             // shouldn't be at last level
-            revert();
+            revert("extractProofValue.5");
           }
 
           if (!node[1].isList()) {
@@ -171,14 +172,14 @@ library MerklePatriciaProofVerifier {
           mptKeyOffset += 1;
           if (nibble >= 16) {
             // each element of the path has to be a nibble
-            revert();
+            revert("extractProofValue.6");
           }
 
           if (_isEmptyBytesequence(node[nibble])) {
             // Sanity
             if (i != stack.length - 1) {
               // leaf node should be at last level
-              revert();
+              revert("extractProofValue.7");
             }
 
             return new bytes(0);
@@ -193,7 +194,7 @@ library MerklePatriciaProofVerifier {
           // Sanity
           if (i != stack.length - 1) {
             // should be at last level
-            revert();
+            revert("extractProofValue.8");
           }
 
           return node[16].toBytes();
@@ -238,7 +239,7 @@ library MerklePatriciaProofVerifier {
   function _merklePatriciaCompactDecode(
     bytes memory compact
   ) private pure returns (bool isLeaf, bytes memory nibbles) {
-    require(compact.length > 0);
+    require(compact.length > 0, "_merklePatriciaCompactDecode.1");
     uint256 first_nibble = (uint8(compact[0]) >> 4) & 0xF;
     uint256 skipNibbles;
     if (first_nibble == 0) {
@@ -255,7 +256,7 @@ library MerklePatriciaProofVerifier {
       isLeaf = true;
     } else {
       // Not supposed to happen!
-      revert();
+      revert("_merklePatriciaCompactDecode.2");
     }
     return (isLeaf, _decodeNibbles(compact, skipNibbles));
   }
@@ -264,10 +265,10 @@ library MerklePatriciaProofVerifier {
     bytes memory compact,
     uint256 skipNibbles
   ) private pure returns (bytes memory nibbles) {
-    require(compact.length > 0);
+    require(compact.length > 0, "_decodeNibbles.1");
 
     uint256 length = compact.length * 2;
-    require(skipNibbles <= length);
+    require(skipNibbles <= length, "_decodeNibbles.2");
     length -= skipNibbles;
 
     nibbles = new bytes(length);
