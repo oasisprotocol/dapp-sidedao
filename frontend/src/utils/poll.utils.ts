@@ -294,7 +294,7 @@ export type CheckPermissionContext = {
 export const checkPollPermission = async (
   input: CheckPermissionInputs,
   context: CheckPermissionContext,
-): Promise<PollPermissions> => {
+): Promise<PollPermissions | undefined> => {
   const { daoAddress, provider } = context
   const { userAddress, proposalId, aclAddress, options } = input
 
@@ -372,8 +372,10 @@ export const checkPollPermission = async (
     } catch (e) {
       const problem = e as any
       error = problem.error?.message ?? problem.reason ?? problem.code ?? problem
-      console.log('Error when testing permission to vote on', proposalId, ':', error)
+      console.error('Error when testing permission to vote on', proposalId, ':', error)
+      console.error('proof:', proof)
       canVote = denyWithReason(`there was a technical problem verifying your permissions`)
+      return
     }
   } else {
     canVote = denyWithReason(
