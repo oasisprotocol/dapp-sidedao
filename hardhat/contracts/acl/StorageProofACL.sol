@@ -51,7 +51,7 @@ contract StorageProofACL is IPollACL
     {
         bytes32 id = internal_id(msg.sender, in_proposalId);
 
-        require( s_polls[id].block_hash == 0 );
+        require( s_polls[id].block_hash == 0, "xchain.onPollCreated.block_hash" );
 
         PollCreationOptions memory options = abi.decode(in_data, (PollCreationOptions));
 
@@ -67,12 +67,20 @@ contract StorageProofACL is IPollACL
                 headerCache.add(options.headerRlpBytes);
             }
         }
+        else {
+            // Either way, the block header must exist, if it's not provided that's an error!
+            require( headerCache.exists(options.settings.block_hash), "xchain.onPollCreated.header!" );
+        }
 
         // Prime the account cache
         if( options.rlpAccountProof.length > 0 ) {
             if( ! accountCache.exists(options.settings.block_hash, options.settings.account_address) ) {
                 accountCache.add(options.settings.block_hash, options.settings.account_address, options.rlpAccountProof);
             }
+        }
+        else {
+            // The account must have been proven to exist within the block, otherwise that's an error!
+            require( accountCache.exists(options.settings.block_hash, options.settings.account_address), "xchain.onPollCreated.account!" );
         }
     }
 
@@ -93,7 +101,7 @@ contract StorageProofACL is IPollACL
     {
         bytes32 id = internal_id(in_dao, in_proposalId);
 
-        require( s_polls[id].block_hash != 0 );
+        require( s_polls[id].block_hash != 0, "xchain.canVoteOnPoll.emptyBlockhash" );
 
         PollSettings memory settings = s_polls[id];
 
