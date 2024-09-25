@@ -57,6 +57,7 @@ export const usePollData = (pollId: string) => {
     invalidateGaslessStatus,
     isMine,
     permissions,
+    permissionsPending,
     checkPermissions,
   } = useExtendedPoll(proposal, { onDashboard: false })
 
@@ -399,6 +400,7 @@ export const usePollData = (pollId: string) => {
 
     isMine,
     permissions,
+    permissionsPending,
     checkPermissions,
     canVote,
     gaslessEnabled,
