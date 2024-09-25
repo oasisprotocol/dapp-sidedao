@@ -33,7 +33,7 @@ export abstract class PermissionCache {
         }
       },
     },
-    fetcher: (input, _, { context }) => checkPollPermission(input, context),
+    fetcher: (input, _, { context, options }) => checkPollPermission(input, context, options),
   })
 
   static fetch = (
