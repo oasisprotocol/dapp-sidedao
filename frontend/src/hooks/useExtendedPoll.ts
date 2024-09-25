@@ -83,7 +83,12 @@ export const useExtendedPoll = (
     [proposal, ipfsParams, isDemo],
   )
 
-  const { isMine, permissions, checkPermissions } = usePollPermissions(poll, params.onDashboard)
+  const {
+    isMine,
+    permissions,
+    checkPermissions,
+    isPending: permissionsPending,
+  } = usePollPermissions(poll, params.onDashboard)
 
   const isActive = !!proposal?.active
 
@@ -178,6 +183,7 @@ export const useExtendedPoll = (
     invalidateGaslessStatus,
     isMine,
     permissions,
+    permissionsPending,
     checkPermissions,
   }
 }

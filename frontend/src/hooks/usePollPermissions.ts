@@ -29,6 +29,7 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined, onDashboard: 
 
   const { userAddress } = eth
 
+  const [isPending, setIsPending] = useState(false)
   const [isMine, setIsMine] = useState<boolean | undefined>()
   const [permissions, setPermissions] = useState<PollPermissions>({ ...blackPermissions })
 
@@ -83,7 +84,9 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined, onDashboard: 
       provider: eth.state.provider,
     }
 
+    setIsPending(true)
     const newStatus = await PermissionCache.fetch(inputs, context, { forceRefresh: force })
+    setIsPending(false)
     if (newStatus) setPermissions(newStatus)
   }
 
@@ -92,6 +95,7 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined, onDashboard: 
   return {
     isMine,
     permissions,
+    isPending,
     checkPermissions: () => {
       setPermissions({ ...blackPermissions })
       void checkPermissions(true)

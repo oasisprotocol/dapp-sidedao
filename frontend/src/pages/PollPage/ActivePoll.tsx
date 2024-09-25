@@ -34,6 +34,7 @@ export const ActivePoll: FC<PollData> = ({
   isVoting,
   isMine,
   permissions,
+  permissionsPending,
   checkPermissions,
   canComplete,
   isCompleting,
@@ -148,10 +149,26 @@ export const ActivePoll: FC<PollData> = ({
         </h4>
       )}
       {hasWallet && !hasWalletOnWrongNetwork && !getVerdict(canAclVote, false) ? (
-        <>
-          <WarningCircleIcon size={'large'} />
-          <h4>You can&apos;t vote on this poll, since {getReason(canAclVote)}.</h4>
-        </>
+        <AnimatePresence>
+          {!permissionsPending && (
+            <motion.div
+              key={'warning-icon'}
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+            >
+              <WarningCircleIcon size={'large'} />
+            </motion.div>
+          )}
+          <motion.div
+            key={'warning-message'}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+          >
+            <h4>You can&apos;t vote on this poll, since {getReason(canAclVote)}.</h4>
+          </motion.div>
+        </AnimatePresence>
       ) : (
         aclExplanation && (
           <>
