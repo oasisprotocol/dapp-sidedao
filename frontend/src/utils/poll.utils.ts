@@ -1,4 +1,4 @@
-import { AbiCoder, BytesLike, getAddress, JsonRpcProvider, ParamType } from 'ethers'
+import { AbiCoder, BytesLike, getAddress, getUint, JsonRpcProvider, ParamType } from 'ethers'
 
 import {
   chain_info,
@@ -16,6 +16,7 @@ import {
   fetchStorageProof,
   IPollACL__factory,
   TokenInfo,
+  fetchStorageValue,
 } from '@oasisprotocol/side-dao-contracts'
 import {
   VITE_CONTRACT_ACL_ALLOWALL,
@@ -338,8 +339,6 @@ export const checkPollPermission = async (
     const tokenAddress = (options as AclOptionsToken).token
     tokenInfo = await getSapphireTokenDetails(tokenAddress)
     explanation = `You need to hold some ${tokenInfo?.name ?? 'specific'} token (on the Sapphire network) to vote.`
-
-    // console.log("loaded token details", tokenDetails?.name)
     proof = new Uint8Array()
     try {
       const result = 0n !== (await pollACL.canVoteOnPoll(daoAddress, proposalId, userAddress, proof))
@@ -363,13 +362,21 @@ export const checkPollPermission = async (
     try {
       tokenInfo = await getERC20TokenDetails(chainId, tokenAddress)
       explanation = `This poll is only for those who have hold ${tokenInfo?.name} token on ${chainDefinition.name} when the poll was created.`
-      proof = await fetchStorageProof(provider, blockHash, tokenAddress, slot, userAddress)
-      const result = await pollACL.canVoteOnPoll(daoAddress, proposalId, userAddress, proof)
-      // console.log("xChainAcl check:", result, 0n != result)
-      if (0n !== result) {
-        canVote = true
-      } else {
-        canVote = denyWithReason(`you don't hold any ${tokenInfo.name} tokens on ${chainDefinition} chain`)
+      let isBalancePositive = false
+      const holderBalance = getUint(
+        await fetchStorageValue(provider, blockHash, tokenAddress, slot, userAddress),
+      )
+      if (holderBalance > BigInt(0)) {
+        // Only attempt to get a proof if the balance is non-zero
+        proof = await fetchStorageProof(provider, blockHash, tokenAddress, slot, userAddress)
+        const result = await pollACL.canVoteOnPoll(daoAddress, proposalId, userAddress, proof)
+        if (0n !== result) {
+          isBalancePositive = true
+          canVote = true
+        }
+      }
+      if (!isBalancePositive) {
+        canVote = denyWithReason(`you don't hold any ${tokenInfo.name} tokens on ${chainDefinition.name}`)
       }
     } catch (e) {
       const problem = e as any
