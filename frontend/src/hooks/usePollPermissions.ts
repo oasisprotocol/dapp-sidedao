@@ -7,7 +7,7 @@ import { CheckPermissionContext, CheckPermissionInputs, PollPermissions } from '
 import { PermissionCache } from './PermissionCache'
 import { dashboard } from '../constants/config'
 
-export const NOT_CHECKED = "Hasn't been checked yet"
+export const NOT_CHECKED = "the permission test hasn't finished yet"
 
 const blackPermissions: PollPermissions = {
   proof: '',
