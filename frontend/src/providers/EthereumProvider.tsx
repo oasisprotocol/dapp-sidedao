@@ -2,7 +2,11 @@ import detectEthereumProvider from '@metamask/detect-provider'
 import { EthereumContext, EthereumState } from './EthereumContext'
 import { FC, PropsWithChildren, useEffect, useState } from 'react'
 import { BrowserProvider, JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner, ZeroAddress } from 'ethers'
-import { wrapEthersProvider, NETWORKS as SAPPHIRE_NETWORKS, wrapEthersSigner } from '@oasisprotocol/sapphire-ethers-v6'
+import {
+  wrapEthersProvider,
+  NETWORKS as SAPPHIRE_NETWORKS,
+  wrapEthersSigner,
+} from '@oasisprotocol/sapphire-ethers-v6'
 import { DemoConnectionStatus, DemoNetwork, demoNetworkFromChainId } from '../utils/crypto.demo'
 import { DemoEIP1193Provider } from '../utils/eip1193.demo'
 import { VITE_WEB3_GATEWAY } from '../constants/config'

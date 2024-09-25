@@ -11,6 +11,9 @@ dev-staging:
 build:
 	$(NPM) $@
 
+prettify:
+	$(NPM) $@
+
 build-staging:
 	$(NPM) vite build -m staging
 

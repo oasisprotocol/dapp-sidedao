@@ -36,15 +36,17 @@
   height: 48px;
 }
 
-.search, .openCompletePolls, .showInaccessible {
+.search,
+.openCompletePolls,
+.showInaccessible {
   width: 300px;
 }
 
 .noPolls {
   display: flex;
-  background: #E6E5FF;
+  background: #e6e5ff;
   flex-direction: column;
-  border: 1px solid #01001F;
+  border: 1px solid #01001f;
   border-radius: 12px;
   padding: 24px;
   min-height: 600px;
@@ -53,7 +55,7 @@
   justify-content: center;
 
   h4 {
-    font-size: 18px
+    font-size: 18px;
   }
 
   p {
