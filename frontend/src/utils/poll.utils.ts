@@ -28,6 +28,7 @@ import { encryptJSON } from './crypto.demo'
 import { Pinata } from './Pinata'
 import { EthereumContext } from '../providers/EthereumContext'
 import { DecisionWithReason, denyWithReason } from '../components/InputFields'
+import { FetcherFetchOptions } from './StoredLRUCache'
 
 export { parseEther } from 'ethers'
 
@@ -294,7 +295,8 @@ export type CheckPermissionContext = {
 export const checkPollPermission = async (
   input: CheckPermissionInputs,
   context: CheckPermissionContext,
-): Promise<PollPermissions> => {
+  fetchOptions?: FetcherFetchOptions<PollPermissions, CheckPermissionContext>,
+): Promise<PollPermissions | undefined> => {
   const { daoAddress, provider } = context
   const { userAddress, proposalId, aclAddress, options } = input
 
@@ -372,8 +374,10 @@ export const checkPollPermission = async (
     } catch (e) {
       const problem = e as any
       error = problem.error?.message ?? problem.reason ?? problem.code ?? problem
-      console.log('Error when testing permission to vote on', proposalId, ':', error)
+      console.error('Error when testing permission to vote on', proposalId, ':', error)
+      console.error('proof:', proof)
       canVote = denyWithReason(`there was a technical problem verifying your permissions`)
+      if (fetchOptions) fetchOptions.ttl = 1000
     }
   } else {
     canVote = denyWithReason(

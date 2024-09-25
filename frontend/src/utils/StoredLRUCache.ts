@@ -11,6 +11,9 @@ type SerializationMethod<Data> = {
 
 type DebugTopic = 'info' | 'save' | 'load' | 'fetch' | 'get' | 'set' | 'hit'
 
+export type FetcherOptions<V, FC> = LRUCache.FetcherOptions<string, V, FC>
+export type FetcherFetchOptions<V, FC> = LRUCache.FetcherFetchOptions<string, V, FC>
+
 export type StoredLRUCacheOptions<K, V, FC> = {
   /**
    * What is the name of this cache instance?
@@ -95,7 +98,7 @@ export type StoredLRUCacheOptions<K, V, FC> = {
   fetcher?: (
     key: K,
     staleValue: V | undefined,
-    options: LRUCache.FetcherOptions<string, V, FC>,
+    options: FetcherOptions<V, FC>,
   ) => Promise<V | undefined | void> | V | undefined | void
 }
 
