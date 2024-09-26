@@ -94,7 +94,12 @@ export const CompletedPoll: FC<
           </>
         </div>
       )}
-      <SocialShares label={'Share results on'} name={name} introText={'See the results here:'} />
+      <SocialShares
+        label={'Share results on'}
+        name={name}
+        introText={'See the results here:'}
+        pageTitle={name}
+      />
     </Card>
   )
 }
