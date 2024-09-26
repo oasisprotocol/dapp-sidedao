@@ -5,6 +5,7 @@ import classes from './index.module.css'
 import { Button, ButtonSize } from '../../components/Button'
 import { useNavigate } from 'react-router-dom'
 import { useAppState } from '../../hooks/useAppState'
+import { appName } from '../../constants/config'
 
 export const LandingPage: FC = () => {
   const navigate = useNavigate()
@@ -17,7 +18,9 @@ export const LandingPage: FC = () => {
   return (
     <Layout variation={'landing'}>
       <div className={classes.landing}>
-        <h2>Welcome to SideDAO, a poll creation tool for your DAO.</h2>
+        <h2>
+          Welcome to <span className={'noWrap'}>{appName}</span>, a poll creation tool for your DAO.
+        </h2>
         To participate in a poll or create one, please connect your wallet above. This ensures secure and
         verified interaction with the polling system.
         <div className={'niceLineWide noWrap'}>

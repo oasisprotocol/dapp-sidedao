@@ -2,6 +2,7 @@ import { FC, useCallback, useMemo } from 'react'
 import classes from './index.module.css'
 import { StringUtils } from '../../utils/string.utils'
 import { LinkedinShareButton, TwitterShareButton } from 'react-share'
+import { appName } from '../../constants/config'
 
 const Twitter: FC<{ classname?: string }> = ({ classname }) => (
   <div className={StringUtils.clsx(classes.socialIcon, classname)} title={'Share on X'}>
@@ -51,7 +52,7 @@ const AsEmbed: FC<{ classname?: string; url: string }> = ({ classname, url }) =>
     () =>
       `<iframe
             width="640" height="720" src="${url}"
-            title="Oasis SideDAO poll" frameBorder="0"
+            title="${appName}" frameBorder="0"
             allow="clipboard-write; web-share"
             referrerPolicy="strict-origin-when-cross-origin" 
             allowFullScreen
