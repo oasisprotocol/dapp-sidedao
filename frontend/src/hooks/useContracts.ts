@@ -3,7 +3,7 @@ import {
   GaslessVoting__factory,
   IPollManagerACL__factory,
   IPollACL__factory,
-} from '@oasisprotocol/side-dao-contracts'
+} from '@oasisprotocol/blockvote-contracts'
 import type { PollManager, GaslessVoting, IPollACL, IPollManagerACL } from '../types'
 import { EthereumContext } from '../providers/EthereumContext'
 import { useEffect, useState } from 'react'

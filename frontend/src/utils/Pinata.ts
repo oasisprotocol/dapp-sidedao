@@ -6,7 +6,7 @@ export abstract class Pinata {
   static GATEWAY_URL = VITE_IPFS_GATEWAY
 
   static #cache = new StoredLRUCache<string, Uint8Array, void>({
-    storageKey: 'sideDAO.ipfsCache',
+    storageKey: 'blockvote.ipfsCache',
     ttl: 1000 * 60 * 60 * 5,
     max: 1000,
     constantValues: true,

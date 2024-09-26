@@ -12,7 +12,7 @@ import {
     getBlockHeaderRLP,
     getMapSlot,
     xchainRPC
-} from "@oasisprotocol/side-dao-contracts";
+} from "@oasisprotocol/blockvote-contracts";
 
 type BlockParamsExtra = BlockParams & {stateRoot:string};
 

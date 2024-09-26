@@ -1,4 +1,4 @@
-import type { PollManager, Poll } from '@oasisprotocol/side-dao-contracts'
+import type { PollManager, Poll } from '@oasisprotocol/blockvote-contracts'
 export type {
   Poll,
   AclOptions,
@@ -8,7 +8,7 @@ export type {
   IPollManagerACL,
   TokenInfo,
   AclOptionsXchain,
-} from '@oasisprotocol/side-dao-contracts'
+} from '@oasisprotocol/blockvote-contracts'
 
 export type Proposal = {
   id: string

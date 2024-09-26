@@ -119,7 +119,12 @@ export const ThanksForVote: FC<PollData> = ({
         <VoteIcon />
         {choices[Number(myVote)]}
       </motion.div>
-      <SocialShares label={'Share vote on'} name={name} introText={'I just voted on this poll:'} />
+      <SocialShares
+        label={'Share vote on'}
+        name={name}
+        introText={'I just voted on this poll:'}
+        pageTitle={name}
+      />
       <StatusInfo
         remainingTime={remainingTime}
         remainingTimeString={remainingTimeString}

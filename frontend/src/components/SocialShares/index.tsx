@@ -2,6 +2,7 @@ import { FC, useCallback, useMemo } from 'react'
 import classes from './index.module.css'
 import { StringUtils } from '../../utils/string.utils'
 import { LinkedinShareButton, TwitterShareButton } from 'react-share'
+import { appName } from '../../constants/config'
 
 const Twitter: FC<{ classname?: string }> = ({ classname }) => (
   <div className={StringUtils.clsx(classes.socialIcon, classname)} title={'Share on X'}>
@@ -46,12 +47,12 @@ const AsLink: FC<{ classname?: string; url: string }> = ({ classname, url }) => 
   )
 }
 
-const AsEmbed: FC<{ classname?: string; url: string }> = ({ classname, url }) => {
+const AsEmbed: FC<{ classname?: string; url: string; title: string }> = ({ classname, url, title }) => {
   const embedCode = useMemo(
     () =>
       `<iframe
             width="640" height="720" src="${url}"
-            title="Oasis SideDAO poll" frameBorder="0"
+            title="${title} - ${appName}" frameBorder="0"
             allow="clipboard-write; web-share"
             referrerPolicy="strict-origin-when-cross-origin" 
             allowFullScreen
@@ -98,7 +99,8 @@ export const SocialShares: FC<{
   className?: string
   name: string
   introText: string
-}> = ({ label, className, name, introText }) => {
+  pageTitle: string
+}> = ({ label, className, name, introText, pageTitle }) => {
   const url = window.location.href
   const title = `"${name}" \n \n${introText}\n`
 
@@ -116,7 +118,7 @@ export const SocialShares: FC<{
 
         <AsLink classname={className} url={url} />
 
-        <AsEmbed classname={className} url={url} />
+        <AsEmbed classname={className} url={url} title={pageTitle} />
       </div>
     </>
   )

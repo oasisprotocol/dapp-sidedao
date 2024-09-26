@@ -21,7 +21,7 @@ export abstract class PermissionCache {
       'fetch',
     ],
     // debug: ['load', 'save'],
-    storageKey: 'sideDAO.pollPermissions2',
+    storageKey: 'blockvote.pollPermissions2',
     dataVersion: 4,
     transformValues: {
       encode: data => JSON.stringify(data, bigNumberify.stringify),

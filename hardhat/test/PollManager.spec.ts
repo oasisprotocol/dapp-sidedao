@@ -22,7 +22,7 @@ import {
   getBlockHeaderRLP,
   fetchAccountProof,
   guessStorageSlot,
-} from '@oasisprotocol/side-dao-contracts';
+} from '@oasisprotocol/blockvote-contracts';
 
 import {
   PollManager,

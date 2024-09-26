@@ -1,6 +1,6 @@
 import { useContracts } from '../../hooks/useContracts'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { randomchoice } from '@oasisprotocol/side-dao-contracts'
+import { randomchoice } from '@oasisprotocol/blockvote-contracts'
 import { ethers, Transaction, TransactionReceipt, ZeroAddress } from 'ethers'
 import { DemoNetwork } from '../../utils/crypto.demo'
 import { useEthereum } from '../../hooks/useEthereum'

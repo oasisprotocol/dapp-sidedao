@@ -1,9 +1,9 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { AccountCache, HeaderCache, StorageProof, StorageProofACL } from "../src/contracts";
-//import { fetchAccountProof, fetchStorageProof, getBlockHeaderRLP, guessStorageSlot, xchainRPC } from "@oasisprotocol/side-dao-contracts";
+//import { fetchAccountProof, fetchStorageProof, getBlockHeaderRLP, guessStorageSlot, xchainRPC } from "@oasisprotocol/blockvote-contracts";
 import { AbiCoder, BytesLike, hexlify, ParamType, randomBytes } from "ethers";
-import { fetchAccountProof, fetchStorageProof, xchainRPC } from "@oasisprotocol/side-dao-contracts";
+import { fetchAccountProof, fetchStorageProof, xchainRPC } from "@oasisprotocol/blockvote-contracts";
 
 function abiEncode (types: ReadonlyArray<string | ParamType>, values: ReadonlyArray<any>): string {
     const abi = AbiCoder.defaultAbiCoder()

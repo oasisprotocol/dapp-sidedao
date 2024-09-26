@@ -1,5 +1,5 @@
 {
-  "name": "@oasisprotocol/side-dao-frontend",
+  "name": "@oasisprotocol/blockvote-frontend",
   "private": true,
   "version": "0.0.0",
   "license": "See License in ../LICENSE",
@@ -24,7 +24,7 @@
     "@oasisprotocol/deoxysii": "^0.0.6",
     "@oasisprotocol/sapphire-ethers-v6": "^6.0.1",
     "@oasisprotocol/sapphire-paratime": "^2.0.1",
-    "@oasisprotocol/side-dao-contracts": "workspace:^",
+    "@oasisprotocol/blockvote-contracts": "workspace:^",
     "@phosphor-icons/core": "^2.0.8",
     "ethers": "6.10.0",
     "framer-motion": "^11.5.4",
