@@ -31,6 +31,7 @@
     "lru-cache": "10.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-helmet-async": "^2.0.5",
     "react-intersection-observer": "^9.8.1",
     "react-parallax-tilt": "^1.7.217",
     "react-responsive": "^9.0.2",
