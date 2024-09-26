@@ -1,12 +1,13 @@
 import { Layout } from '../../components/Layout'
 import { FC } from 'react'
-import { usePollData } from './hook'
+import { PollData, usePollData } from './hook'
 import { useParams } from 'react-router-dom'
 import { Alert } from '../../components/Alert'
 import { CompletedPoll } from './CompletedPoll'
 import { ActivePoll } from './ActivePoll'
-// import { EnforceWallet } from '../../App';
 import { ThanksForVote } from './ThanksForVoting'
+import { Helmet } from 'react-helmet-async'
+import { appName, appNameAndTagline, appRootUrl } from '../../constants/config'
 
 const PollLoading: FC = () => {
   return (
@@ -28,10 +29,8 @@ const WaitingForResults: FC = () => {
   )
 }
 
-export const PollPage: FC = () => {
-  const { pollId } = useParams()
-  const pollData = usePollData(pollId!)
-  const { isLoading, error, poll, active, hasVoted, existingVote, hasCompleted, pollResults } = pollData
+export const PollUI: FC<PollData> = props => {
+  const { isLoading, error, poll, active, hasVoted, existingVote, hasCompleted, pollResults } = props
   if (error) {
     return (
       <Layout variation={'landing'}>
@@ -51,7 +50,7 @@ export const PollPage: FC = () => {
     if (existingVote !== undefined) {
       return (
         <Layout variation={'dark'}>
-          <ThanksForVote {...pollData} />
+          <ThanksForVote {...props} />
         </Layout>
       )
     } else {
@@ -68,7 +67,7 @@ export const PollPage: FC = () => {
   if (active) {
     return (
       <Layout variation="light">
-        <ActivePoll {...pollData} />
+        <ActivePoll {...props} />
       </Layout>
     )
   } else {
@@ -76,8 +75,48 @@ export const PollPage: FC = () => {
     if (!pollResults) return <PollLoading />
     return (
       <Layout variation="dark">
-        <CompletedPoll {...pollData} />
+        <CompletedPoll {...props} />
       </Layout>
+    )
+  }
+}
+
+export const PollPage: FC = () => {
+  const { pollId } = useParams()
+  const pollData = usePollData(pollId!)
+  const { poll } = pollData
+  const params = poll?.ipfsParams
+  if (params) {
+    const title = `${params!.name} - ${appName}`
+    const description = params!.description
+    return (
+      <>
+        <Helmet>
+          <title>{title}</title>
+          <meta name="twitter:title" content={title} />
+          <meta property="og:title" content={title} />,
+          <meta property="og:url" content={`${appRootUrl}/#polls/${pollId}`} />
+          {description && (
+            <>
+              <meta name="twitter:description" content={description} />
+              <meta property="og:description" content={description} />,
+            </>
+          )}
+        </Helmet>
+        <PollUI {...pollData} />
+      </>
+    )
+  } else {
+    return (
+      <>
+        <Helmet>
+          <title>{appNameAndTagline}</title>
+          <meta name="twitter:title" content={appNameAndTagline} />
+          <meta property="og:title" content={appNameAndTagline} />
+          <meta property="og:url" content={appRootUrl} />
+        </Helmet>
+        <PollUI {...pollData} />
+      </>
     )
   }
 }

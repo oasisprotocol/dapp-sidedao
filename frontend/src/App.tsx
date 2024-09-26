@@ -1,5 +1,6 @@
 import { FC } from 'react'
 import { createHashRouter, Outlet, RouterProvider } from 'react-router-dom'
+import { HelmetProvider } from 'react-helmet-async'
 import { EIP1193ContextProvider } from './providers/EIP1193Provider'
 import { Web3ContextProvider } from './providers/Web3Provider'
 import { AppStateContextProvider } from './providers/AppStateProvider'
@@ -34,16 +35,18 @@ const router = createHashRouter([
 
 export const App: FC = () => {
   return (
-    <ErrorBoundary>
-      <EthereumContextProvider>
-        <EIP1193ContextProvider>
-          <Web3ContextProvider>
-            <AppStateContextProvider>
-              <RouterProvider router={router} />
-            </AppStateContextProvider>
-          </Web3ContextProvider>
-        </EIP1193ContextProvider>
-      </EthereumContextProvider>
-    </ErrorBoundary>
+    <HelmetProvider>
+      <ErrorBoundary>
+        <EthereumContextProvider>
+          <EIP1193ContextProvider>
+            <Web3ContextProvider>
+              <AppStateContextProvider>
+                <RouterProvider router={router} />
+              </AppStateContextProvider>
+            </Web3ContextProvider>
+          </EIP1193ContextProvider>
+        </EthereumContextProvider>
+      </ErrorBoundary>
+    </HelmetProvider>
   )
 }
