@@ -1,6 +1,6 @@
 // EIP-3085: wallet_addEthereumChain RPC Method
 import { ExtendedPoll } from '../types'
-import { randomchoice } from '@oasisprotocol/side-dao-contracts'
+import { randomchoice } from '@oasisprotocol/blockvote-contracts'
 
 interface AddEthereumChainParameter {
   chainId: string

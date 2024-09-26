@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "@oasisprotocol/side-dao-contracts",
+  "name": "@oasisprotocol/blockvote-contracts",
   "version": "1.0.0",
   "license": "MIT",
   "module": "./lib/esm/index.js",

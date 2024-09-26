@@ -19,9 +19,9 @@ import {
   NFTInfo,
   nftDetailsFromProvider,
   ContractType,
-} from '@oasisprotocol/side-dao-contracts'
-export type { ContractType, NftType } from '@oasisprotocol/side-dao-contracts'
-export { isToken } from '@oasisprotocol/side-dao-contracts'
+} from '@oasisprotocol/blockvote-contracts'
+export type { ContractType, NftType } from '@oasisprotocol/blockvote-contracts'
+export { isToken } from '@oasisprotocol/blockvote-contracts'
 import {
   VITE_CONTRACT_ACL_ALLOWALL,
   VITE_CONTRACT_ACL_STORAGEPROOF,

@@ -7,7 +7,7 @@ import {
   getHolderBalance,
   guessStorageSlot,
   xchainRPC,
-} from '@oasisprotocol/side-dao-contracts';
+} from '@oasisprotocol/blockvote-contracts';
 
 interface WellKnownToken {
   holder: string;
