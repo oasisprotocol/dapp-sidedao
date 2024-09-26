@@ -16,11 +16,10 @@ export type AclOptionsXchain = {
     blockHash: string;
     address: string;
     slot: number;
-  }
+  };
 };
 
-export type AclOptions =
-{
+export type AclOptions = {
   address: string;
   options: AclOptionsToken | AclOptionsAllowAll | AclOptionsAllowList | AclOptionsXchain;
 };
@@ -38,18 +37,18 @@ export type Poll = {
 };
 
 export type StorageProof = {
-  key: string,
-  value: string,
-  proof: string[],
+  key: string;
+  value: string;
+  proof: string[];
 };
 
 export type GetProofResponse = {
-  balance: string,
-  codeHash: string,
-  nonce: string,
-  storageHash: string,
-  accountProof: string[],
-  storageProof: StorageProof[],
+  balance: string;
+  codeHash: string;
+  nonce: string;
+  storageHash: string;
+  accountProof: string[];
+  storageProof: StorageProof[];
 };
 
 export type TokenInfo = {
@@ -59,4 +58,4 @@ export type TokenInfo = {
   symbol: string;
   decimals: bigint;
   totalSupply: bigint;
-}
+};
