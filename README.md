@@ -45,7 +45,7 @@ the number of proxy accounts that can be used to pay for the gas for voters
 and the amount of tokens each of those accounts will be initially funded.
 
 The deployed DAO contract addresses will be stored
-inside the `frontend.demo` folder's `.env.development`, for example:
+inside the `frontend` folder's `.env.development`, for example:
 
 ```
 VITE_DAO_V1_ADDR=0x5FbDB2315678afecb367f032d93F642f64180aa3
@@ -137,7 +137,7 @@ npx hardhat deploy --network sapphire
 ## Demo frontend
 
 After compiling the backend, updating `.env.development` with the corresponding
-DAO address and chain ID, move to the `frontend.demo` folder to compile and
+DAO address and chain ID, move to the `frontend` folder to compile and
 Hot-Reload demo frontend for Development:
 
 ```sh

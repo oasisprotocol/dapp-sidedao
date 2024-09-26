@@ -32,9 +32,6 @@ jobs:
       - name: Test backend
         working-directory: hardhat
         run: pnpm test
-      - name: Build demo frontend.demo
-        working-directory: frontend.demo
-        run: pnpm build
-      - name: Build demo frontend
+      - name: Build frontend
         working-directory: frontend
         run: pnpm build
