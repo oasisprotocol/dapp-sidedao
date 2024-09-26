@@ -60,13 +60,11 @@ export type ValidatorControls = {
 
 export type SyncValidatorFunction<DataType> = (
   value: DataType,
-  changed: boolean,
   controls: ValidatorControls,
   reason: string,
 ) => SingleOrArray<ValidatorProduct>
 export type AsyncValidatorFunction<DataType> = (
   value: DataType,
-  changed: boolean,
   controls: ValidatorControls,
   reason: string,
 ) => Promise<SingleOrArray<ValidatorProduct>>

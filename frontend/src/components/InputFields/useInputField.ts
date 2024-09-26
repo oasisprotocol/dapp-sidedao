@@ -21,9 +21,28 @@ type ValidatorBundle<DataType> = SingleOrArray<undefined | ValidatorFunction<Dat
  * Data type for describing a field
  */
 export type InputFieldProps<DataType> = {
+  /**
+   * The name of this field.
+   *
+   * Only used for debugging.
+   */
   name: string
+
+  /**
+   * Optional description of this field.
+   */
   description?: string
+
+  /**
+   * Optional label to use for this field.
+   */
   label?: string
+
+  /**
+   * Do we normally want to have the label on the same line as the value?
+   */
+  compact?: boolean
+
   placeholder?: string
   initialValue: DataType
 
@@ -135,7 +154,7 @@ export type ValidationParams = {
  */
 export type InputFieldControls<DataType> = Pick<
   InputFieldProps<DataType>,
-  'label' | 'description' | 'placeholder' | 'name'
+  'label' | 'compact' | 'description' | 'placeholder' | 'name'
 > & {
   type: string
   visible: boolean
@@ -222,6 +241,7 @@ export function useInputField<DataType>(
   const {
     name,
     label,
+    compact,
     placeholder,
     description,
     initialValue,
@@ -309,14 +329,9 @@ export function useInputField<DataType>(
       // Do we have anything to worry about from this validator?
       try {
         const validatorReport =
-          hasError || !isStillFresh()
+          hasError || !isStillFresh() || (!forceChange && wasOK && lastValidatedData === cleanValue)
             ? [] // If we already have an error, don't even bother with any more validators
-            : await validator(
-                cleanValue,
-                forceChange || !wasOK || lastValidatedData !== cleanValue,
-                { ...validatorControls, isStillFresh },
-                params.reason,
-              ) // Execute the current validators
+            : await validator(cleanValue, { ...validatorControls, isStillFresh }, params.reason) // Execute the current validators
 
         getAsArray(validatorReport) // Maybe we have a single report, maybe an array. Receive it as an array.
           .map(report => wrapProblem(report, 'root', 'error')) // Wrap single strings to proper reports
@@ -384,6 +399,7 @@ export function useInputField<DataType>(
     name,
     description,
     label,
+    compact,
     placeholder,
     value,
     setValue,

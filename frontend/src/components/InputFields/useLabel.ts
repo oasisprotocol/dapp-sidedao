@@ -10,6 +10,7 @@ export type LabelProps<DataType = string> = Pick<
   InputFieldProps<DataType>,
   | 'name'
   | 'label'
+  | 'compact'
   | 'description'
   | 'visible'
   | 'hidden'

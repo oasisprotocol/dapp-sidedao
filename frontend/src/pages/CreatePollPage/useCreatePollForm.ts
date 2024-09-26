@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
+  AsyncValidatorFunction,
   Choice,
   collectErrorsInFields,
   deny,
@@ -24,13 +25,12 @@ import {
   getTokenHolderAclOptions,
   getXchainAclOptions,
   getLatestBlock,
-  getERC20TokenDetails,
   isValidAddress,
-  isERC20Token,
   parseEther,
-  getNftType,
   CreatePollProps,
-  getChainDefinition,
+  getContractDetails,
+  ContractType,
+  isToken,
 } from '../../utils/poll.utils'
 import { useEthereum } from '../../hooks/useEthereum'
 import { useContracts } from '../../hooks/useContracts'
@@ -84,9 +84,15 @@ const hideDisabledIfNecessary = (choice: Choice): Choice => ({
 
 const sleep = (time: number) => new Promise<string>(resolve => setTimeout(() => resolve(''), time))
 
-const addMockValidation: Partial<LabelProps> = {
+const mockValidator: AsyncValidatorFunction<any> = async (_value, controls) => {
+  if (!controls.isStillFresh()) return undefined
+  await sleep(500)
+  return undefined
+}
+
+const addMockValidation: Partial<LabelProps<any>> = {
   showValidationSuccess: true,
-  validators: () => sleep(500),
+  validators: mockValidator,
   validateOnChange: true,
 }
 
@@ -168,8 +174,7 @@ export const useCreatePollForm = () => {
     required: [true, 'Please specify the address of the token that is the key to this poll!'],
     validators: [
       value => (!isValidAddress(value) ? "This doesn't seem to be a valid address." : undefined),
-      async (value, changed, controls) => {
-        if (!changed) return
+      async (value, controls) => {
         controls.updateStatus({ message: 'Fetching token details...' })
         const details = await getSapphireTokenDetails(value)
         if (!details) {
@@ -244,80 +249,121 @@ export const useCreatePollForm = () => {
     visible: accessControlMethod.value === 'acl_xchain',
     choices: chainChoices,
     onValueChange: (_, isStillFresh) => {
-      if (xchainTokenAddress.isValidated) {
-        void xchainTokenAddress.validate({ forceChange: true, reason: 'change', isStillFresh })
+      if (xchainContractAddress.isValidated) {
+        void xchainContractAddress.validate({ forceChange: true, reason: 'change', isStillFresh })
       }
     },
   })
 
-  const xchainTokenAddress = useTextField({
-    name: 'xchainTokenAddress',
-    label: 'Token Address',
+  const xchainContractAddress = useTextField({
+    name: 'xchainContractAddress',
+    label: 'Contract Address',
     visible: accessControlMethod.value === 'acl_xchain',
-    placeholder: 'Token address on chain. (Currently on ERC-20 tokens are supported.)',
+    placeholder: 'Contract address on chain. (Token or NFT)',
     required: [true, 'Please specify the address on the other chain that is the key to this poll!'],
     validators: [
       value => (isValidAddress(value) ? undefined : "This doesn't seem to be a valid address."),
-      async (value, changed, controls) => {
-        if (!changed) return
-        controls.updateStatus({ message: 'Checking out token...' })
-        if (await isERC20Token(chain.value, value)) return undefined
-        const nftType = await getNftType(chain.value, value)
-        if (nftType)
-          return `This seems to be an ${nftType} NFT, not an ERC-20 token. Support is coming, but we are not there yet.`
-        return `The address is valid, but this doesn't seem to be an ERC-20 token on ${getChainDefinition(chain.value).name}.`
-      },
-      async (value, changed, controls) => {
-        if (!changed) return
-        controls.updateStatus({ message: 'Fetching token details...' })
-        const details = await getERC20TokenDetails(chain.value, value)
-        if (!details) {
-          return "Can't find token details!"
+      async (value, controls) => {
+        controls.updateStatus({ message: 'Checking out contract...' })
+        const details = await getContractDetails(chain.value, value)
+        if (details) {
+          xchainContractType.setValue(details.type)
+          xchainContractName.setValue(details.name)
+          xchainSymbol.setValue(details.symbol)
+        } else {
+          xchainContractType.setValue('Unknown')
+          return 'Failed to load token details!'
         }
-        xchainTokenName.setValue(details.name)
-        xchainTokenSymbol.setValue(details.symbol)
       },
     ],
     validateOnChange: true,
     showValidationSuccess: true,
+    onValueChange: (_, isStillFresh) => {
+      if (xchainWalletAddress.isValidated) {
+        void xchainWalletAddress.validate({ forceChange: true, reason: 'change', isStillFresh })
+      }
+    },
   })
 
   const hasValidXchainTokenAddress =
-    xchainTokenAddress.visible && xchainTokenAddress.isValidated && !xchainTokenAddress.hasProblems
+    xchainContractAddress.visible && xchainContractAddress.isValidated && !xchainContractAddress.hasProblems
 
-  const xchainTokenName = useLabel({
-    name: 'xchainTokenName',
+  const xchainContractType = useLabel<ContractType | 'Unknown'>({
+    name: 'xchainContractType',
     visible: hasValidXchainTokenAddress,
-    label: 'Selected token:',
-    initialValue: '',
+    label: 'Type:',
+    compact: true,
+    initialValue: 'Unknown',
+    validators: value => {
+      switch (value) {
+        case 'ERC-20':
+          return
+        case 'ERC-721':
+          return
+        // return { message: 'Some ERC-721 tokens are not supported', level: 'warning' }
+        case 'ERC-1155':
+          return 'Unfortunately, ERC-1155 NFTs are Not supported at the moment. Please use another token of NFT.'
+        case 'Unknown':
+        default:
+          return "We can't recognize this as a supported contract. Please use another token or NFT."
+      }
+    },
+    validateOnChange: true,
+    showValidationSuccess: true,
   })
 
-  const xchainTokenSymbol = useLabel({
-    name: 'xchainTokenSymbol',
-    visible: hasValidXchainTokenAddress,
-    label: 'Symbol:',
+  const xchainContractName = useLabel({
+    name: 'xchainContractName',
+    visible: hasValidXchainTokenAddress && xchainContractType.value !== 'Unknown',
+    label: `${isToken(xchainContractType.value as any) ? 'Token' : 'NFT'}:`,
     initialValue: '',
+    compact: true,
+    ...addMockValidation,
+  })
+
+  const xchainSymbol = useLabel({
+    name: 'xchainSymbol',
+    visible: hasValidXchainTokenAddress && xchainContractType.value !== 'Unknown',
+    label: 'Symbol:',
+    compact: true,
+    initialValue: '',
+    ...addMockValidation,
   })
 
   const xchainWalletAddress = useTextField({
     name: 'xchainWalletAddress',
     label: 'Wallet Address',
-    visible: hasValidXchainTokenAddress,
+    visible: hasValidXchainTokenAddress && !xchainContractType.hasProblems,
     placeholder: 'Wallet address of a token holder on chain',
     required: [true, 'Please specify the address of a token holder!'],
     validators: [
       value => (isValidAddress(value) ? undefined : "This doesn't seem to be a valid address."),
-      async (value, changed, controls) => {
-        if (!changed) return
-        const slot = await checkXchainTokenHolder(chain.value, xchainTokenAddress.value, value, progress => {
-          controls.updateStatus({ message: progress })
-        })
-        if (!slot) return "Can't confirm this token at this wallet."
-        xchainWalletBalance.setValue(`Confirmed ${slot.balanceDecimal} ${xchainTokenSymbol.value}`)
+      async (value, controls) => {
+        if (xchainContractType.value === 'Unknown') {
+          return "Can't check balance for contracts of unknown type!"
+        }
+
+        const slot = await checkXchainTokenHolder(
+          chain.value,
+          xchainContractAddress.value,
+          xchainContractType.value,
+          value,
+          controls.isStillFresh,
+          progress => {
+            controls.updateStatus({ message: progress })
+          },
+        )
+        if (!slot) {
+          if (xchainContractType.value === 'ERC-721') {
+            return "Can't find this NFT in this wallet. Please note the not all ERC-721 NFTs are supported. This one might not be. If this is important, please open an issue."
+          } else {
+            return "Can't confirm this token at this wallet."
+          }
+        }
+        xchainWalletBalance.setValue(`Confirmed ${slot.balanceDecimal} ${xchainSymbol.value}`)
         xchainWalletSlotNumber.setValue(slot.index.toString())
       },
-      async (_value, changed, controls) => {
-        if (!changed) return
+      async (_value, controls) => {
         controls.updateStatus({ message: 'Looking up reference block ...' })
         const block = await getLatestBlock(chain.value)
         if (!block?.hash) return 'Failed to fetch latest block.'
@@ -334,7 +380,7 @@ export const useCreatePollForm = () => {
 
   const xchainWalletBalance = useLabel({
     name: 'xchainWalletBalance',
-    label: 'Token balance:',
+    label: 'Balance:',
     visible: hasValidXchainWallet,
     initialValue: '',
     classnames: classes.explanation,
@@ -545,8 +591,9 @@ export const useCreatePollForm = () => {
       [sapphireTokenName, sapphireTokenSymbol],
       addressWhitelist,
       chain,
-      xchainTokenAddress,
-      [xchainTokenName, xchainTokenSymbol],
+      xchainContractAddress,
+      xchainContractType,
+      [xchainContractName, xchainSymbol],
       xchainWalletAddress,
       [xchainWalletBalance, xchainWalletSlotNumber],
       [xchainBlockHash, xchainBlockHeight],
@@ -596,7 +643,7 @@ export const useCreatePollForm = () => {
         return await getXchainAclOptions(
           {
             chainId: chain.value,
-            contractAddress: xchainTokenAddress.value,
+            contractAddress: xchainContractAddress.value,
             slotNumber: parseInt(xchainWalletSlotNumber.value),
             blockHash: xchainBlockHash.value,
           },

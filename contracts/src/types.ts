@@ -16,11 +16,10 @@ export type AclOptionsXchain = {
     blockHash: string;
     address: string;
     slot: number;
-  }
+  };
 };
 
-export type AclOptions =
-{
+export type AclOptions = {
   address: string;
   options: AclOptionsToken | AclOptionsAllowAll | AclOptionsAllowList | AclOptionsXchain;
 };
@@ -38,19 +37,24 @@ export type Poll = {
 };
 
 export type StorageProof = {
-  key: string,
-  value: string,
-  proof: string[],
+  key: string;
+  value: string;
+  proof: string[];
 };
 
 export type GetProofResponse = {
-  balance: string,
-  codeHash: string,
-  nonce: string,
-  storageHash: string,
-  accountProof: string[],
-  storageProof: StorageProof[],
+  balance: string;
+  codeHash: string;
+  nonce: string;
+  storageHash: string;
+  accountProof: string[];
+  storageProof: StorageProof[];
 };
+
+export type TokenType = 'ERC-20';
+export type NftType = 'ERC-721' | 'ERC-1155';
+export type ContractType = TokenType | NftType;
+export const isToken = (type: ContractType): boolean => type === 'ERC-20';
 
 export type TokenInfo = {
   chainId: bigint;
@@ -59,4 +63,13 @@ export type TokenInfo = {
   symbol: string;
   decimals: bigint;
   totalSupply: bigint;
-}
+  type: TokenType;
+};
+
+export type NFTInfo = {
+  chainId: bigint;
+  addr: string;
+  name?: string;
+  symbol?: string;
+  type: NftType;
+};
