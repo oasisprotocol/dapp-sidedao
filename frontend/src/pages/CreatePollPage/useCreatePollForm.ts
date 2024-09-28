@@ -1,13 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
-  AsyncValidatorFunction,
   Choice,
   collectErrorsInFields,
   deny,
   FieldConfiguration,
   findErrorsInFields,
+  flatten,
   getVerdict,
-  LabelProps,
   useBooleanField,
   useDateField,
   useLabel,
@@ -15,33 +14,16 @@ import {
   useTextArrayField,
   useTextField,
 } from '../../components/InputFields'
-import {
-  chainsForXchain,
-  checkXchainTokenHolder,
-  createPoll as doCreatePoll,
-  getAllowAllACLOptions,
-  getAllowListAclOptions,
-  getSapphireTokenDetails,
-  getTokenHolderAclOptions,
-  getXchainAclOptions,
-  getLatestBlock,
-  isValidAddress,
-  parseEther,
-  CreatePollProps,
-  getContractDetails,
-  ContractType,
-  isToken,
-} from '../../utils/poll.utils'
+import { createPoll as doCreatePoll, parseEther, CreatePollProps } from '../../utils/poll.utils'
 import { useEthereum } from '../../hooks/useEthereum'
 import { useContracts } from '../../hooks/useContracts'
-
 import classes from './index.module.css'
 import { DateUtils } from '../../utils/date.utils'
 import { useTime } from '../../hooks/useTime'
 import { designDecisions, MIN_COMPLETION_TIME_MINUTES } from '../../constants/config'
-import { AclOptions } from '../../types'
-import { renderAddress } from '../../components/Addresses'
+
 import { useNavigate } from 'react-router-dom'
+import { acls } from '../../components/ACLs'
 
 // The steps / pages of the wizard
 const StepTitles = {
@@ -61,40 +43,10 @@ const expectedRanges = {
   '10000-': 100000,
 } as const
 
-const aclCostEstimates = {
-  acl_allowAll: 0.1,
-  acl_allowList: 0.1,
-  acl_tokenHolder: 0.2,
-  acl_xchain: 0.2,
-} as const
-
-// Split a list of addresses by newLine, comma or space
-const splitAddresses = (addressSoup: string): string[] =>
-  addressSoup
-    .split('\n')
-    .flatMap(x => x.split(','))
-    .flatMap(x => x.split(' '))
-    .map(x => x.trim())
-    .filter(x => x.length > 0)
-
 const hideDisabledIfNecessary = (choice: Choice): Choice => ({
   ...choice,
   hidden: choice.hidden || (designDecisions.hideDisabledSelectOptions && !getVerdict(choice.enabled, true)),
 })
-
-const sleep = (time: number) => new Promise<string>(resolve => setTimeout(() => resolve(''), time))
-
-const mockValidator: AsyncValidatorFunction<any> = async (_value, controls) => {
-  if (!controls.isStillFresh()) return undefined
-  await sleep(500)
-  return undefined
-}
-
-const addMockValidation: Partial<LabelProps<any>> = {
-  showValidationSuccess: true,
-  validators: mockValidator,
-  validateOnChange: true,
-}
 
 export const useCreatePollForm = () => {
   const eth = useEthereum()
@@ -147,274 +99,19 @@ export const useCreatePollForm = () => {
   const accessControlMethod = useOneOfField({
     name: 'accessControlMethod',
     label: 'Who can vote',
-    choices: [
-      { value: 'acl_allowAll', label: 'Everybody' },
-      {
-        value: 'acl_tokenHolder',
-        label: 'Holds Token on Sapphire',
-        hidden: true, // We decided to hide this option, since this is not the focus
-      },
-      {
-        value: 'acl_allowList',
-        label: 'Address Whitelist',
-        description: 'You can specify a list of addresses that are allowed to vote.',
-      },
-      {
-        value: 'acl_xchain',
-        label: 'Cross-Chain DAO',
-        description: 'You can set a condition that is evaluated on another chain.',
-      },
-    ],
+    choices: acls,
   } as const)
 
-  const sapphireTokenAddress = useTextField({
-    name: 'tokenAddress',
-    label: 'Token Address',
-    visible: accessControlMethod.value === 'acl_tokenHolder',
-    required: [true, 'Please specify the address of the token that is the key to this poll!'],
-    validators: [
-      value => (!isValidAddress(value) ? "This doesn't seem to be a valid address." : undefined),
-      async (value, controls) => {
-        controls.updateStatus({ message: 'Fetching token details...' })
-        const details = await getSapphireTokenDetails(value)
-        if (!details) {
-          return "Can't find token details!"
-        }
-        sapphireTokenName.setValue(details.name)
-        sapphireTokenSymbol.setValue(details.symbol)
-      },
-    ],
-    validateOnChange: true,
-    showValidationSuccess: true,
-  })
+  const aclConfig = acls.map(acl => ({
+    name: acl.value,
+    ...acl.useConfiguration(acl.value === accessControlMethod.value),
+  }))
 
-  const hasValidSapphireTokenAddress =
-    sapphireTokenAddress.visible && sapphireTokenAddress.isValidated && !sapphireTokenAddress.hasProblems
+  const currentAcl = acls.find(acl => acl.value === accessControlMethod.value)!
 
-  const sapphireTokenName = useLabel({
-    name: 'sapphireTokenName',
-    visible: hasValidSapphireTokenAddress,
-    label: 'Selected token:',
-    initialValue: '',
-  })
+  const currentAclConfig = aclConfig.find(a => a.name === accessControlMethod.value)!
 
-  const sapphireTokenSymbol = useLabel({
-    name: 'sapphireTokenSymbol',
-    visible: hasValidSapphireTokenAddress,
-    label: 'Symbol:',
-    initialValue: '',
-  })
-
-  const addressWhitelist = useTextArrayField({
-    name: 'addressWhitelist',
-    label: 'Acceptable Addresses',
-    description: 'You can just copy-paste your list here',
-    addItemLabel: 'Add address',
-    removeItemLabel: 'Remove address',
-    visible: accessControlMethod.value === 'acl_allowList',
-    allowEmptyItems: [false, 'Please specify address, or remove this field!'],
-    minItems: 1,
-    allowDuplicates: [
-      false,
-      ['This address is repeated below.', 'The same address was already listed above!'],
-    ],
-    itemValidator: value =>
-      value && !isValidAddress(value) ? "This doesn't seem to be a valid address." : undefined,
-    onItemEdited: (index, value, me) => {
-      if (value.indexOf(',') !== -1 || value.indexOf(' ') !== -1 || value.indexOf('\n') !== -1) {
-        const addresses = splitAddresses(value)
-        const newAddresses = [...me.value]
-        for (let i = 0; i < addresses.length; i++) {
-          newAddresses[index + i] = addresses[i]
-        }
-        me.setValue(newAddresses)
-      }
-    },
-    validateOnChange: true,
-    showValidationSuccess: true,
-  })
-
-  const chainChoices: Choice<number>[] = useMemo(
-    () =>
-      chainsForXchain.map(([id, name]) => ({
-        value: id,
-        label: `${name} (${id})`,
-      })),
-    [],
-  )
-
-  const chain = useOneOfField({
-    name: 'chain',
-    label: 'Chain',
-    visible: accessControlMethod.value === 'acl_xchain',
-    choices: chainChoices,
-    onValueChange: (_, isStillFresh) => {
-      if (xchainContractAddress.isValidated) {
-        void xchainContractAddress.validate({ forceChange: true, reason: 'change', isStillFresh })
-      }
-    },
-  })
-
-  const xchainContractAddress = useTextField({
-    name: 'xchainContractAddress',
-    label: 'Contract Address',
-    visible: accessControlMethod.value === 'acl_xchain',
-    placeholder: 'Contract address on chain. (Token or NFT)',
-    required: [true, 'Please specify the address on the other chain that is the key to this poll!'],
-    validators: [
-      value => (isValidAddress(value) ? undefined : "This doesn't seem to be a valid address."),
-      async (value, controls) => {
-        controls.updateStatus({ message: 'Checking out contract...' })
-        const details = await getContractDetails(chain.value, value)
-        if (details) {
-          xchainContractType.setValue(details.type)
-          xchainContractName.setValue(details.name)
-          xchainSymbol.setValue(details.symbol)
-        } else {
-          xchainContractType.setValue('Unknown')
-          return 'Failed to load token details!'
-        }
-      },
-    ],
-    validateOnChange: true,
-    showValidationSuccess: true,
-    onValueChange: (_, isStillFresh) => {
-      if (xchainWalletAddress.isValidated) {
-        void xchainWalletAddress.validate({ forceChange: true, reason: 'change', isStillFresh })
-      }
-    },
-  })
-
-  const hasValidXchainTokenAddress =
-    xchainContractAddress.visible && xchainContractAddress.isValidated && !xchainContractAddress.hasProblems
-
-  const xchainContractType = useLabel<ContractType | 'Unknown'>({
-    name: 'xchainContractType',
-    visible: hasValidXchainTokenAddress,
-    label: 'Type:',
-    compact: true,
-    initialValue: 'Unknown',
-    validators: value => {
-      switch (value) {
-        case 'ERC-20':
-          return
-        case 'ERC-721':
-          return
-        // return { message: 'Some ERC-721 tokens are not supported', level: 'warning' }
-        case 'ERC-1155':
-          return 'Unfortunately, ERC-1155 NFTs are Not supported at the moment. Please use another token of NFT.'
-        case 'Unknown':
-        default:
-          return "We can't recognize this as a supported contract. Please use another token or NFT."
-      }
-    },
-    validateOnChange: true,
-    showValidationSuccess: true,
-  })
-
-  const xchainContractName = useLabel({
-    name: 'xchainContractName',
-    visible: hasValidXchainTokenAddress && xchainContractType.value !== 'Unknown',
-    label: `${isToken(xchainContractType.value as any) ? 'Token' : 'NFT'}:`,
-    initialValue: '',
-    compact: true,
-    ...addMockValidation,
-  })
-
-  const xchainSymbol = useLabel({
-    name: 'xchainSymbol',
-    visible: hasValidXchainTokenAddress && xchainContractType.value !== 'Unknown',
-    label: 'Symbol:',
-    compact: true,
-    initialValue: '',
-    ...addMockValidation,
-  })
-
-  const xchainWalletAddress = useTextField({
-    name: 'xchainWalletAddress',
-    label: 'Wallet Address',
-    visible: hasValidXchainTokenAddress && !xchainContractType.hasProblems,
-    placeholder: 'Wallet address of a token holder on chain',
-    required: [true, 'Please specify the address of a token holder!'],
-    validators: [
-      value => (isValidAddress(value) ? undefined : "This doesn't seem to be a valid address."),
-      async (value, controls) => {
-        if (xchainContractType.value === 'Unknown') {
-          return "Can't check balance for contracts of unknown type!"
-        }
-
-        const slot = await checkXchainTokenHolder(
-          chain.value,
-          xchainContractAddress.value,
-          xchainContractType.value,
-          value,
-          controls.isStillFresh,
-          progress => {
-            controls.updateStatus({ message: progress })
-          },
-        )
-        if (!slot) {
-          if (xchainContractType.value === 'ERC-721') {
-            return "Can't find this NFT in this wallet. Please note the not all ERC-721 NFTs are supported. This one might not be. If this is important, please open an issue."
-          } else {
-            return "Can't confirm this token at this wallet."
-          }
-        }
-        xchainWalletBalance.setValue(`Confirmed ${slot.balanceDecimal} ${xchainSymbol.value}`)
-        xchainWalletSlotNumber.setValue(slot.index.toString())
-      },
-      async (_value, controls) => {
-        controls.updateStatus({ message: 'Looking up reference block ...' })
-        const block = await getLatestBlock(chain.value)
-        if (!block?.hash) return 'Failed to fetch latest block.'
-        xchainBlockHash.setValue(block.hash)
-        xchainBlockHeight.setValue(block.number.toString())
-      },
-    ],
-    validateOnChange: true,
-    showValidationSuccess: true,
-  })
-
-  const hasValidXchainWallet =
-    hasValidXchainTokenAddress && xchainWalletAddress.isValidated && !xchainWalletAddress.hasProblems
-
-  const xchainWalletBalance = useLabel({
-    name: 'xchainWalletBalance',
-    label: 'Balance:',
-    visible: hasValidXchainWallet,
-    initialValue: '',
-    classnames: classes.explanation,
-    ...addMockValidation,
-  })
-
-  const xchainWalletSlotNumber = useLabel({
-    name: 'xchainWalletSlotNumber',
-    label: 'Stored at:',
-    visible: hasValidXchainWallet,
-    initialValue: '',
-    classnames: classes.explanation,
-    formatter: slot => `Slot #${slot}`,
-    ...addMockValidation,
-  })
-
-  const xchainBlockHash = useLabel({
-    name: 'xchainBlockHash',
-    label: 'Reference Block Hash',
-    visible: hasValidXchainWallet,
-    initialValue: 'unknown',
-    classnames: classes.explanation,
-    renderer: renderAddress,
-    ...addMockValidation,
-  })
-
-  const xchainBlockHeight = useLabel({
-    name: 'xchainBlockHeight',
-    label: 'Block Height',
-    visible: hasValidXchainWallet,
-    initialValue: 'unknown',
-    classnames: classes.explanation,
-    ...addMockValidation,
-  })
+  const allAclFieldsToShow = flatten(aclConfig.map(g => g.fields))
 
   const voteWeighting = useOneOfField({
     name: 'voteWeighting',
@@ -466,9 +163,9 @@ export const useCreatePollForm = () => {
 
   useEffect(() => {
     if (!gasFree.value) return
-    const cost = aclCostEstimates[accessControlMethod.value] * expectedRanges[numberOfExpectedVoters.value]
+    const cost = currentAcl.costEstimation * expectedRanges[numberOfExpectedVoters.value]
     amountOfSubsidy.setValue(cost.toString())
-  }, [gasFree.value, accessControlMethod.value, numberOfExpectedVoters.value])
+  }, [gasFree.value, currentAcl, numberOfExpectedVoters.value])
 
   const resultDisplayType = useOneOfField({
     name: 'resultDisplayType',
@@ -587,16 +284,7 @@ export const useCreatePollForm = () => {
     basics: [question, description, answers, customCSS],
     permission: [
       accessControlMethod,
-      sapphireTokenAddress,
-      [sapphireTokenName, sapphireTokenSymbol],
-      addressWhitelist,
-      chain,
-      xchainContractAddress,
-      xchainContractType,
-      [xchainContractName, xchainSymbol],
-      xchainWalletAddress,
-      [xchainWalletBalance, xchainWalletSlotNumber],
-      [xchainBlockHash, xchainBlockHeight],
+      ...allAclFieldsToShow,
       voteWeighting,
       gasFree,
       gasFreeExplanation,
@@ -628,32 +316,6 @@ export const useCreatePollForm = () => {
     setStepIndex(stepIndex + 1)
   }
 
-  const getAclOptions = async (
-    updateStatus?: ((status: string | undefined) => void) | undefined,
-  ): Promise<[string, AclOptions]> => {
-    const acl = accessControlMethod.value
-    switch (acl) {
-      case 'acl_allowAll':
-        return getAllowAllACLOptions()
-      case 'acl_tokenHolder':
-        return getTokenHolderAclOptions(sapphireTokenAddress.value)
-      case 'acl_allowList':
-        return getAllowListAclOptions(addressWhitelist.value)
-      case 'acl_xchain':
-        return await getXchainAclOptions(
-          {
-            chainId: chain.value,
-            contractAddress: xchainContractAddress.value,
-            slotNumber: parseInt(xchainWalletSlotNumber.value),
-            blockHash: xchainBlockHash.value,
-          },
-          updateStatus,
-        )
-      default:
-        throw new Error(`Unknown ACL contract ${acl}`)
-    }
-  }
-
   const createPoll = async () => {
     setValidationPending(true)
     const hasErrors = await findErrorsInFields(stepFields[step], 'submit', () => true)
@@ -665,12 +327,13 @@ export const useCreatePollForm = () => {
 
     const logger = (message?: string | undefined) => creationStatus.setValue(message ?? '')
 
-    // const logger = console.log
-
     setIsCreating(true)
     try {
-      const [aclData, aclOptions] = await getAclOptions(logger)
-
+      const aclConfigValues = currentAclConfig.values
+      const [aclData, aclOptions] = await currentAcl.getAclOptions(
+        aclConfigValues as never, // TODO: why is this conversion necessary?
+        logger,
+      )
       const pollProps: CreatePollProps = {
         question: question.value,
         description: description.value,

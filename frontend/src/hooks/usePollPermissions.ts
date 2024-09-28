@@ -76,7 +76,7 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined, onDashboard: 
       userAddress,
       proposalId,
       aclAddress: poll.proposal.params.acl,
-      options: poll.ipfsParams.acl.options,
+      options: poll.ipfsParams.acl,
     }
 
     const context: CheckPermissionContext = {
