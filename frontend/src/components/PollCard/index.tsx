@@ -23,8 +23,9 @@ import {
 } from '../../pages/DashboardPage/useDashboardData'
 import { useEthereum } from '../../hooks/useEthereum'
 import { NOT_CHECKED } from '../../hooks/usePollPermissions'
-import { motion, AnimatePresence } from 'framer-motion'
+import { AnimatePresence } from 'framer-motion'
 import { Button } from '../Button'
+import { MotionDiv } from '../Animations'
 
 const Arrow: FC<{ className: string }> = ({ className }) => (
   <svg
@@ -159,7 +160,8 @@ export const PollCard: FC<{
   return (
     <AnimatePresence initial={false}>
       {visible && (
-        <motion.div
+        <MotionDiv
+          reason={'dashboardPollCards'}
           layout
           // key={pollId}
           initial={{ height: 0, opacity: 0 }}
@@ -211,7 +213,7 @@ export const PollCard: FC<{
               </div>
             </div>
           </Link>
-        </motion.div>
+        </MotionDiv>
       )}
     </AnimatePresence>
   )

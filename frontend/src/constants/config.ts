@@ -221,3 +221,16 @@ export const appNameAndTagline = 'Oasis Blockvote, a poll creation tool for your
 export const appDescription =
   'Create polls for everyone or just your group, with public results but cryptographically secure and private votes.'
 export const appRootUrl = 'http://oasisprotocol.github.io/dapp-blockvote'
+
+export const allowedAnimations = [
+  'dashboardNoPolls', // No poll indicator appearing on the dashboard
+  'dashboardPollCards', // Poll cards appearing and disappearing on search etc
+  // 'conditionalField', // A field is conditionally hidden or shown
+  'fieldStatus', // Field validation pending, error, correct status indication
+  'fieldValidationErrors', // Field validation errors
+  'permissionWarning', // We have found out that you don't have permission to vote
+  'countdown', // A countdown has moving digits
+  'voting', // Submitting a vote
+  'voteSubmitted', // We have submitted out vote
+  'resultsDisplay', // Animated display of poll results
+]

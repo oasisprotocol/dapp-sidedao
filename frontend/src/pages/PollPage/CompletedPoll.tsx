@@ -6,7 +6,7 @@ import { Card } from '../../components/Card'
 import { SocialShares } from '../../components/SocialShares'
 import { PollAccessIndicatorWrapper } from '../../components/PollCard/PollAccessIndicator'
 import { getVerdict } from '../../components/InputFields'
-import { motion } from 'framer-motion'
+import { MotionDiv } from '../../components/Animations'
 
 export const CompletedPoll: FC<
   Pick<PollData, 'poll' | 'pollResults' | 'isMine' | 'permissions' | 'checkPermissions'>
@@ -33,7 +33,8 @@ export const CompletedPoll: FC<
       {!!description && <h4>{description}</h4>}
       <>
         {Object.entries(choices).map(([index, entry]) => (
-          <motion.div
+          <MotionDiv
+            reason={'resultsDisplay'}
             layout
             className={StringUtils.clsx(
               classes.choice,
@@ -46,7 +47,10 @@ export const CompletedPoll: FC<
               width: '100%',
             }}
             animate={{
-              borderColor: ['#a2a0ffff', '#a2a0ff00', '#a2a0ffff'],
+              borderColor:
+                // [
+                '#a2a0ffff',
+              // '#a2a0ff00', '#a2a0ffff'],
             }}
             transition={{
               duration: 1,
@@ -54,7 +58,8 @@ export const CompletedPoll: FC<
               repeatDelay: 2,
             }}
           >
-            <motion.div
+            <MotionDiv
+              reason={'resultsDisplay'}
               layout
               className={classes.sizeBar}
               initial={{ width: '0%' }}
@@ -62,15 +67,16 @@ export const CompletedPoll: FC<
               transition={{ delay: 0.5, duration: 0.5, ease: 'easeOut' }}
             />
             <div className={classes.above}>{entry.choice}</div>
-            <motion.div
+            <MotionDiv
+              reason={'resultsDisplay'}
               className={`${classes.percentage} ${classes.above}`}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1, duration: 0.5 }}
             >
               {entry.rate}%
-            </motion.div>
-          </motion.div>
+            </MotionDiv>
+          </MotionDiv>
         ))}
       </>
       {aclExplanation && (

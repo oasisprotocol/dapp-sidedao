@@ -1,8 +1,9 @@
 import { FC, PropsWithChildren } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence } from 'framer-motion'
 import { InputFieldControls } from './useInputField'
 import { StringUtils } from '../../utils/string.utils'
 import classes from './index.module.css'
+import { MotionDiv } from '../Animations'
 
 export const WithVisibility: FC<
   PropsWithChildren<{
@@ -16,7 +17,8 @@ export const WithVisibility: FC<
   return (
     <AnimatePresence initial={false}>
       {visible && (
-        <motion.div
+        <MotionDiv
+          reason={'conditionalField'}
           layout
           key={field.name}
           className={StringUtils.clsx(classes.fieldContainer, containerClassName)}
@@ -30,7 +32,7 @@ export const WithVisibility: FC<
         >
           {children}
           {padding && <div key="padding" className={classes.fieldPadding} />}
-        </motion.div>
+        </MotionDiv>
       )}
     </AnimatePresence>
   )

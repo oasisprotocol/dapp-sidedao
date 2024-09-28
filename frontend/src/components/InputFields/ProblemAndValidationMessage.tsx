@@ -1,8 +1,9 @@
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence } from 'framer-motion'
 import { FC } from 'react'
 import { ProblemList } from './ProblemDisplay'
 import { Problem } from './util'
 import { InputFieldControls } from './useInputField'
+import { MotionDiv } from '../Animations'
 
 export const ProblemAndValidationMessage: FC<
   Pick<InputFieldControls<any>, 'validationPending' | 'validationStatusMessage' | 'clearProblem'> & {
@@ -16,7 +17,9 @@ export const ProblemAndValidationMessage: FC<
       <ProblemList problems={problems} onRemove={clearProblem} />
       <AnimatePresence mode={'wait'}>
         {!!validationStatusMessage && validationPending && (
-          <motion.div
+          <MotionDiv
+            reason={'fieldValidationErrors'}
+            layout
             key={'problems-and-validation-messages'}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
@@ -24,7 +27,7 @@ export const ProblemAndValidationMessage: FC<
             transition={{ duration: 0.2, delay: 0 }}
           >
             {validationStatusMessage}
-          </motion.div>
+          </MotionDiv>
         )}
       </AnimatePresence>
     </>

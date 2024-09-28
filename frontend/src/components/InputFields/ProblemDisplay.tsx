@@ -1,7 +1,8 @@
 import { FC, ForwardedRef, forwardRef } from 'react'
 import { Problem, ProblemLevel } from './util'
 import classes from './index.module.css'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence } from 'framer-motion'
+import { MotionDiv } from '../Animations'
 
 const problemClass: Record<ProblemLevel, string> = {
   error: classes.fieldError,
@@ -14,7 +15,8 @@ export const ProblemDisplay: FC<{
 }> = forwardRef(({ problem, onRemove }, ref: ForwardedRef<HTMLDivElement>) => {
   // console.log('Displaying problem', problem)
   return (
-    <motion.div
+    <MotionDiv
+      reason={'fieldValidationErrors'}
       ref={ref}
       key={problem.signature || problem.message}
       // layout
@@ -29,7 +31,7 @@ export const ProblemDisplay: FC<{
       transition={{ duration: 0.2, ease: 'easeInOut' }}
     >
       {problem.message}
-    </motion.div>
+    </MotionDiv>
   )
 })
 
