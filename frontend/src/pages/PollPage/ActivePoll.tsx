@@ -106,13 +106,12 @@ export const ActivePoll: FC<PollData> = ({
       <h4>{description}</h4>
 
       {(hasWallet || isPastDue) && (
-        <AnimatePresence initial={true}>
+        <AnimatePresence initial={false}>
           {choices.map((choice, index) =>
             !isVoting || selectedChoice === BigInt(index) ? (
               <MotionDiv
                 reason={'voting'}
                 layout
-                initial={{ opacity: 0, height: 0, width: '50%' }}
                 animate={{ opacity: 1, height: 48, width: '100%' }}
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.5 }}
