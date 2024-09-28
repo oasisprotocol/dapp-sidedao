@@ -14,7 +14,8 @@ import { WarningCircleIcon } from '../../components/icons/WarningCircleIcon'
 import { PollAccessIndicatorWrapper } from '../../components/PollCard/PollAccessIndicator'
 import { designDecisions } from '../../constants/config'
 import { SpinnerIcon } from '../../components/icons/SpinnerIcon'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence } from 'framer-motion'
+import { MotionDiv } from '../../components/Animations'
 
 export const ActivePoll: FC<PollData> = ({
   hasWallet,
@@ -55,9 +56,9 @@ export const ActivePoll: FC<PollData> = ({
     (index: number) => {
       if (canSelect) {
         if (selectedChoice === BigInt(index)) {
-          setSelectedChoice(undefined)
+          void setSelectedChoice(undefined)
         } else {
-          setSelectedChoice(BigInt(index))
+          void setSelectedChoice(BigInt(index))
         }
       }
     },
@@ -108,7 +109,8 @@ export const ActivePoll: FC<PollData> = ({
         <AnimatePresence initial={true}>
           {choices.map((choice, index) =>
             !isVoting || selectedChoice === BigInt(index) ? (
-              <motion.div
+              <MotionDiv
+                reason={'voting'}
                 layout
                 initial={{ opacity: 0, height: 0, width: '50%' }}
                 animate={{ opacity: 1, height: 48, width: '100%' }}
@@ -120,7 +122,7 @@ export const ActivePoll: FC<PollData> = ({
               >
                 <div className={classes.above}>{choice}</div>
                 {!designDecisions.showSubmitButton && isVoting && <SpinnerIcon spinning height="30" />}
-              </motion.div>
+              </MotionDiv>
             ) : undefined,
           )}
         </AnimatePresence>
@@ -144,30 +146,32 @@ export const ActivePoll: FC<PollData> = ({
       {publishVotes && <div>Votes will be made public when the poll is completed.</div>}
       {isPastDue && (
         <h4>
-          Voting results will be available when {isMine ? 'you compplete' : 'the owner formally completes'}{' '}
-          the poll.
+          Voting results will be available when {isMine ? 'you complete' : 'the owner formally completes'} the
+          poll.
         </h4>
       )}
       {hasWallet && !hasWalletOnWrongNetwork && !getVerdict(canAclVote, false) ? (
         <AnimatePresence>
           {!permissionsPending && (
-            <motion.div
+            <MotionDiv
+              reason={'permissionWarning'}
               key={'warning-icon'}
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
             >
               <WarningCircleIcon size={'large'} />
-            </motion.div>
+            </MotionDiv>
           )}
-          <motion.div
+          <MotionDiv
+            reason={'permissionWarning'}
             key={'warning-message'}
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
           >
             <h4>You can&apos;t vote on this poll, since {getReason(canAclVote)}.</h4>
-          </motion.div>
+          </MotionDiv>
         </AnimatePresence>
       ) : (
         aclExplanation && (

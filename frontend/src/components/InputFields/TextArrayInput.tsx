@@ -5,10 +5,11 @@ import { StringUtils } from '../../utils/string.utils'
 import { ProblemList } from './ProblemDisplay'
 import { checkProblems } from './util'
 import { SpinnerIcon } from '../icons/SpinnerIcon'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence } from 'framer-motion'
 import { WithVisibility } from './WithVisibility'
 import { WithLabelAndDescription } from './WithLabelAndDescription'
 import { WithValidation } from './WithValidation'
+import { MotionDiv } from '../Animations'
 
 const TrashIcon: FC<{
   label: string
@@ -111,7 +112,8 @@ export const TextArrayInput: FC<TextArrayControls> = props => {
                 //   field={{ visible: true, name: `item-${index}` }}
                 //   padding={false}
                 // >
-                <motion.div
+                <MotionDiv
+                  reason={'conditionalField'}
                   layout
                   key={`edit-${index}`}
                   className={StringUtils.clsx(
@@ -171,7 +173,7 @@ export const TextArrayInput: FC<TextArrayControls> = props => {
                       title={whyDisabled}
                     />
                   </WithValidation>
-                </motion.div>
+                </MotionDiv>
                 // </WithVisibility>
               )
             })}

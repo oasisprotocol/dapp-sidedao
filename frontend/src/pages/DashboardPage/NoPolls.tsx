@@ -1,14 +1,15 @@
-import { motion } from 'framer-motion'
 import { FC } from 'react'
 import classes from './index.module.css'
 import { ProofOfStakeIcon } from '../../components/icons/ProofOfStake'
+import { MotionDiv } from '../../components/Animations'
 
 export const NoPolls: FC<{ hasFilters: boolean; clearFilters: () => void }> = ({
   hasFilters,
   clearFilters,
 }) => {
   return (
-    <motion.div
+    <MotionDiv
+      reason={'dashboardNoPolls'}
       className={classes.noPolls}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -25,6 +26,6 @@ export const NoPolls: FC<{ hasFilters: boolean; clearFilters: () => void }> = ({
           to see more.
         </p>
       )}
-    </motion.div>
+    </MotionDiv>
   )
 }

@@ -1,10 +1,11 @@
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence } from 'framer-motion'
 import { FC } from 'react'
 import { CheckCircleIcon } from '../icons/CheckCircleIcon'
 import { SpinnerIcon } from '../icons/SpinnerIcon'
 import { checkProblems, Problem } from './util'
 import { InputFieldControls } from './useInputField'
 import { WarningCircleIcon } from '../icons/WarningCircleIcon'
+import { MotionDiv } from '../Animations'
 
 export const FieldStatusIndicators: FC<
   Pick<
@@ -23,7 +24,9 @@ export const FieldStatusIndicators: FC<
   return (
     <AnimatePresence>
       {(showPending || showSuccess || showError) && (
-        <motion.div
+        <MotionDiv
+          reason={'fieldStatus'}
+          layout
           key="field-status"
           initial={{ width: 0 }}
           animate={{ width: 'auto' }}
@@ -31,26 +34,39 @@ export const FieldStatusIndicators: FC<
           // transition={{ duration: 2 }}
         >
           {showPending && (
-            <motion.div key="pending" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <MotionDiv
+              reason={'fieldStatus'}
+              key="pending"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
               <SpinnerIcon width={24} height={24} spinning={true} />
-            </motion.div>
+            </MotionDiv>
           )}
           {showSuccess && (
-            <motion.div
+            <MotionDiv
+              reason={'fieldStatus'}
               key={'success'}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
               <CheckCircleIcon />
-            </motion.div>
+            </MotionDiv>
           )}
           {showError && (
-            <motion.div key={'error'} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <MotionDiv
+              reason={'fieldStatus'}
+              key={'error'}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
               <WarningCircleIcon />
-            </motion.div>
+            </MotionDiv>
           )}
-        </motion.div>
+        </MotionDiv>
       )}
     </AnimatePresence>
   )
