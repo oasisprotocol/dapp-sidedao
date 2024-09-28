@@ -225,7 +225,7 @@ export const appRootUrl = 'http://oasisprotocol.github.io/dapp-blockvote'
 export const allowedAnimations = [
   'dashboardNoPolls', // No poll indicator appearing on the dashboard
   'dashboardPollCards', // Poll cards appearing and disappearing on search etc
-  'conditionalField', // A field is conditionally hidden or shown
+  // 'conditionalField', // A field is conditionally hidden or shown
   'fieldStatus', // Field validation pending, error, correct status indication
   'fieldValidationErrors', // Field validation errors
   'permissionWarning', // We have found out that you don't have permission to vote
