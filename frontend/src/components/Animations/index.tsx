@@ -1,4 +1,4 @@
-import { CSSProperties, FC, PropsWithChildren, SVGAttributes } from 'react'
+import { CSSProperties, FC, forwardRef, PropsWithChildren, SVGAttributes } from 'react'
 import { motion } from 'framer-motion'
 
 type MotionDivProps = Parameters<typeof motion.div>[0]
@@ -70,13 +70,13 @@ export const MotionDiv: FC<
     initial?: Target
     animate?: Target
   }
-> = props => {
+> = forwardRef((props, ref) => {
   const { reason, ...motionProps } = props
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { layout, initial, animate, exit, ...divProps } = motionProps
   if (shouldAnimate(reason)) {
-    return <motion.div {...motionProps} />
+    return <motion.div {...motionProps} ref={ref} />
   } else {
     return <div {...divProps} style={{ ...(initial ?? {}), ...(animate ?? {}) }} />
   }
-}
+})
