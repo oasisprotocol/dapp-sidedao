@@ -18,8 +18,6 @@ import {
 export type { ContractType, NftType } from '@oasisprotocol/blockvote-contracts'
 export { isToken } from '@oasisprotocol/blockvote-contracts'
 import { Poll, PollManager } from '../types'
-import { encryptJSON } from './crypto.demo'
-import { Pinata } from './Pinata'
 import { EthereumContext } from '../providers/EthereumContext'
 import { DecisionWithReason, denyWithReason } from '../components/InputFields'
 import { FetcherFetchOptions } from './StoredLRUCache'
@@ -166,18 +164,8 @@ export const createPoll = async (
 
   // console.log('Compiling poll', poll)
 
-  const { key, cipherbytes } = encryptJSON(poll)
-
-  updateStatus('Saving poll data to IPFS')
-  const ipfsHash = await Pinata.pinData(cipherbytes)
-
-  if (!ipfsHash) throw new Error('Failed to save to IPFS, try again!')
-  // console.log('Poll ipfsHash', ipfsHash);
-  // updateStatus("Saved to IPFS")
-
   const proposalParams: PollManager.ProposalParamsStruct = {
-    ipfsHash,
-    ipfsSecret: key,
+    metadata: JSON.stringify(poll),
     numChoices: answers.length,
     publishVotes: poll.options.publishVotes,
     closeTimestamp: poll.options.closeTimestamp,

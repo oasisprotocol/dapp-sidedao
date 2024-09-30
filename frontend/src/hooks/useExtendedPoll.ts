@@ -1,8 +1,5 @@
-import { ListOfVotes, ExtendedPoll, Poll, PollResults, Proposal } from '../types'
+import { ListOfVotes, ExtendedPoll, PollResults, Proposal } from '../types'
 import { useEffect, useMemo, useState } from 'react'
-import { useIPFSData } from './useIPFSData'
-import { getBytes } from 'ethers'
-import { decryptJSON } from '../utils/crypto.demo'
 import { dashboard, demoSettings, getDemoPoll } from '../constants/config'
 import { usePollGaslessStatus } from './usePollGaslessStatus'
 import { usePollPermissions } from './usePollPermissions'
@@ -31,32 +28,11 @@ export const useExtendedPoll = (
   const { gaslessEnabled, gaslessPossible, gvAddresses, gvBalances, invalidateGaslessStatus } =
     usePollGaslessStatus(proposalId, params.onDashboard)
 
-  const ipfsHash = proposal?.params?.ipfsHash
-
-  const {
-    isLoading: isIpfsLoading,
-    error: ipfsError,
-    data: ipfsData,
-    refetch: ipfsRefetch,
-  } = useIPFSData(ipfsHash)
-
-  const ipfsSecret = proposal?.params?.ipfsSecret
+  const metadata = proposal?.params?.metadata
 
   let correctiveAction: (() => void) | undefined
 
-  const [ipfsParams, ipfsDecodingError] = useMemo((): [Poll | undefined, string | undefined] => {
-    if (!ipfsSecret || !ipfsData) return [undefined, undefined]
-    try {
-      const poll = decryptJSON(getBytes(ipfsSecret), ipfsData) as Poll
-      return [poll, undefined]
-    } catch (error) {
-      return [undefined, 'Filed to load poll data.']
-    }
-  }, [ipfsData, ipfsSecret])
-
-  if (ipfsError || ipfsDecodingError) {
-    correctiveAction = ipfsRefetch
-  }
+  const ipfsParams = useMemo(() => (metadata ? JSON.parse(metadata) : undefined), [metadata])
 
   useEffect(
     // Update poll object
@@ -165,8 +141,8 @@ export const useExtendedPoll = (
     proposalId,
     isActive,
     isDemo,
-    isLoading: isIpfsLoading,
-    error: ipfsError ?? ipfsDecodingError,
+    isLoading: false,
+    error: undefined,
     correctiveAction,
     poll,
     voteCounts,
