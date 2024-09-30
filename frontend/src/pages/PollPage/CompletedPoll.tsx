@@ -9,8 +9,17 @@ import { getVerdict } from '../../components/InputFields'
 import { MotionDiv } from '../../components/Animations'
 
 export const CompletedPoll: FC<
-  Pick<PollData, 'poll' | 'pollResults' | 'isMine' | 'permissions' | 'checkPermissions'>
-> = ({ poll, pollResults, isMine, permissions, checkPermissions }) => {
+  Pick<
+    PollData,
+    | 'poll'
+    | 'pollResults'
+    | 'isMine'
+    | 'permissions'
+    | 'checkPermissions'
+    | 'hasWallet'
+    | 'hasWalletOnWrongNetwork'
+  >
+> = ({ poll, pollResults, isMine, permissions, checkPermissions, hasWallet, hasWalletOnWrongNetwork }) => {
   const { name, description } = poll!.ipfsParams!
   const { choices, votes } = pollResults!
   const { explanation: aclExplanation, canVote: aclCanVote } = permissions
@@ -21,13 +30,15 @@ export const CompletedPoll: FC<
       <h4 className={'niceLine'}>
         <div className={'niceLine'}>
           {name}
-          <PollAccessIndicatorWrapper
-            isMine={isMine}
-            permissions={permissions}
-            isActive={false}
-            retest={checkPermissions}
-            hideRestrictedNoAccess={true}
-          />
+          {hasWallet && !hasWalletOnWrongNetwork && (
+            <PollAccessIndicatorWrapper
+              isMine={isMine}
+              permissions={permissions}
+              isActive={false}
+              retest={checkPermissions}
+              hideRestrictedNoAccess={true}
+            />
+          )}
         </div>
       </h4>
       {!!description && <h4>{description}</h4>}
