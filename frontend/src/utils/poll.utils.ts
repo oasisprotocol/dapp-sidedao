@@ -1,4 +1,12 @@
-import { AbiCoder, BytesLike, getAddress, JsonRpcProvider, ParamType } from 'ethers'
+import {
+  AbiCoder,
+  BytesLike,
+  encodeBase64,
+  getAddress,
+  JsonRpcProvider,
+  ParamType,
+  toUtf8Bytes,
+} from 'ethers'
 
 import {
   chain_info,
@@ -165,7 +173,7 @@ export const createPoll = async (
   // console.log('Compiling poll', poll)
 
   const proposalParams: PollManager.ProposalParamsStruct = {
-    metadata: JSON.stringify(poll),
+    metadata: encodeBase64(toUtf8Bytes(JSON.stringify(poll))),
     numChoices: answers.length,
     publishVotes: poll.options.publishVotes,
     closeTimestamp: poll.options.closeTimestamp,
