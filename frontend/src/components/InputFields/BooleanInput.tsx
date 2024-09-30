@@ -4,11 +4,10 @@ import classes from './index.module.css'
 import { StringUtils } from '../../utils/string.utils'
 
 import { WithVisibility } from './WithVisibility'
-import { WithDescription } from './WithDescription'
 import { WithValidation } from './WithValidation'
 
 export const BooleanInput: FC<BooleanFieldControls> = props => {
-  const { name, label, value, setValue, allProblems, enabled, whyDisabled } = props
+  const { name, description, label, value, setValue, allProblems, enabled, whyDisabled } = props
 
   // Clicking on the checkbox itself
   const handleChange = useCallback(
@@ -24,25 +23,24 @@ export const BooleanInput: FC<BooleanFieldControls> = props => {
 
   return (
     <WithVisibility field={props}>
-      <WithDescription field={props}>
-        <WithValidation field={props} problems={allProblems.root}>
-          <div
-            className={StringUtils.clsx('niceLine', enabled ? classes.pointer : classes.disabled)}
-            title={whyDisabled}
-            onClick={handleLabelClick}
-          >
-            <input
-              type={'checkbox'}
-              name={name}
-              checked={value}
-              onChange={handleChange}
-              size={32}
-              disabled={!enabled}
-            />
-            {label}
-          </div>
-        </WithValidation>
-      </WithDescription>
+      <WithValidation field={props} problems={allProblems.root}>
+        <div
+          className={StringUtils.clsx('niceLine', enabled ? classes.pointer : classes.disabled)}
+          title={whyDisabled}
+          onClick={handleLabelClick}
+        >
+          <input
+            type={'checkbox'}
+            name={name}
+            checked={value}
+            onChange={handleChange}
+            size={32}
+            disabled={!enabled}
+          />
+          {label}
+          {description && <span title={description}>🛈</span>}
+        </div>
+      </WithValidation>
     </WithVisibility>
   )
 }
