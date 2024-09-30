@@ -197,7 +197,7 @@ export const ActivePoll: FC<PollData> = ({
             )}
           </div>
         )}
-        {isMine && (
+        {isMine && hasWallet && !hasWalletOnWrongNetwork && (
           <Button
             size={'small'}
             disabled={!canComplete}
