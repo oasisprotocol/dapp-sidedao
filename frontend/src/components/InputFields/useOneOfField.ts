@@ -14,13 +14,13 @@ type OneOfFieldProps<DataType = string> = Omit<
   'initialValue' | 'required' | 'placeholder'
 > & {
   initialValue?: DataType
-  choices: Choice<DataType>[]
+  readonly choices: readonly Choice<DataType>[]
   requiredMessage?: string
   disableIfOnlyOneVisibleChoice?: boolean
 }
 
 export type OneOfFieldControls<DataType> = InputFieldControls<DataType> & {
-  choices: Choice<DataType>[]
+  choices: readonly Choice<DataType>[]
 }
 
 export function useOneOfField<DataType>(props: OneOfFieldProps<DataType>): OneOfFieldControls<DataType> {

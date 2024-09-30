@@ -1,5 +1,6 @@
 import { InputFieldControls, ValidationReason } from './useInputField'
-import { getAsArray, SingleOrArray } from './util'
+import { AsyncValidatorFunction, getAsArray, SingleOrArray } from './util'
+import { LabelProps } from './useLabel'
 
 type FieldLike = Pick<InputFieldControls<any>, 'name' | 'type' | 'visible' | 'validate' | 'hasProblems'>
 
@@ -24,3 +25,17 @@ export const collectErrorsInFields = (fields: FieldConfiguration): boolean =>
     .flatMap(config => getAsArray(config))
     .filter(field => field.visible)
     .some(field => field.hasProblems)
+
+const sleep = (time: number) => new Promise<string>(resolve => setTimeout(() => resolve(''), time))
+
+const mockValidator: AsyncValidatorFunction<any> = async (_value, controls) => {
+  if (!controls.isStillFresh()) return undefined
+  await sleep(500)
+  return undefined
+}
+
+export const addMockValidation: Partial<LabelProps> = {
+  showValidationSuccess: true,
+  validators: mockValidator,
+  validateOnChange: true,
+}

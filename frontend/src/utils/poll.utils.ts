@@ -1,4 +1,4 @@
-import { AbiCoder, BytesLike, getAddress, getUint, JsonRpcProvider, ParamType } from 'ethers'
+import { AbiCoder, BytesLike, getAddress, JsonRpcProvider, ParamType } from 'ethers'
 
 import {
   chain_info,
@@ -6,34 +6,24 @@ import {
   xchainRPC,
   AclOptions,
   guessStorageSlot,
-  getBlockHeaderRLP,
-  fetchAccountProof,
   getNftContractType,
   ChainDefinition,
-  AclOptionsToken,
   AclOptionsXchain,
-  fetchStorageProof,
   IPollACL__factory,
   TokenInfo,
-  fetchStorageValue,
   NFTInfo,
   nftDetailsFromProvider,
   ContractType,
 } from '@oasisprotocol/blockvote-contracts'
 export type { ContractType, NftType } from '@oasisprotocol/blockvote-contracts'
 export { isToken } from '@oasisprotocol/blockvote-contracts'
-import {
-  VITE_CONTRACT_ACL_ALLOWALL,
-  VITE_CONTRACT_ACL_STORAGEPROOF,
-  VITE_CONTRACT_ACL_TOKENHOLDER,
-  VITE_CONTRACT_ACL_VOTERALLOWLIST,
-} from '../constants/config'
 import { Poll, PollManager } from '../types'
 import { encryptJSON } from './crypto.demo'
 import { Pinata } from './Pinata'
 import { EthereumContext } from '../providers/EthereumContext'
 import { DecisionWithReason, denyWithReason } from '../components/InputFields'
 import { FetcherFetchOptions } from './StoredLRUCache'
+import { findACLForOptions } from '../components/ACLs'
 
 export { parseEther } from 'ethers'
 
@@ -72,76 +62,9 @@ export const getSapphireTokenDetails = async (address: string) => {
  *
  *  @returns DataHexstring
  */
-const abiEncode = (types: ReadonlyArray<string | ParamType>, values: ReadonlyArray<any>): string => {
+export const abiEncode = (types: ReadonlyArray<string | ParamType>, values: ReadonlyArray<any>): string => {
   const abi = AbiCoder.defaultAbiCoder()
   return abi.encode(types, values)
-}
-
-export const getAllowAllACLOptions = (): [string, AclOptions] => {
-  return [
-    '0x', // Empty bytes is passed
-    {
-      address: VITE_CONTRACT_ACL_ALLOWALL,
-      options: { allowAll: true },
-    },
-  ]
-}
-
-export const getAllowListAclOptions = (addresses: string[]): [string, AclOptions] => {
-  return [
-    abiEncode(['address[]'], [addresses]),
-    {
-      address: VITE_CONTRACT_ACL_VOTERALLOWLIST,
-      options: { allowList: true },
-    },
-  ]
-}
-
-export const getTokenHolderAclOptions = (tokenAddress: string): [string, AclOptions] => {
-  return [
-    abiEncode(['address'], [tokenAddress]),
-    {
-      address: VITE_CONTRACT_ACL_TOKENHOLDER,
-      options: { token: tokenAddress },
-    },
-  ]
-}
-
-export const getXchainAclOptions = async (
-  props: {
-    chainId: number
-    contractAddress: string
-    slotNumber: number
-    blockHash: string
-  },
-  updateStatus?: ((status: string | undefined) => void) | undefined,
-): Promise<[string, AclOptions]> => {
-  const { chainId, contractAddress, slotNumber, blockHash } = props
-  const showStatus = updateStatus ?? ((message?: string | undefined) => console.log(message))
-  const rpc = xchainRPC(chainId)
-  showStatus('Getting block header RLP')
-  const headerRlpBytes = await getBlockHeaderRLP(rpc, blockHash)
-  // console.log('headerRlpBytes', headerRlpBytes);
-  showStatus('Fetching account proof')
-  const rlpAccountProof = await fetchAccountProof(rpc, blockHash, contractAddress)
-  // console.log('rlpAccountProof', rlpAccountProof);
-  return [
-    abiEncode(
-      ['tuple(tuple(bytes32,address,uint256),bytes,bytes)'],
-      [[[blockHash, contractAddress, slotNumber], headerRlpBytes, rlpAccountProof]],
-    ),
-    {
-      address: VITE_CONTRACT_ACL_STORAGEPROOF,
-      options: {
-        xchain: {
-          chainId,
-          blockHash,
-          address: contractAddress,
-          slot: slotNumber,
-        },
-      },
-    },
-  ]
 }
 
 export const getERC20TokenDetails = async (chainId: number, address: string) => {
@@ -304,15 +227,16 @@ export type PollPermissions = {
   explanation: string | undefined
   canVote: DecisionWithReason
   canManage: boolean
-  tokenInfo: TokenInfo | NFTInfo | undefined
-  xChainOptions: AclOptionsXchain | undefined
+  tokenInfo?: TokenInfo | NFTInfo | undefined
+  xChainOptions?: AclOptionsXchain | undefined
   error: string
 }
 
-export type CheckPermissionInputs = Pick<AclOptions, 'options'> & {
+export type CheckPermissionInputs = {
   userAddress: string
   proposalId: string
   aclAddress: string
+  options: AclOptions
 }
 
 export type CheckPermissionContext = {
@@ -329,103 +253,38 @@ export const checkPollPermission = async (
   const { userAddress, proposalId, aclAddress, options } = input
 
   const pollACL = IPollACL__factory.connect(aclAddress, provider)
-
-  let proof: BytesLike = ''
-  let explanation = ''
-  let canVote: DecisionWithReason = true
   const canManage = await pollACL.canManagePoll(daoAddress, proposalId, userAddress)
-  let error = ''
-  let tokenInfo: TokenInfo | NFTInfo | undefined = undefined
-  let xChainOptions: AclOptionsXchain | undefined = undefined
+  const acl = findACLForOptions(options)
 
-  const isAllowAll = 'allowAll' in options
-  const isTokenHolder = 'token' in options
-  const isWhitelist = 'allowList' in options
-  const isXChain = 'xchain' in options
-
-  if (isAllowAll) {
-    proof = new Uint8Array()
-    const result = 0n !== (await pollACL.canVoteOnPoll(daoAddress, proposalId, userAddress, proof))
-    if (result) {
-      canVote = true
-      explanation = ''
-    } else {
-      canVote = denyWithReason('some unknown reason')
+  if (!acl) {
+    return {
+      proof: '',
+      explanation: '',
+      canVote: denyWithReason(
+        'this poll has some unknown access control settings. (Poll created by newer version of software?)',
+      ),
+      tokenInfo: undefined,
+      xChainOptions: undefined,
+      error: '',
+      canManage,
     }
-  } else if (isWhitelist) {
-    proof = new Uint8Array()
-    explanation = 'This poll is only for a predefined list of addresses.'
-    const result = 0n !== (await pollACL.canVoteOnPoll(daoAddress, proposalId, userAddress, proof))
-    // console.log("whiteListAcl check:", result)
-    if (result) {
-      canVote = true
-    } else {
-      canVote = denyWithReason('you are not on the list of allowed addresses')
-    }
-  } else if (isTokenHolder) {
-    const tokenAddress = (options as AclOptionsToken).token
-    tokenInfo = await getSapphireTokenDetails(tokenAddress)
-    explanation = `You need to hold some ${tokenInfo?.name ?? 'specific'} token (on the Sapphire network) to vote.`
-    proof = new Uint8Array()
-    try {
-      const result = 0n !== (await pollACL.canVoteOnPoll(daoAddress, proposalId, userAddress, proof))
-      // console.log("tokenHolderAcl check:", result)
-      if (result) {
-        canVote = true
-      } else {
-        canVote = denyWithReason(`you don't hold any ${tokenInfo?.name} tokens`)
-      }
-    } catch {
-      canVote = denyWithReason(`you don't hold any ${tokenInfo?.name} tokens`)
-    }
-  } else if (isXChain) {
-    xChainOptions = options as AclOptionsXchain
-
-    const {
-      xchain: { chainId, blockHash, address: tokenAddress, slot },
-    } = xChainOptions
-    const provider = xchainRPC(chainId)
-    const chainDefinition = getChainDefinition(chainId)
-    try {
-      tokenInfo = await getContractDetails(chainId, tokenAddress)
-      if (!tokenInfo) throw new Error("Can't load token details")
-      explanation = `This poll is only for those who have hold ${tokenInfo?.name} token on ${chainDefinition.name} when the poll was created.`
-      let isBalancePositive = false
-      const holderBalance = getUint(
-        await fetchStorageValue(provider, blockHash, tokenAddress, slot, userAddress),
-      )
-      if (holderBalance > BigInt(0)) {
-        // Only attempt to get a proof if the balance is non-zero
-        proof = await fetchStorageProof(provider, blockHash, tokenAddress, slot, userAddress)
-        const result = await pollACL.canVoteOnPoll(daoAddress, proposalId, userAddress, proof)
-        if (0n !== result) {
-          isBalancePositive = true
-          canVote = true
-        }
-      }
-      if (!isBalancePositive) {
-        canVote = denyWithReason(`you don't hold any ${tokenInfo.name} tokens on ${chainDefinition.name}`)
-      }
-    } catch (e) {
-      const problem = e as any
-      error = problem.error?.message ?? problem.reason ?? problem.code ?? problem
-      console.error('Error when testing permission to vote on', proposalId, ':', error)
-      console.error('proof:', proof)
-      canVote = denyWithReason(`there was a technical problem verifying your permissions`)
-      if (fetchOptions) fetchOptions.ttl = 1000
-    }
-  } else {
-    canVote = denyWithReason(
-      'this poll has some unknown access control settings. (Poll created by newer version of software?)',
-    )
   }
+
+  const {
+    canVote,
+    explanation,
+    proof,
+    error = '',
+    ...extra
+  } = await acl.checkPermission(pollACL, daoAddress, proposalId, userAddress, options as any)
+
+  if (error && fetchOptions) fetchOptions.ttl = 1000
 
   return {
     proof,
     explanation,
     error,
-    tokenInfo,
-    xChainOptions,
+    ...extra,
     canVote,
     canManage,
   }
