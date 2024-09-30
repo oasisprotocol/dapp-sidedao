@@ -575,4 +575,18 @@ contract PollManager is IERC165, IPollManager {
     {
         return PROPOSALS[in_id].active;
     }
+
+    function getProposalId(
+        ProposalParams calldata in_params,
+        bytes calldata in_aclData,
+        address in_owner
+    )
+        public pure
+        returns (bytes32)
+    {
+        return keccak256(abi.encode(in_owner, in_params, in_aclData));
+    }
+
 }
+
+
