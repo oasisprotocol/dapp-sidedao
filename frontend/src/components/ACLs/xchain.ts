@@ -35,9 +35,9 @@ import { useMemo } from 'react'
 
 export const xchain = defineACL({
   value: 'acl_xchain',
-  label: 'Cross-Chain DAO',
+  label: 'Token Snapshot voting',
   costEstimation: 0.2,
-  description: 'You can set a condition that is evaluated on another chain.',
+  description: 'take a snapshot of token or NFT balances from another chain',
   useConfiguration: active => {
     const chainChoices: Choice<number>[] = useMemo(
       () =>
