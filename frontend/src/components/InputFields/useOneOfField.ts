@@ -16,6 +16,7 @@ type OneOfFieldProps<DataType = string> = Omit<
   initialValue?: DataType
   readonly choices: readonly Choice<DataType>[]
   requiredMessage?: string
+  hideDisabledChoices?: boolean
   disableIfOnlyOneVisibleChoice?: boolean
 }
 
@@ -24,8 +25,15 @@ export type OneOfFieldControls<DataType> = InputFieldControls<DataType> & {
 }
 
 export function useOneOfField<DataType>(props: OneOfFieldProps<DataType>): OneOfFieldControls<DataType> {
-  const { choices, requiredMessage = 'Please select an option!', disableIfOnlyOneVisibleChoice } = props
-  const visibleChoices = choices.filter(choice => !choice.hidden)
+  const {
+    choices,
+    requiredMessage = 'Please select an option!',
+    hideDisabledChoices,
+    disableIfOnlyOneVisibleChoice,
+  } = props
+  const visibleChoices = choices.filter(
+    choice => !choice.hidden && (!hideDisabledChoices || getVerdict(choice.enabled, true)),
+  )
   const enabledChoices = visibleChoices.filter(choice => getVerdict(choice.enabled, true))
   const initialValue = props.initialValue ?? (enabledChoices[0] ?? visibleChoices[0]).value
 
