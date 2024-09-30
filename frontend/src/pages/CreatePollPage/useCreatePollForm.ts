@@ -96,6 +96,13 @@ export const useCreatePollForm = () => {
     enabled: deny('Coming soon!'),
   })
 
+  const hidden = useBooleanField({
+    name: 'hidden',
+    label: 'Hidden poll',
+    description:
+      "If enabled, poll can only be accessed via the specific URL, but won't appear in any searches or dashboards.",
+  })
+
   const accessControlMethod = useOneOfField({
     name: 'accessControlMethod',
     label: 'Who can vote',
@@ -283,6 +290,7 @@ export const useCreatePollForm = () => {
   const stepFields: Record<CreationStep, FieldConfiguration> = {
     basics: [question, description, answers, customCSS],
     permission: [
+      hidden,
       accessControlMethod,
       ...allAclFieldsToShow,
       voteWeighting,
@@ -338,6 +346,7 @@ export const useCreatePollForm = () => {
         question: question.value,
         description: description.value,
         answers: answers.value,
+        isHidden: hidden.value,
         aclData,
         aclOptions,
         subsidizeAmount: gasFree.value ? parseEther(amountOfSubsidy.value) : undefined,

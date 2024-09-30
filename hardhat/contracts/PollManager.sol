@@ -52,12 +52,12 @@ contract PollManager is IERC165, IPollManager {
     // DATA STRUCTURES
 
     struct ProposalParams {
-        string ipfsHash;
-        bytes32 ipfsSecret;
         uint8 numChoices;
         bool publishVotes;
+        bool isHidden;
         uint64 closeTimestamp;
         IPollACL acl;
+        string metadata;
     }
 
     struct Proposal {
@@ -90,11 +90,13 @@ contract PollManager is IERC165, IPollManager {
 
 
     // ------------------------------------------------------------------------
-    // CONFIDENTIAL STORAGE
+    // CONFIDENTIAL / INTERNAL STORAGE
 
     mapping(bytes32 => Ballot) private s_ballots;
 
     IPollManagerACL private immutable s_managerACL;
+
+    mapping(bytes32 => uint256) private s_pastProposalsIndex;
 
 
     // ------------------------------------------------------------------------
@@ -148,7 +150,18 @@ contract PollManager is IERC165, IPollManager {
         external payable
         returns (bytes32)
     {
-        if (!s_managerACL.canCreatePoll(address(this), msg.sender)) {
+        return createFor(in_params, in_aclData, msg.sender);
+    }
+
+    function createFor(
+        ProposalParams calldata in_params,
+        bytes calldata in_aclData,
+        address in_owner
+    )
+        public payable
+        returns (bytes32)
+    {
+        if (!s_managerACL.canCreatePoll(address(this), in_owner)) {
             revert Create_NotAllowed();
         }
 
@@ -165,7 +178,7 @@ contract PollManager is IERC165, IPollManager {
             revert Create_TooManyChoices();
         }
 
-        bytes32 proposalId = keccak256(abi.encode(msg.sender, in_params, in_aclData));
+        bytes32 proposalId = getProposalId(in_params, in_aclData, in_owner);
 
         if (PROPOSALS[proposalId].params.numChoices != 0) {
             revert Create_AlreadyExists();
@@ -177,25 +190,29 @@ contract PollManager is IERC165, IPollManager {
             topChoice:0
         });
 
-        ACTIVE_PROPOSALS.add(proposalId);
-
         Ballot storage ballot = s_ballots[proposalId];
 
-        uint xorMask = ballot.xorMask = uint256(keccak256(abi.encodePacked(address(this), msg.sender)));
+        uint xorMask = ballot.xorMask = uint256(keccak256(abi.encodePacked(address(this), in_owner)));
 
         for (uint256 i; i < in_params.numChoices; ++i)
         {
             ballot.voteCounts[i] = xorMask;
         }
 
-        GASLESS_VOTER.onPollCreated{value:msg.value}(proposalId, msg.sender);
+        GASLESS_VOTER.onPollCreated{value:msg.value}(proposalId, in_owner);
 
         if( in_params.acl != IPollACL(address(0)) )
         {
-            in_params.acl.onPollCreated(proposalId, msg.sender, in_aclData);
+            in_params.acl.onPollCreated(proposalId, in_owner, in_aclData);
         }
 
-        emit ProposalCreated(proposalId);
+        // Hidden proposals will not show in the public list
+        if( ! in_params.isHidden )
+        {
+            ACTIVE_PROPOSALS.add(proposalId);
+
+            emit ProposalCreated(proposalId);
+        }
 
         return proposalId;
     }
@@ -324,6 +341,7 @@ contract PollManager is IERC165, IPollManager {
 
     /// Paginated access to the active proposals
     /// Pagination is in reverse order, so most recent first
+    /// Hidden proposals are not included in this list
     function getActiveProposals(uint256 in_offset, uint256 in_limit)
         external view
         returns (uint out_count, ProposalWithId[] memory out_proposals)
@@ -350,6 +368,7 @@ contract PollManager is IERC165, IPollManager {
 
     /// Past proposals are in reverse order
     /// So the most recently closed proposal pops up in the list after closure
+    /// Hidden proposals are not included in this list
     function getPastProposals(uint256 in_offset, uint256 in_limit)
         external view
         returns (uint out_count, ProposalWithId[] memory out_proposals)
@@ -374,8 +393,11 @@ contract PollManager is IERC165, IPollManager {
         }
     }
 
-   function close(bytes32 in_proposalId)
-        external
+    /// Permanently delete a proposal and associated data
+    /// If the proposal isn't closed, it will be closed first
+    /// XXX:
+    function close(bytes32 in_proposalId)
+        public
     {
         Proposal storage proposal = PROPOSALS[in_proposalId];
         if (!proposal.active) {
@@ -414,14 +436,58 @@ contract PollManager is IERC165, IPollManager {
 
         PROPOSALS[in_proposalId].topChoice = uint8(topChoice);
         PROPOSALS[in_proposalId].active = false;
-        ACTIVE_PROPOSALS.remove(in_proposalId);
-        PAST_PROPOSALS.push(in_proposalId);
+
+        // If proposal isn't hidden, remove from active list, to past list + emit events
+        if( ! proposal.params.isHidden )
+        {
+            ACTIVE_PROPOSALS.remove(in_proposalId);
+            s_pastProposalsIndex[in_proposalId] = PAST_PROPOSALS.length;
+            PAST_PROPOSALS.push(in_proposalId);
+            emit ProposalClosed(in_proposalId, topChoice);
+        }
 
         proposal.params.acl.onPollClosed(in_proposalId);
 
         GASLESS_VOTER.onPollClosed(in_proposalId);
+    }
 
-        emit ProposalClosed(in_proposalId, topChoice);
+    error Destroy_NotFound();
+
+    function destroy(bytes32 in_proposalId)
+        external
+    {
+        Proposal storage proposal = PROPOSALS[in_proposalId];
+        if ( 0 == proposal.params.numChoices) {
+            revert Destroy_NotFound();
+        }
+
+        if( proposal.active )
+        {
+            close(in_proposalId);
+        }
+
+        delete PROPOSALS[in_proposalId];
+
+        Ballot storage ballot = s_ballots[in_proposalId];
+
+        for( uint i = 0; i < ballot.voters.length; i++ )
+        {
+            delete ballot.votes[ballot.voters[i]];
+        }
+
+        delete s_ballots[in_proposalId];
+
+        // Remove proposal from past proposals list
+        if( ! proposal.params.isHidden )
+        {
+            uint idx = s_pastProposalsIndex[in_proposalId];
+            uint cnt = PAST_PROPOSALS.length;
+            if( idx != (cnt - 1) ) {
+                PAST_PROPOSALS[idx] = PAST_PROPOSALS[cnt-1];
+            }
+            PAST_PROPOSALS.pop();
+            delete s_pastProposalsIndex[in_proposalId];
+        }
     }
 
     function getVoteOf(bytes32 in_proposalId, address in_voter)
@@ -508,5 +574,16 @@ contract PollManager is IERC165, IPollManager {
         returns (bool)
     {
         return PROPOSALS[in_id].active;
+    }
+
+    function getProposalId(
+        ProposalParams calldata in_params,
+        bytes calldata in_aclData,
+        address in_owner
+    )
+        public pure
+        returns (bytes32)
+    {
+        return keccak256(abi.encode(in_owner, in_params, in_aclData));
     }
 }

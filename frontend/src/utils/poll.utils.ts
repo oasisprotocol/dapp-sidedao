@@ -18,8 +18,6 @@ import {
 export type { ContractType, NftType } from '@oasisprotocol/blockvote-contracts'
 export { isToken } from '@oasisprotocol/blockvote-contracts'
 import { Poll, PollManager } from '../types'
-import { encryptJSON } from './crypto.demo'
-import { Pinata } from './Pinata'
 import { EthereumContext } from '../providers/EthereumContext'
 import { DecisionWithReason, denyWithReason } from '../components/InputFields'
 import { FetcherFetchOptions } from './StoredLRUCache'
@@ -125,6 +123,7 @@ export type CreatePollProps = {
   question: string
   description: string
   answers: string[]
+  isHidden: boolean
   aclData: string
   aclOptions: AclOptions
   subsidizeAmount: bigint | undefined
@@ -144,6 +143,7 @@ export const createPoll = async (
     answers,
     aclData,
     aclOptions,
+    isHidden,
     subsidizeAmount,
     publishVotes,
     completionTime,
@@ -164,22 +164,13 @@ export const createPoll = async (
 
   // console.log('Compiling poll', poll)
 
-  const { key, cipherbytes } = encryptJSON(poll)
-
-  updateStatus('Saving poll data to IPFS')
-  const ipfsHash = await Pinata.pinData(cipherbytes)
-
-  if (!ipfsHash) throw new Error('Failed to save to IPFS, try again!')
-  // console.log('Poll ipfsHash', ipfsHash);
-  // updateStatus("Saved to IPFS")
-
   const proposalParams: PollManager.ProposalParamsStruct = {
-    ipfsHash,
-    ipfsSecret: key,
+    metadata: JSON.stringify(poll),
     numChoices: answers.length,
     publishVotes: poll.options.publishVotes,
     closeTimestamp: poll.options.closeTimestamp,
     acl: aclOptions.address,
+    isHidden,
   }
 
   console.log('params are', proposalParams)
@@ -201,13 +192,16 @@ export const createPoll = async (
     console.log('Receipt is', receipt)
     throw new Error('createProposal tx receipt reported failure.')
   }
-  const proposalId = receipt.logs[0].data
-
   updateStatus('Created poll')
-
-  // console.log('doCreatePoll: Proposal ID', proposalId);
-
-  return proposalId
+  if (isHidden) {
+    const proposalId = await pollManager.getProposalId(proposalParams, aclData, creator)
+    // console.log('Hidden proposal id is:', proposalId)
+    return proposalId
+  } else {
+    const proposalId = receipt.logs[0].data
+    // console.log('doCreatePoll: Proposal ID', proposalId);
+    return proposalId
+  }
 }
 
 export const completePoll = async (eth: EthereumContext, pollManager: PollManager, proposalId: string) => {
@@ -220,6 +214,18 @@ export const completePoll = async (eth: EthereumContext, pollManager: PollManage
   const receipt = await tx.wait()
 
   if (receipt!.status != 1) throw new Error('Complete ballot tx failed')
+}
+
+export const destroyPoll = async (eth: EthereumContext, pollManager: PollManager, proposalId: string) => {
+  await eth.switchNetwork() // ensure we're on the correct network first!
+  // console.log("Preparing complete tx...")
+
+  const tx = await pollManager.destroy(proposalId)
+  // console.log('Destroy proposal tx', tx);
+
+  const receipt = await tx.wait()
+
+  if (receipt!.status != 1) throw new Error('Destroy poll tx failed')
 }
 
 export type PollPermissions = {

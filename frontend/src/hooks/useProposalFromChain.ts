@@ -33,7 +33,8 @@ export const useProposalFromChain = (proposalId: string) => {
       const [active, topChoice, params] = data
       const acl = data?.params?.acl
       if (!acl || acl === ZeroAddress) {
-        setError('Found proposal with invalid ACL.')
+        // setError('Found proposal with invalid ACL.')
+        setError('Poll not found. Are you sure the link is correct?')
         console.log('Found proposal with invalid ACL.')
       } else {
         setProposal({

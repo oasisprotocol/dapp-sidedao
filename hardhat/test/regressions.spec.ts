@@ -30,7 +30,7 @@ struct PollCreationOptions {
 */
 const STORAGEPROOF_ACL_OPTIONS = ['tuple(tuple(bytes32,address,uint256),bytes,bytes)'];
 
-describe("Cross-chain", function () {
+describe("Regressions", function () {
     let headerCache: HeaderCache;
     let accountCache: AccountCache;
     let storageProof: StorageProof;
@@ -51,7 +51,7 @@ describe("Cross-chain", function () {
     });
 
     /// Construct the arguments manually
-    it.skip('USDT on Ethereum', async () => {
+    it('USDT on Ethereum', async () => {
         const [signer] = await ethers.getSigners();
 
         const contractAddress = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
