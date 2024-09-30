@@ -5,6 +5,7 @@ import { usePollGaslessStatus } from './usePollGaslessStatus'
 import { usePollPermissions } from './usePollPermissions'
 import { useEthereum } from './useEthereum'
 import { useContracts } from './useContracts'
+import { decodeBase64, toUtf8String } from 'ethers'
 
 const noVotes: ListOfVotes = { out_count: 0n, out_voters: [], out_choices: [] }
 
@@ -32,7 +33,10 @@ export const useExtendedPoll = (
 
   let correctiveAction: (() => void) | undefined
 
-  const ipfsParams = useMemo(() => (metadata ? JSON.parse(metadata) : undefined), [metadata])
+  const ipfsParams = useMemo(
+    () => (metadata ? JSON.parse(toUtf8String(decodeBase64(metadata))) : undefined),
+    [metadata],
+  )
 
   useEffect(
     // Update poll object
