@@ -192,13 +192,16 @@ export const createPoll = async (
     console.log('Receipt is', receipt)
     throw new Error('createProposal tx receipt reported failure.')
   }
-  const proposalId = receipt.logs[0].data
-
   updateStatus('Created poll')
-
-  // console.log('doCreatePoll: Proposal ID', proposalId);
-
-  return proposalId
+  if (isHidden) {
+    const proposalId = await pollManager.getProposalId(proposalParams, aclData, creator)
+    // console.log('Hidden proposal id is:', proposalId)
+    return proposalId
+  } else {
+    const proposalId = receipt.logs[0].data
+    // console.log('doCreatePoll: Proposal ID', proposalId);
+    return proposalId
+  }
 }
 
 export const completePoll = async (eth: EthereumContext, pollManager: PollManager, proposalId: string) => {
