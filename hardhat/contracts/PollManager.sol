@@ -178,7 +178,7 @@ contract PollManager is IERC165, IPollManager {
             revert Create_TooManyChoices();
         }
 
-        bytes32 proposalId = keccak256(abi.encode(in_owner, in_params, in_aclData));
+        bytes32 proposalId = getProposalId(in_params, in_aclData, in_owner);
 
         if (PROPOSALS[proposalId].params.numChoices != 0) {
             revert Create_AlreadyExists();
@@ -586,7 +586,4 @@ contract PollManager is IERC165, IPollManager {
     {
         return keccak256(abi.encode(in_owner, in_params, in_aclData));
     }
-
 }
-
-

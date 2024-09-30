@@ -6,10 +6,8 @@ import {
   BytesLike,
   EventLog,
   JsonRpcProvider,
-  ZeroHash,
   decodeRlp,
   encodeRlp,
-  formatEther,
   getBytes,
   parseEther,
 } from 'ethers';
@@ -123,20 +121,20 @@ describe('PollManager', function () {
 
     TEST_PROPOSALS = [
       {
-        ipfsHash: '0xabcd',
-        ipfsSecret: ZeroHash,
-        numChoices: 3n,
-        publishVotes: true,
-        closeTimestamp: 0n,
+        isHidden: false,
+        numChoices: 4n,
+        publishVotes: false,
+        closeTimestamp: BigInt(new Date().getTime() + 1),
         acl: acl_allowall_addr,
+        metadata: ''
       },
       {
-        ipfsHash: '0xdef0',
-        ipfsSecret: ZeroHash,
+        isHidden: false,
         numChoices: 3n,
         publishVotes: true,
-        closeTimestamp: 0n,
+        closeTimestamp: BigInt(new Date().getTime() + 2),
         acl: acl_allowall_addr,
+        metadata: ''
       },
     ];
   });
@@ -165,7 +163,8 @@ describe('PollManager', function () {
       expect(ap_paginated.out_proposals.length).eq(1);
 
       const x = ap_paginated.out_proposals[0].proposal.params;
-      expect(x.ipfsHash).eq(p.ipfsHash);
+      expect(x.isHidden).eq(p.isHidden);
+      expect(x.metadata).eq(p.metadata);
       expect(x.numChoices).eq(p.numChoices);
       expect(x.publishVotes).eq(p.publishVotes);
       expect(x.closeTimestamp).eq(p.closeTimestamp);
@@ -191,8 +190,8 @@ describe('PollManager', function () {
     const propId = await addProposal(
       pm,
       {
-        ipfsHash: '0xabcdblahblah',
-        ipfsSecret: ZeroHash,
+        isHidden: false,
+        metadata: '',
         numChoices: 3n,
         publishVotes: false,
         closeTimestamp: 0n,
@@ -253,8 +252,8 @@ describe('PollManager', function () {
     const propId = await addProposal(
       pm,
       {
-        ipfsHash: '0xabcdblahblahstuff',
-        ipfsSecret: ZeroHash,
+        isHidden: false,
+        metadata: '',
         numChoices: 3n,
         publishVotes: false,
         closeTimestamp: 0n,
@@ -311,8 +310,8 @@ describe('PollManager', function () {
     const proposalId = await addProposal(
       pm,
       {
-        ipfsHash: '0xabcdblahblah',
-        ipfsSecret: ZeroHash,
+        isHidden: false,
+        metadata: '',
         numChoices: 3n,
         publishVotes: false,
         closeTimestamp: 0n,
@@ -413,8 +412,8 @@ describe('PollManager', function () {
     const proposalId = await addProposal(
       pm,
       {
-        ipfsHash: '0xabcdblahblah',
-        ipfsSecret: ZeroHash,
+        isHidden: false,
+        metadata: '',
         numChoices: 3n,
         publishVotes: false,
         closeTimestamp: 0n,
