@@ -22,7 +22,7 @@ export abstract class PermissionCache {
     ],
     // debug: ['load', 'save'],
     storageKey: 'blockvote.pollPermissions2',
-    dataVersion: 4,
+    dataVersion: 5,
     transformValues: {
       encode: data => JSON.stringify(data, bigNumberify.stringify),
       decode: (stringData): PollPermissions => {

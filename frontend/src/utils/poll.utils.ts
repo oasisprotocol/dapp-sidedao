@@ -272,7 +272,7 @@ export const checkPollPermission = async (
 
   const {
     canVote,
-    explanation,
+    explanation = '',
     proof,
     error = '',
     ...extra
