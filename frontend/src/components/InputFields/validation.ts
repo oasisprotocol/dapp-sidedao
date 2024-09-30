@@ -2,7 +2,10 @@ import { InputFieldControls, ValidationReason } from './useInputField'
 import { AsyncValidatorFunction, getAsArray, SingleOrArray } from './util'
 import { LabelProps } from './useLabel'
 
-type FieldLike = Pick<InputFieldControls<any>, 'name' | 'type' | 'visible' | 'validate' | 'hasProblems'>
+export type FieldLike = Pick<
+  InputFieldControls<any>,
+  'name' | 'type' | 'visible' | 'validate' | 'hasProblems'
+>
 
 export type FieldConfiguration = SingleOrArray<FieldLike>[]
 

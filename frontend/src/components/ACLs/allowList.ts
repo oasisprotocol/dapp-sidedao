@@ -1,7 +1,7 @@
 import { defineACL } from './common'
-import { VITE_CONTRACT_ACL_VOTERALLOWLIST } from '../../constants/config'
+import { designDecisions, VITE_CONTRACT_ACL_VOTERALLOWLIST } from '../../constants/config'
 import { abiEncode, isValidAddress } from '../../utils/poll.utils'
-import { denyWithReason, useTextArrayField } from '../InputFields'
+import { denyWithReason, useOneOfField, useTextArrayField } from '../InputFields'
 import { AclOptions } from '@oasisprotocol/blockvote-contracts'
 
 // Split a list of addresses by newLine, comma or space
@@ -48,8 +48,21 @@ export const allowList = defineACL({
       showValidationSuccess: true,
     })
 
+    const voteWeighting = useOneOfField({
+      name: 'voteWeighting',
+      label: 'Vote weight',
+      visible: active,
+      choices: [
+        {
+          value: 'weight_perWallet',
+          label: '1 vote per wallet',
+        },
+      ],
+      disableIfOnlyOneVisibleChoice: designDecisions.disableSelectsWithOnlyOneVisibleOption,
+    } as const)
+
     return {
-      fields: [addresses],
+      fields: [addresses, voteWeighting],
       values: {
         addresses: addresses.value,
       },

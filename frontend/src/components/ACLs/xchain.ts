@@ -3,6 +3,7 @@ import {
   addMockValidation,
   Choice,
   DecisionWithReason,
+  deny,
   denyWithReason,
   useLabel,
   useOneOfField,
@@ -28,7 +29,7 @@ import {
   getBlockHeaderRLP,
   xchainRPC,
 } from '@oasisprotocol/blockvote-contracts'
-import { VITE_CONTRACT_ACL_STORAGEPROOF } from '../../constants/config'
+import { designDecisions, VITE_CONTRACT_ACL_STORAGEPROOF } from '../../constants/config'
 import classes from './index.module.css'
 import { BytesLike, getUint } from 'ethers'
 import { useMemo } from 'react'
@@ -220,6 +221,25 @@ export const xchain = defineACL({
       ...addMockValidation,
     })
 
+    const voteWeighting = useOneOfField({
+      name: 'voteWeighting',
+      label: 'Vote weight',
+      visible: active,
+      choices: [
+        {
+          value: 'weight_perWallet',
+          label: '1 vote per wallet',
+          enabled: deny('Coming soon'),
+        },
+        {
+          value: 'weight_perToken',
+          label: 'According to token distribution',
+        },
+      ],
+      hideDisabledChoices: designDecisions.hideDisabledSelectOptions,
+      disableIfOnlyOneVisibleChoice: designDecisions.disableSelectsWithOnlyOneVisibleOption,
+    } as const)
+
     return {
       fields: [
         chain,
@@ -229,6 +249,7 @@ export const xchain = defineACL({
         walletAddress,
         [walletBalance, slotNumber],
         [blockHash, blockHeight],
+        voteWeighting,
       ],
       values: {
         chainId: chain.value,

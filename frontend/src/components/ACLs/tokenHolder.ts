@@ -1,7 +1,14 @@
 import { defineACL } from './common'
-import { DecisionWithReason, denyWithReason, useLabel, useTextField } from '../InputFields'
+import {
+  DecisionWithReason,
+  deny,
+  denyWithReason,
+  useLabel,
+  useOneOfField,
+  useTextField,
+} from '../InputFields'
 import { abiEncode, getSapphireTokenDetails, isValidAddress } from '../../utils/poll.utils'
-import { VITE_CONTRACT_ACL_TOKENHOLDER } from '../../constants/config'
+import { designDecisions, VITE_CONTRACT_ACL_TOKENHOLDER } from '../../constants/config'
 
 export const tokenHolder = defineACL({
   value: 'acl_tokenHolder',
@@ -47,8 +54,26 @@ export const tokenHolder = defineACL({
       initialValue: '',
     })
 
+    const voteWeighting = useOneOfField({
+      name: 'voteWeighting',
+      label: 'Vote weight',
+      visible: active,
+      choices: [
+        {
+          value: 'weight_perWallet',
+          label: '1 vote per wallet',
+          enabled: deny('Coming soon'),
+        },
+        {
+          value: 'weight_perToken',
+          label: 'According to token distribution',
+        },
+      ],
+      disableIfOnlyOneVisibleChoice: designDecisions.disableSelectsWithOnlyOneVisibleOption,
+    } as const)
+
     return {
-      fields: [tokenAddress, [tokenName, tokenSymbol]],
+      fields: [tokenAddress, [tokenName, tokenSymbol], voteWeighting],
       values: {
         tokenAddress: tokenAddress.value,
       },

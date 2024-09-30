@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react'
 import {
-  Choice,
   collectErrorsInFields,
   deny,
   FieldConfiguration,
+  FieldLike,
   findErrorsInFields,
   flatten,
-  getVerdict,
   useBooleanField,
   useDateField,
   useLabel,
@@ -42,11 +41,6 @@ const expectedRanges = {
   '1000-10000': 10000,
   '10000-': 100000,
 } as const
-
-const hideDisabledIfNecessary = (choice: Choice): Choice => ({
-  ...choice,
-  hidden: choice.hidden || (designDecisions.hideDisabledSelectOptions && !getVerdict(choice.enabled, true)),
-})
 
 export const useCreatePollForm = () => {
   const eth = useEthereum()
@@ -118,24 +112,20 @@ export const useCreatePollForm = () => {
 
   const currentAclConfig = aclConfig.find(a => a.name === accessControlMethod.value)!
 
-  const allAclFieldsToShow = flatten(aclConfig.map(g => g.fields))
+  const allAclFieldsToShow = flatten(
+    aclConfig.map(acl => {
+      const addPrefixToName = (f: FieldLike) => ({ ...f, name: `${acl.name}/${f.name}` })
 
-  const voteWeighting = useOneOfField({
-    name: 'voteWeighting',
-    label: 'Vote weight',
-    choices: [
-      {
-        value: 'weight_perWallet',
-        label: '1 vote per wallet',
-      },
-      {
-        value: 'weight_perToken',
-        label: 'According to token distribution',
-        enabled: deny('Coming soon'),
-      },
-    ].map(hideDisabledIfNecessary),
-    disableIfOnlyOneVisibleChoice: designDecisions.disableSelectsWithOnlyOneVisibleOption,
-  } as const)
+      const rows = acl.fields
+      return rows.map(row => {
+        if (Array.isArray(row)) {
+          return row.map(field => addPrefixToName(field))
+        } else {
+          return addPrefixToName(row)
+        }
+      })
+    }),
+  )
 
   const gasFree = useBooleanField({
     name: 'gasless',
@@ -199,7 +189,8 @@ export const useCreatePollForm = () => {
         label: 'Show percentage and votes for each answer',
         description: 'Everyone can see who voted for what.',
       },
-    ].map(hideDisabledIfNecessary),
+    ],
+    hideDisabledChoices: designDecisions.hideDisabledSelectOptions,
   } as const)
 
   const authorResultDisplayType = useOneOfField({
@@ -230,7 +221,8 @@ export const useCreatePollForm = () => {
         description: 'The author can see who voted for what.',
         enabled: deny('Coming soon'),
       },
-    ].map(hideDisabledIfNecessary),
+    ],
+    hideDisabledChoices: designDecisions.hideDisabledSelectOptions,
     disableIfOnlyOneVisibleChoice: designDecisions.disableSelectsWithOnlyOneVisibleOption,
   } as const)
 
@@ -293,7 +285,6 @@ export const useCreatePollForm = () => {
       hidden,
       accessControlMethod,
       ...allAclFieldsToShow,
-      voteWeighting,
       gasFree,
       gasFreeExplanation,
       [numberOfExpectedVoters, amountOfSubsidy],

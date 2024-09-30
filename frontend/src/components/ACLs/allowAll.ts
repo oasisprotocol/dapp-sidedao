@@ -1,15 +1,30 @@
 import { defineACL } from './common'
-import { VITE_CONTRACT_ACL_ALLOWALL } from '../../constants/config'
-import { denyWithReason } from '../InputFields'
+import { designDecisions, VITE_CONTRACT_ACL_ALLOWALL } from '../../constants/config'
+import { denyWithReason, useOneOfField } from '../InputFields'
 
 export const allowAll = defineACL({
   value: 'acl_allowAll',
   label: 'Everybody',
   costEstimation: 0.1,
-  useConfiguration: () => ({
-    fields: [],
-    values: undefined,
-  }),
+  useConfiguration: active => {
+    const voteWeighting = useOneOfField({
+      name: 'voteWeighting',
+      label: 'Vote weight',
+      visible: active,
+      choices: [
+        {
+          value: 'weight_perWallet',
+          label: '1 vote per wallet',
+        },
+      ],
+      disableIfOnlyOneVisibleChoice: designDecisions.disableSelectsWithOnlyOneVisibleOption,
+    } as const)
+
+    return {
+      fields: [voteWeighting],
+      values: undefined,
+    }
+  },
   getAclOptions: () => [
     '0x', // Empty bytes is passed
     {
