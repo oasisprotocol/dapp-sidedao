@@ -125,6 +125,7 @@ export type CreatePollProps = {
   question: string
   description: string
   answers: string[]
+  isHidden: boolean
   aclData: string
   aclOptions: AclOptions
   subsidizeAmount: bigint | undefined
@@ -144,6 +145,7 @@ export const createPoll = async (
     answers,
     aclData,
     aclOptions,
+    isHidden,
     subsidizeAmount,
     publishVotes,
     completionTime,
@@ -180,6 +182,7 @@ export const createPoll = async (
     publishVotes: poll.options.publishVotes,
     closeTimestamp: poll.options.closeTimestamp,
     acl: aclOptions.address,
+    isHidden,
   }
 
   console.log('params are', proposalParams)
