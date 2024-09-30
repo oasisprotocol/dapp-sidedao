@@ -22,7 +22,7 @@ export const CompletedPoll: FC<
   >
 > = ({ poll, pollResults, isMine, permissions, checkPermissions, hasWallet, hasWalletOnWrongNetwork }) => {
   const { name, description } = poll!.ipfsParams!
-  const { choices, votes, totalVotes } = pollResults!
+  const { choices, votes, voters, totalVotes } = pollResults!
   const { explanation: aclExplanation, canVote: aclCanVote } = permissions
 
   return (
@@ -98,6 +98,16 @@ export const CompletedPoll: FC<
         </>
       )}
       {!!votes?.out_count && <VoteBrowser choices={choices} votes={votes} totalVotes={totalVotes} />}
+      {!!voters?.out_count && (
+        <div>
+          <h4>Voters:</h4>
+          <>
+            {voters.out_voters.map((voter, index) => {
+              return <div key={`voter-${index}`}>{voter}</div>
+            })}
+          </>
+        </div>
+      )}
       <SocialShares
         label={'Share results on'}
         name={name}

@@ -1,4 +1,4 @@
-import { ListOfVotes, ExtendedPoll, PollResults, Proposal } from '../types'
+import { ListOfVotes, ExtendedPoll, PollResults, Proposal, ListOfVoters } from '../types'
 import { useEffect, useMemo, useState } from 'react'
 import { dashboard, demoSettings, getDemoPoll } from '../constants/config'
 import { usePollGaslessStatus } from './usePollGaslessStatus'
@@ -7,7 +7,8 @@ import { useEthereum } from './useEthereum'
 import { useContracts } from './useContracts'
 import { decodeBase64, toUtf8String } from 'ethers'
 
-const noVotes: ListOfVotes = { out_count: 0n, out_voters: [], out_choices: [] }
+const noVoters: ListOfVoters = { out_count: 0n, out_voters: [] }
+const noVotes: ListOfVotes = { ...noVoters, out_choices: [] }
 
 export const useExtendedPoll = (
   proposal: Proposal | undefined,
@@ -25,6 +26,7 @@ export const useExtendedPoll = (
   const [voteCounts, setVoteCounts] = useState<bigint[]>([])
   const [winningChoice, setWinningChoice] = useState<bigint | undefined>(undefined)
   const [votes, setVotes] = useState<ListOfVotes>({ ...noVotes })
+  const [voters, setVoters] = useState<ListOfVoters>({ ...noVotes })
 
   const { gaslessEnabled, gaslessPossible, gvAddresses, gvBalances, invalidateGaslessStatus } =
     usePollGaslessStatus(proposalId, params.onDashboard)
@@ -96,8 +98,21 @@ export const useExtendedPoll = (
         loadedVotes.out_choices.push(...newVotes.out_choices)
       }
       setVotes(loadedVotes)
+    } else if (proposal.params.publishVoters) {
+      const loadedVoters: ListOfVoters = {
+        out_count: 1000n, // Fake number, will be updated when the first batch is loaded
+        out_voters: [],
+      }
+      while (loadedVoters.out_voters.length < loadedVoters.out_count) {
+        const newVoters = await pollManager.getVoters(proposal.id, loadedVoters.out_voters.length, 100)
+        loadedVoters.out_count = newVoters.out_count
+        loadedVoters.out_voters.push(...newVoters.out_voters)
+      }
+      setVotes({ ...noVotes })
+      setVoters(loadedVoters)
     } else {
       setVotes({ ...noVotes })
+      setVoters({ ...noVoters })
     }
   }
 
@@ -114,6 +129,7 @@ export const useExtendedPoll = (
       choices: {},
       winner: poll.proposal.topChoice?.toString(),
       votes,
+      voters,
     }
     const zeroVotes = !results.totalVotes
     poll.ipfsParams.choices.forEach((choice, index) => {
@@ -125,7 +141,7 @@ export const useExtendedPoll = (
       }
     })
     return results
-  }, [poll, voteCounts, winningChoice, votes])
+  }, [poll, voteCounts, winningChoice, votes, voters])
 
   const completeDemoPoll = () => {
     if (!poll) return
@@ -162,7 +178,6 @@ export const useExtendedPoll = (
     poll,
     voteCounts,
     winningChoice,
-    votes,
     pollResults,
     deadline,
     setDeadline,

@@ -49,7 +49,6 @@ export const usePollData = (pollId: string) => {
     deadline,
     setDeadline,
     completeDemoPoll,
-    votes,
     voteCounts,
     winningChoice,
     pollResults,
@@ -444,8 +443,6 @@ export const usePollData = (pollId: string) => {
     voteCounts,
     winningChoice,
     pollResults,
-
-    votes,
   }
 }
 
