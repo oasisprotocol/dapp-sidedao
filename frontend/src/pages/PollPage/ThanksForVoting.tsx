@@ -27,10 +27,29 @@ const StatusInfo: FC<{
   canComplete: boolean
   complete: () => void
   isCompleting: boolean
-}> = ({ remainingTime, remainingTimeString, isMine, canComplete, complete, isCompleting }) => {
+  canDestroy: boolean
+  isDestroying: boolean
+  destroy: () => void
+}> = ({
+  remainingTime,
+  remainingTimeString,
+  isMine,
+  canComplete,
+  complete,
+  isCompleting,
+  canDestroy,
+  isDestroying,
+  destroy,
+}) => {
   const handleComplete = () => {
     if (canComplete && window.confirm("Are you you you want to complete this poll? This can't be undone.")) {
       complete()
+    }
+  }
+
+  const handleDestroy = () => {
+    if (canDestroy && window.confirm("Are you you you want to destroy this poll? This can't be undone.")) {
+      destroy()
     }
   }
 
@@ -43,6 +62,15 @@ const StatusInfo: FC<{
             <h4>Voting results will be available when you complete the poll.</h4>
             <Button size={'small'} disabled={!canComplete} onClick={handleComplete} pending={isCompleting}>
               {isCompleting ? 'Completing poll' : 'Complete poll'}
+            </Button>
+            <Button
+              size={'small'}
+              disabled={!canDestroy}
+              color={'secondary'}
+              onClick={handleDestroy}
+              pending={isDestroying}
+            >
+              {isDestroying ? 'Destroying poll' : 'Destroy poll'}
             </Button>
           </>
         )
@@ -70,6 +98,15 @@ const StatusInfo: FC<{
           <Button size={'small'} disabled={!canComplete} onClick={handleComplete} pending={isCompleting}>
             {isCompleting ? 'Completing poll' : 'Complete poll'}
           </Button>
+          <Button
+            size={'small'}
+            disabled={!canDestroy}
+            color={'secondary'}
+            onClick={handleDestroy}
+            pending={isDestroying}
+          >
+            {isDestroying ? 'Destroying poll' : 'Destroy poll'}
+          </Button>
         </>
       )
     } else {
@@ -89,6 +126,9 @@ export const ThanksForVote: FC<PollData> = ({
   canComplete,
   completePoll,
   isCompleting,
+  canDestroy,
+  isDestroying,
+  destroyPoll,
 }) => {
   const {
     name,
@@ -133,6 +173,9 @@ export const ThanksForVote: FC<PollData> = ({
         canComplete={canComplete}
         complete={completePoll}
         isCompleting={isCompleting}
+        canDestroy={canDestroy}
+        isDestroying={isDestroying}
+        destroy={destroyPoll}
       />
     </Card>
   )

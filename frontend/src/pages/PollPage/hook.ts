@@ -5,7 +5,7 @@ import { ethers, Transaction, TransactionReceipt, ZeroAddress } from 'ethers'
 import { DemoNetwork } from '../../utils/crypto.demo'
 import { useEthereum } from '../../hooks/useEthereum'
 import { DateUtils } from '../../utils/date.utils'
-import { completePoll as doCompletePoll } from '../../utils/poll.utils'
+import { completePoll as doCompletePoll, destroyPoll as doDestroyPoll } from '../../utils/poll.utils'
 import {
   demoSettings,
   designDecisions,
@@ -17,8 +17,10 @@ import { tuneValue } from '../../utils/tuning'
 import { getVerdict } from '../../components/InputFields'
 import { useExtendedPoll } from '../../hooks/useExtendedPoll'
 import { useProposalFromChain } from '../../hooks/useProposalFromChain'
+import { useNavigate } from 'react-router-dom'
 
 export const usePollData = (pollId: string) => {
+  const navigate = useNavigate()
   const eth = useEthereum()
   const { userAddress, isHomeChain } = eth
 
@@ -28,6 +30,7 @@ export const usePollData = (pollId: string) => {
   const [hasCompleted, setHasCompleted] = useState(false)
   const [selectedChoice, setSelectedChoice] = useState<bigint | undefined>()
   const [existingVote, setExistingVote] = useState<bigint | undefined>(undefined)
+  const [isDestroying, setIsDestroying] = useState(false)
 
   const proposalId = `0x${pollId}`
 
@@ -89,6 +92,7 @@ export const usePollData = (pollId: string) => {
     canVote =
       (!!eth.state.address || isDemo) &&
       !isCompleting &&
+      !isDestroying &&
       winningChoice === undefined &&
       selectedChoice !== undefined &&
       existingVote === undefined &&
@@ -100,6 +104,7 @@ export const usePollData = (pollId: string) => {
       winningChoice === undefined &&
       // (eth.state.address === undefined || existingVote === undefined) &&
       !isCompleting &&
+      !isDestroying &&
       winningChoice === undefined &&
       existingVote === undefined &&
       getVerdict(permissions.canVote, false) &&
@@ -109,7 +114,8 @@ export const usePollData = (pollId: string) => {
   const hasWallet = isDemo || (isHomeChain && userAddress !== ZeroAddress)
   const hasWalletOnWrongNetwork = !isDemo && !isHomeChain && userAddress !== ZeroAddress
 
-  const canComplete = permissions.canManage && (!deadline || isPastDue)
+  const canComplete = permissions.canManage && (!deadline || isPastDue) && (!isDestroying || !isCompleting)
+  const canDestroy = permissions.canManage && (!isDestroying || !isCompleting)
 
   // console.log("canAclManage?", canAclManage, "deadline:", deadline, "isPastDue?", isPastDue, "canComplete?", canComplete)
 
@@ -123,6 +129,19 @@ export const usePollData = (pollId: string) => {
       console.log('Error completing poll:', e)
     } finally {
       setIsCompleting(false)
+    }
+  }
+
+  const destroyPoll = async () => {
+    if (!signerDao) throw new Error("Can't destroy poll with no poll manager.")
+    setIsDestroying(true)
+    try {
+      await doDestroyPoll(eth, signerDao, proposalId)
+      navigate('/')
+    } catch (e) {
+      console.log('Error destroying poll:', e)
+    } finally {
+      setIsDestroying(false)
     }
   }
 
@@ -418,6 +437,9 @@ export const usePollData = (pollId: string) => {
     completePoll,
     isCompleting,
     hasCompleted,
+    canDestroy,
+    destroyPoll,
+    isDestroying,
 
     voteCounts,
     winningChoice,

@@ -216,6 +216,18 @@ export const completePoll = async (eth: EthereumContext, pollManager: PollManage
   if (receipt!.status != 1) throw new Error('Complete ballot tx failed')
 }
 
+export const destroyPoll = async (eth: EthereumContext, pollManager: PollManager, proposalId: string) => {
+  await eth.switchNetwork() // ensure we're on the correct network first!
+  // console.log("Preparing complete tx...")
+
+  const tx = await pollManager.destroy(proposalId)
+  // console.log('Destroy proposal tx', tx);
+
+  const receipt = await tx.wait()
+
+  if (receipt!.status != 1) throw new Error('Destroy poll tx failed')
+}
+
 export type PollPermissions = {
   proof: BytesLike
   explanation: string | undefined

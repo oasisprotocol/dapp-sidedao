@@ -39,7 +39,10 @@ export const ActivePoll: FC<PollData> = ({
   checkPermissions,
   canComplete,
   isCompleting,
+  canDestroy,
   completePoll,
+  isDestroying,
+  destroyPoll,
   topUp,
 }) => {
   // console.log("hasWallet?", hasWallet, "hasWalletOnWrongNetwork?",hasWalletOnWrongNetwork)
@@ -70,6 +73,12 @@ export const ActivePoll: FC<PollData> = ({
       void completePoll()
     }
   }, [canComplete, completePoll])
+
+  const handleDestroy = useCallback(() => {
+    if (canDestroy && window.confirm("Are you sure you want to destroy this poll? This can't be undone.")) {
+      void destroyPoll()
+    }
+  }, [canDestroy, destroyPoll])
 
   const handleTopup = (address: string) => {
     const amountString = window.prompt(
@@ -198,15 +207,26 @@ export const ActivePoll: FC<PollData> = ({
           </div>
         )}
         {isMine && hasWallet && !hasWalletOnWrongNetwork && (
-          <Button
-            size={'small'}
-            disabled={!canComplete}
-            color={isMine && isPastDue ? 'primary' : 'secondary'}
-            onClick={handleComplete}
-            pending={isCompleting}
-          >
-            {isCompleting ? 'Completing poll' : 'Complete poll'}
-          </Button>
+          <>
+            <Button
+              size={'small'}
+              disabled={!canComplete}
+              color={isMine && isPastDue ? 'primary' : 'secondary'}
+              onClick={handleComplete}
+              pending={isCompleting}
+            >
+              {isCompleting ? 'Completing poll' : 'Complete poll'}
+            </Button>
+            <Button
+              size={'small'}
+              disabled={!canDestroy}
+              color={'secondary'}
+              onClick={handleDestroy}
+              pending={isDestroying}
+            >
+              {isDestroying ? 'Destroying poll' : 'Destroy poll'}
+            </Button>
+          </>
         )}
         {!hasWallet && !isPastDue && <ConnectWallet mobileSticky={false} />}
       </div>
