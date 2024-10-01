@@ -22,7 +22,7 @@ interface AddEthereumChainParameter {
 export const getAddEthereumChainParameterFromDefinition = (
   def: ChainDefinition,
 ): AddEthereumChainParameter => ({
-  chainId: def.chainId.toString(), // TODO: do we have to make this into hex?
+  chainId: `0x${def.chainId.toString(16)}`,
   chainName: def.name,
   iconUrls: def.icon ? [getIconUrl(def.icon)] : [],
   nativeCurrency: def.nativeCurrency,
