@@ -1,5 +1,5 @@
 
-type IconT = string | { url: string; width: number; height: number; format: 'png'|'svg' };
+export type IconT = string | { url: string; width: number; height: number; format: 'png'|'svg' };
 
 export interface ChainDefinition {
     name: string;

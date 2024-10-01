@@ -5,7 +5,8 @@ import { EIP1193Error } from '../utils/errors'
 import detectEthereumProvider from '@metamask/detect-provider'
 import { EIP1193Context, EIP1193ProviderContext } from './EIP1193Context'
 import { VITE_NETWORK_BIGINT } from '../constants/config'
-import { CHAINS } from '../constants/config'
+import { chain_info } from '@oasisprotocol/blockvote-contracts'
+import { getAddEthereumChainParameterFromDefinition } from '../utils/crypto.demo'
 
 declare global {
   interface Window {
@@ -37,14 +38,14 @@ export const EIP1193ContextProvider: FC<PropsWithChildren> = ({ children }) => {
   }
 
   const _addNetwork = (chainId: bigint = VITE_NETWORK_BIGINT) => {
-    if (!CHAINS.has(chainId)) {
+    const chain = chain_info[Number(chainId)]
+    if (!chain) {
       throw new Error(`Chain configuration for chain id '${chainId}' not found!`)
     }
 
-    const chain = CHAINS.get(chainId)
     return window.ethereum?.request?.({
       method: 'wallet_addEthereumChain',
-      params: [chain],
+      params: [getAddEthereumChainParameterFromDefinition(chain)],
     })
   }
 

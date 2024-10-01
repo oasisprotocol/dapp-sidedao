@@ -1,6 +1,7 @@
 import { FC, PropsWithChildren, useCallback, useState } from 'react'
 import { wrapEthersProvider } from '@oasisprotocol/sapphire-ethers-v6'
-import { CHAINS, VITE_NETWORK_BIGINT, VITE_NETWORK_NUMBER } from '../constants/config'
+import { chain_info } from '@oasisprotocol/blockvote-contracts'
+import { VITE_NETWORK_BIGINT, VITE_NETWORK_NUMBER } from '../constants/config'
 import { UnknownNetworkError } from '../utils/errors'
 import { Web3Context, Web3ProviderContext, Web3ProviderState } from './Web3Context'
 import { useEIP1193 } from '../hooks/useEIP1193'
@@ -56,12 +57,16 @@ export const Web3ContextProvider: FC<PropsWithChildren> = ({ children }) => {
       throw new Error('[Web3Context] Sapphire provider is required!')
     }
 
-    if (!CHAINS.has(chainId) || VITE_NETWORK_BIGINT !== chainId) {
+    const chain = chain_info[Number(chainId)]
+    if (!chain) {
       throw new UnknownNetworkError('Unknown network!')
     }
-
-    const { blockExplorerUrls, chainName } = CHAINS.get(chainId)!
-    const [explorerBaseUrl] = blockExplorerUrls || [null]
+    if (chain.chainId !== VITE_NETWORK_NUMBER) {
+      throw new UnknownNetworkError('Wallet is on the wrong network, we should switch!')
+    }
+    const { explorers, name: chainName } = chain
+    // blockExplorerUrls,
+    const explorerBaseUrl = (explorers || [])[0]?.url ?? 'null'
 
     setState(prevState => ({
       ...prevState,

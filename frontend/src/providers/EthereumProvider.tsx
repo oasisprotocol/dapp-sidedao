@@ -1,4 +1,5 @@
 import detectEthereumProvider from '@metamask/detect-provider'
+import { chain_info } from '@oasisprotocol/blockvote-contracts'
 import { EthereumContext, EthereumState } from './EthereumContext'
 import { FC, PropsWithChildren, useEffect, useState } from 'react'
 import { BrowserProvider, JsonRpcApiProvider, JsonRpcProvider, JsonRpcSigner, ZeroAddress } from 'ethers'
@@ -7,14 +8,19 @@ import {
   NETWORKS as SAPPHIRE_NETWORKS,
   wrapEthersSigner,
 } from '@oasisprotocol/sapphire-ethers-v6'
-import { DemoConnectionStatus, DemoNetwork, demoNetworkFromChainId } from '../utils/crypto.demo'
+import {
+  ConfiguredNetwork,
+  DemoConnectionStatus,
+  getAddEthereumChainParameterFromDefinition,
+  getChainIdAsNumber,
+} from '../utils/crypto.demo'
 import { DemoEIP1193Provider } from '../utils/eip1193.demo'
 import { VITE_WEB3_GATEWAY } from '../constants/config'
 
 const ethereumInitialState: EthereumState = {
   signer: undefined,
   provider: wrapEthersProvider(new JsonRpcProvider(VITE_WEB3_GATEWAY, 'any')),
-  network: DemoNetwork.FromConfig,
+  network: ConfiguredNetwork,
   address: undefined,
   status: DemoConnectionStatus.Unknown,
   isSapphire: false,
@@ -39,7 +45,7 @@ export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => 
         ...state,
         status: DemoConnectionStatus.Disconnected,
         signer: undefined,
-        network: DemoNetwork.Unknown,
+        network: 0,
         address: undefined,
       })
     }
@@ -73,7 +79,7 @@ export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => 
     ethProvider.on('connect', info => {
       setState({
         ...state,
-        network: demoNetworkFromChainId(info.chainId),
+        network: getChainIdAsNumber(info.chainId),
         status: DemoConnectionStatus.Connected,
       })
 
@@ -135,11 +141,11 @@ export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => 
     }
 
     // Check if we're requested to switch networks
-    let l_network = demoNetworkFromChainId(await l_provider.send('eth_chainId', []))
-    if (in_doSwitch && (l_network != state.network || l_network != DemoNetwork.FromConfig)) {
+    let l_network = getChainIdAsNumber(await l_provider.send('eth_chainId', []))
+    if (in_doSwitch && (l_network != state.network || l_network != ConfiguredNetwork)) {
       try {
-        await l_provider.send('wallet_switchEthereumChain', [{ chainId: DemoNetwork.FromConfig }])
-        l_network = DemoNetwork.FromConfig
+        await l_provider.send('wallet_switchEthereumChain', [{ chainId: ConfiguredNetwork }])
+        l_network = ConfiguredNetwork
       } catch (e: any) {
         // This error code indicates that the chain has not been added to MetaMask.
         if ((e as any).code !== 4902) throw e
@@ -176,56 +182,20 @@ export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => 
     }
   }, [state.signer])
 
-  async function addNetwork(network: DemoNetwork = DemoNetwork.FromConfig) {
+  async function addNetwork(network: number = ConfiguredNetwork) {
     if (!ethProvider) {
       throw new Error('addNetwork detectEthereumProvider = null')
     }
 
-    if (network == DemoNetwork.SapphireTestnet) {
-      // TODO: this data is also available in config.ts, remove redundancy!
-      await ethProvider.request({
-        method: 'wallet_addEthereumChain',
-        params: [
-          {
-            chainId: '0x5aff',
-            chainName: 'Sapphire Testnet',
-            nativeCurrency: { name: 'TEST', symbol: 'TEST', decimals: 18 },
-            rpcUrls: ['https://testnet.sapphire.oasis.dev/', 'wss://testnet.sapphire.oasis.dev/ws'],
-            blockExplorerUrls: ['https://explorer.stg.oasis.io/testnet/sapphire'],
-          },
-        ],
-      })
-    } else if (network === DemoNetwork.SapphireMainnet) {
-      // TODO: this data is also available in config.ts, remove redundancy!
-      await ethProvider.request({
-        method: 'wallet_addEthereumChain',
-        params: [
-          {
-            chainId: '0x5afe',
-            chainName: 'Sapphire Mainnet',
-            nativeCurrency: {
-              name: 'ROSE',
-              symbol: 'ROSE',
-              decimals: 18,
-            },
-            rpcUrls: ['https://sapphire.oasis.io/', 'wss://sapphire.oasis.io/ws'],
-            blockExplorerUrls: ['https://explorer.oasis.io/mainnet/sapphire'],
-          },
-        ],
-      })
-    } else if (network === DemoNetwork.SapphireLocalnet) {
-      // TODO: this data is also available in config.ts, remove redundancy!
-      await ethProvider.request({
-        method: 'wallet_addEthereumChain',
-        params: [
-          {
-            chainId: '0x5afd',
-            chainName: 'Sapphire Localnet',
-            rpcUrls: ['http://localhost:8545'],
-          },
-        ],
-      })
+    const chain = chain_info[network]
+    if (!chain) {
+      throw new Error('Unknown network ' + network)
     }
+
+    await ethProvider.request({
+      method: 'wallet_addEthereumChain',
+      params: [getAddEthereumChainParameterFromDefinition(chain)],
+    })
   }
 
   // Request that window.ethereum be connected to an account
@@ -234,12 +204,12 @@ export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => 
     await getSigner(true, true)
   }
 
-  async function switchNetwork(network: DemoNetwork = DemoNetwork.FromConfig) {
+  async function switchNetwork(network: number = ConfiguredNetwork) {
     console.log(`Switching network: ${network}`)
     await getSigner(true, true)
   }
 
-  const isHomeChain = state.network === DemoNetwork.FromConfig
+  const isHomeChain = state.network === ConfiguredNetwork
 
   const providerState: EthereumContext = {
     state: {
