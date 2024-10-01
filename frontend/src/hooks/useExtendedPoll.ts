@@ -84,7 +84,18 @@ export const useExtendedPoll = (
     setWinningChoice(proposal.topChoice)
 
     if (proposal.params.publishVotes) {
-      setVotes(await pollManager.getVotes(proposal.id, 0, 10))
+      const loadedVotes: ListOfVotes = {
+        out_count: 1000n, // Fake number, will be updated when the first batch is loaded
+        out_voters: [],
+        out_choices: [],
+      }
+      while (loadedVotes.out_voters.length < loadedVotes.out_count) {
+        const newVotes = await pollManager.getVotes(proposal.id, loadedVotes.out_voters.length, 100)
+        loadedVotes.out_count = newVotes.out_count
+        loadedVotes.out_voters.push(...newVotes.out_voters)
+        loadedVotes.out_choices.push(...newVotes.out_choices)
+      }
+      setVotes(loadedVotes)
     } else {
       setVotes({ ...noVotes })
     }
