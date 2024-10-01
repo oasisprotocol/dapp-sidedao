@@ -1,0 +1,64 @@
+.voteBrowser {
+    width: 100%;
+    h4 {
+        margin-bottom: 1em;
+    }
+
+    .tableWrapper {
+        background: #e6e5ff;
+        border-radius: 8px;
+        padding: 0.5em;
+    }
+
+    table {
+        width: 100%;
+    }
+
+    thead {
+        tr {
+            background: #e6e5ff !important
+        }
+    }
+
+    tr:nth-child(even) {
+        /*background: #e6e5ff;*/
+        /*background: #d2d1ff;*/
+        background: white;
+    }
+
+    tr:nth-child(odd) {
+        /*background: #e6e5ff;*/
+        background: #d2d1ff;
+        /*background: white;*/
+    }
+
+}
+
+.pagination {
+    padding-top: 1em;
+    display: flex;
+    justify-content: center;
+    gap: 1em;
+
+    a {
+        cursor: pointer;
+    }
+}
+
+.noDataFound {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    padding-top: 2em;
+    padding-bottom: 2em;
+
+    a {
+        cursor: pointer;
+        text-decoration: underline;
+    }
+
+}
+
+.myVote {
+    background: yellow !important;
+}

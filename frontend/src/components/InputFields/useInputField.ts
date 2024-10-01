@@ -163,6 +163,7 @@ export type InputFieldControls<DataType> = Pick<
   containerClassName?: string
   value: DataType
   setValue: (value: DataType) => void
+  reset: () => void
   allProblems: AllProblems
   hasProblems: boolean
   isValidated: boolean
@@ -394,6 +395,8 @@ export function useInputField<DataType>(
     }
   }, [visible, JSON.stringify(cleanValue), validateOnChange])
 
+  const reset = () => setValue(initialValue)
+
   return {
     type,
     name,
@@ -403,6 +406,7 @@ export function useInputField<DataType>(
     placeholder,
     value,
     setValue,
+    reset,
     allProblems,
     hasProblems,
     isValidated,

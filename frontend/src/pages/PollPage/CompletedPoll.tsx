@@ -7,6 +7,7 @@ import { SocialShares } from '../../components/SocialShares'
 import { PollAccessIndicatorWrapper } from '../../components/PollCard/PollAccessIndicator'
 import { getVerdict } from '../../components/InputFields'
 import { MotionDiv } from '../../components/Animations'
+import { VoteBrowser } from '../../components/VoteBrowser/VoteBrowser'
 
 export const CompletedPoll: FC<
   Pick<
@@ -21,7 +22,7 @@ export const CompletedPoll: FC<
   >
 > = ({ poll, pollResults, isMine, permissions, checkPermissions, hasWallet, hasWalletOnWrongNetwork }) => {
   const { name, description } = poll!.ipfsParams!
-  const { choices, votes } = pollResults!
+  const { choices, votes, totalVotes } = pollResults!
   const { explanation: aclExplanation, canVote: aclCanVote } = permissions
 
   return (
@@ -96,21 +97,7 @@ export const CompletedPoll: FC<
           {getVerdict(aclCanVote, false) ? <h4>You had access.</h4> : <h4>You didn't have access.</h4>}
         </>
       )}
-      {!!votes?.out_count && (
-        <div>
-          <h4>Individual votes:</h4>
-          <>
-            {votes.out_voters.map((voter, index) => {
-              const [weight, choice] = votes.out_choices[index]
-              return (
-                <div key={`voter-${index}`}>
-                  {voter} ({weight.toString()}): {choices[choice.toString()].choice}
-                </div>
-              )
-            })}
-          </>
-        </div>
-      )}
+      {!!votes?.out_count && <VoteBrowser choices={choices} votes={votes} totalVotes={totalVotes} />}
       <SocialShares
         label={'Share results on'}
         name={name}

@@ -39,17 +39,19 @@ export type ListOfVotes = {
   out_choices: PollManager.ChoiceStructOutput[]
 }
 
+export type ListOfChoices = Record<
+  string,
+  {
+    choice: string
+    votes: bigint
+    rate: number
+    winner: boolean
+  }
+>
+
 export type PollResults = {
   totalVotes: bigint
-  choices: Record<
-    string,
-    {
-      choice: string
-      votes: bigint
-      rate: number
-      winner: boolean
-    }
-  >
+  choices: ListOfChoices
   winner: string
   votes?: ListOfVotes | undefined
 }

@@ -60,18 +60,20 @@ const StatusInfo: FC<{
           <>
             <h4>{remainingTimeString}</h4>
             <h4>Voting results will be available when you complete the poll.</h4>
-            <Button size={'small'} disabled={!canComplete} onClick={handleComplete} pending={isCompleting}>
-              {isCompleting ? 'Completing poll' : 'Complete poll'}
-            </Button>
-            <Button
-              size={'small'}
-              disabled={!canDestroy}
-              color={'secondary'}
-              onClick={handleDestroy}
-              pending={isDestroying}
-            >
-              {isDestroying ? 'Destroying poll' : 'Destroy poll'}
-            </Button>
+            <div className={'niceLine'}>
+              <Button size={'small'} disabled={!canComplete} onClick={handleComplete} pending={isCompleting}>
+                {isCompleting ? 'Completing poll' : 'Complete poll'}
+              </Button>
+              <Button
+                size={'small'}
+                disabled={!canDestroy}
+                color={'secondary'}
+                onClick={handleDestroy}
+                pending={isDestroying}
+              >
+                {isDestroying ? 'Destroying poll' : 'Destroy poll'}
+              </Button>
+            </div>
           </>
         )
       } else {
@@ -95,18 +97,20 @@ const StatusInfo: FC<{
       return (
         <>
           <h4>Voting results will be available when you complete the poll.</h4>
-          <Button size={'small'} disabled={!canComplete} onClick={handleComplete} pending={isCompleting}>
-            {isCompleting ? 'Completing poll' : 'Complete poll'}
-          </Button>
-          <Button
-            size={'small'}
-            disabled={!canDestroy}
-            color={'secondary'}
-            onClick={handleDestroy}
-            pending={isDestroying}
-          >
-            {isDestroying ? 'Destroying poll' : 'Destroy poll'}
-          </Button>
+          <div className={'niceLine'}>
+            <Button size={'small'} disabled={!canComplete} onClick={handleComplete} pending={isCompleting}>
+              {isCompleting ? 'Completing poll' : 'Complete poll'}
+            </Button>
+            <Button
+              size={'small'}
+              disabled={!canDestroy}
+              color={'secondary'}
+              onClick={handleDestroy}
+              pending={isDestroying}
+            >
+              {isDestroying ? 'Destroying poll' : 'Destroy poll'}
+            </Button>
+          </div>
         </>
       )
     } else {
