@@ -492,27 +492,6 @@ contract PollManager is IERC165, IPollManager {
         }
     }
 
-    function getVoteOf(bytes32 in_proposalId, address in_voter)
-        external view
-        returns (Choice memory)
-    {
-        Proposal storage proposal = PROPOSALS[in_proposalId];
-
-        Ballot storage ballot = s_ballots[in_proposalId];
-
-        // Cannot get individual votes when poll still active
-        if( ! proposal.active ) {
-            revert Poll_NotActive();
-        }
-
-        // Individual votes only revealed if creator has set the 'publishVotes' flag
-        if (!proposal.params.publishVotes) {
-            revert Poll_NotPublishingVotes();
-        }
-
-        return ballot.votes[in_voter];
-    }
-
     function getVoteCounts(bytes32 in_proposalId)
         external view
         returns (uint256[] memory)
