@@ -30,6 +30,7 @@ import { EthereumContext } from '../providers/EthereumContext'
 import { DecisionWithReason, denyWithReason } from '../components/InputFields'
 import { FetcherFetchOptions } from './StoredLRUCache'
 import { findACLForOptions } from '../components/ACLs'
+import { VITE_NETWORK_NUMBER } from '../constants/config'
 
 export { parseEther } from 'ethers'
 
@@ -54,8 +55,7 @@ export const isValidAddress = (address: string) => {
 }
 
 export const getSapphireTokenDetails = async (address: string) => {
-  const chainId = 23294
-  const rpc = xchainRPC(chainId)
+  const rpc = xchainRPC(VITE_NETWORK_NUMBER)
   try {
     return await erc20TokenDetailsFromProvider(getAddress(address), rpc)
   } catch {

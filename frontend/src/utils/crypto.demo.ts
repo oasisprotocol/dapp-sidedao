@@ -1,6 +1,34 @@
 import { AEAD, NonceSize, KeySize, TagSize } from '@oasisprotocol/deoxysii'
+import { chain_info } from '@oasisprotocol/blockvote-contracts'
+import type { IconT, ChainDefinition } from '@oasisprotocol/blockvote-contracts'
 import { sha256 } from '@noble/hashes/sha256'
 import { VITE_NETWORK_NUMBER } from '../constants/config'
+
+const getIconUrl = (icon: IconT): string => (typeof icon === 'string' ? icon : (icon as any).url)
+
+interface AddEthereumChainParameter {
+  chainId: string
+  chainName: string
+  iconUrls?: string[]
+  nativeCurrency: {
+    name: string
+    symbol: string
+    decimals: number
+  }
+  rpcUrls: string[]
+  blockExplorerUrls: string[] | null
+}
+
+export const getAddEthereumChainParameterFromDefinition = (
+  def: ChainDefinition,
+): AddEthereumChainParameter => ({
+  chainId: def.chainId.toString(), // TODO: do we have to make this into hex?
+  chainName: def.name,
+  iconUrls: def.icon ? [getIconUrl(def.icon)] : [],
+  nativeCurrency: def.nativeCurrency,
+  rpcUrls: def.rpcUrls,
+  blockExplorerUrls: (def.explorers || []).map(e => e.url),
+})
 
 /// XXX: Seriously JavaScript... can't compare Uint8Arrays???
 function areBytewiseEqual(a: Uint8Array, b: Uint8Array) {
@@ -40,49 +68,15 @@ export function decryptJSON(key: Uint8Array, cipherbytes: Uint8Array) {
   return JSON.parse(plaintext)
 }
 
-export enum DemoNetwork {
-  Unknown = 0,
-  Ethereum = 1,
-  Goerli = 10,
-  BscMainnet = 56,
-  BscTestnet = 97,
-  EmeraldTestnet = 0xa515,
-  EmeraldMainnet = 0xa516,
-  SapphireTestnet = 0x5aff,
-  SapphireMainnet = 0x5afe,
-  SapphireLocalnet = 0x5afd,
-  PolygonMumbai = 0x13381,
-  Local = 1337,
+export const ConfiguredNetwork = VITE_NETWORK_NUMBER
 
-  FromConfig = VITE_NETWORK_NUMBER,
-}
+export const getChainIdAsNumber = (chainId: number | string): number =>
+  typeof chainId === 'string' ? parseInt(chainId, 16) : chainId
 
-const demoNetworkNameMap: Record<DemoNetwork, string> = {
-  [DemoNetwork.Unknown]: 'Unknown Network',
-  [DemoNetwork.Ethereum]: 'Ethereum',
-  [DemoNetwork.Local]: 'Local Network',
-  [DemoNetwork.Goerli]: 'Goerli',
-  [DemoNetwork.EmeraldTestnet]: 'Emerald Testnet',
-  [DemoNetwork.EmeraldMainnet]: 'Emerald Mainnet',
-  [DemoNetwork.SapphireTestnet]: 'Sapphire Testnet',
-  [DemoNetwork.SapphireMainnet]: 'Sapphire Mainnet',
-  [DemoNetwork.SapphireLocalnet]: 'Sapphire Localnet',
-  [DemoNetwork.PolygonMumbai]: 'Polygon Mumbai',
-  [DemoNetwork.BscMainnet]: 'BSC',
-  [DemoNetwork.BscTestnet]: 'BSC Testnet',
-} as const
-
-export function demoNetworkFromChainId(chainId: number | string): DemoNetwork {
-  const id = typeof chainId === 'string' ? parseInt(chainId, 16) : chainId
-  if (DemoNetwork[id]) return id as DemoNetwork
-  return DemoNetwork.Unknown
-}
-
-export function demoNetworkName(network?: DemoNetwork): string {
-  if (network && demoNetworkNameMap[network]) {
-    return demoNetworkNameMap[network]
-  }
-  return demoNetworkNameMap[DemoNetwork.Unknown]
+export function demoNetworkName(network?: bigint): string {
+  if (!network) return 'Unknown network'
+  const chain = chain_info[Number(network)]
+  return chain?.name ?? 'Unknown network'
 }
 
 export enum DemoConnectionStatus {

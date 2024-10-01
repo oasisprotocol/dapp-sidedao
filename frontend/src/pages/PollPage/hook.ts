@@ -2,7 +2,7 @@ import { useContracts } from '../../hooks/useContracts'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { randomchoice } from '@oasisprotocol/blockvote-contracts'
 import { ethers, Transaction, TransactionReceipt, ZeroAddress } from 'ethers'
-import { DemoNetwork } from '../../utils/crypto.demo'
+import { ConfiguredNetwork } from '../../utils/crypto.demo'
 import { useEthereum } from '../../hooks/useEthereum'
 import { DateUtils } from '../../utils/date.utils'
 import { completePoll as doCompletePoll, destroyPoll as doDestroyPoll } from '../../utils/poll.utils'
@@ -305,7 +305,7 @@ export const usePollData = (pollId: string) => {
 
       if (submitAndPay) {
         console.log('doVote: casting vote using normal tx')
-        await eth.switchNetwork(DemoNetwork.FromConfig)
+        await eth.switchNetwork(ConfiguredNetwork)
         const tx = await signerDao.vote(proposalId, choice, permissions.proof)
         const receipt = await tx.wait()
 
