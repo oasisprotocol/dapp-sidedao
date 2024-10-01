@@ -8,6 +8,7 @@ import { PollAccessIndicatorWrapper } from '../../components/PollCard/PollAccess
 import { getVerdict } from '../../components/InputFields'
 import { MotionDiv } from '../../components/Animations'
 import { VoteBrowser } from '../../components/VoteBrowser/VoteBrowser'
+import { VoterBrowser } from '../../components/VoterBrowser/VoterBrowser'
 
 export const CompletedPoll: FC<
   Pick<
@@ -98,16 +99,7 @@ export const CompletedPoll: FC<
         </>
       )}
       {!!votes?.out_count && <VoteBrowser choices={choices} votes={votes} totalVotes={totalVotes} />}
-      {!!voters?.out_count && (
-        <div>
-          <h4>Voters:</h4>
-          <>
-            {voters.out_voters.map((voter, index) => {
-              return <div key={`voter-${index}`}>{voter}</div>
-            })}
-          </>
-        </div>
-      )}
+      {!!voters?.out_count && <VoterBrowser voters={voters} />}
       <SocialShares
         label={'Share results on'}
         name={name}
