@@ -36,6 +36,7 @@ contract PollManager is IERC165, IPollManager {
 
     // Misc. errors relating to info about polls
     error Poll_NotPublishingVotes();
+    error Poll_NotPublishingVoters();
     error Poll_StillActive();
     error Poll_NotActive();
 
@@ -53,6 +54,7 @@ contract PollManager is IERC165, IPollManager {
 
     struct ProposalParams {
         uint8 numChoices;
+        bool publishVoters;
         bool publishVotes;
         bool isHidden;
         uint64 closeTimestamp;
@@ -305,7 +307,7 @@ contract PollManager is IERC165, IPollManager {
         {
             ballot.totalVotes += existingWeight;
 
-            if (proposal.params.publishVotes)
+            if (proposal.params.publishVotes || proposal.params.publishVoters)
             {
                 ballot.voters.push(in_voter);
             }
@@ -490,27 +492,6 @@ contract PollManager is IERC165, IPollManager {
         }
     }
 
-    function getVoteOf(bytes32 in_proposalId, address in_voter)
-        external view
-        returns (Choice memory)
-    {
-        Proposal storage proposal = PROPOSALS[in_proposalId];
-
-        Ballot storage ballot = s_ballots[in_proposalId];
-
-        // Cannot get individual votes when poll still active
-        if( ! proposal.active ) {
-            revert Poll_NotActive();
-        }
-
-        // Individual votes only revealed if creator has set the 'publishVotes' flag
-        if (!proposal.params.publishVotes) {
-            revert Poll_NotPublishingVotes();
-        }
-
-        return ballot.votes[in_voter];
-    }
-
     function getVoteCounts(bytes32 in_proposalId)
         external view
         returns (uint256[] memory)
@@ -565,6 +546,40 @@ contract PollManager is IERC165, IPollManager {
         {
             address voter = ballot.voters[in_offset + i];
             out_choices[i] = ballot.votes[voter];
+            out_voters[i] = voter;
+        }
+    }
+
+    function getVoters(bytes32 in_proposalId, uint in_offset, uint in_limit)
+        external view
+        returns (
+            uint out_count,
+            address[] memory out_voters
+        )
+    {
+        Proposal storage proposal = PROPOSALS[in_proposalId];
+        Ballot storage ballot = s_ballots[in_proposalId];
+
+        if (!proposal.params.publishVoters) {
+            revert Poll_NotPublishingVoters();
+        }
+
+        if (proposal.active) {
+            revert Poll_StillActive();
+        }
+
+        out_count = ballot.voters.length;
+
+        if ((in_offset + in_limit) > out_count)
+        {
+            in_limit = out_count - in_offset;
+        }
+
+        out_voters = new address[](in_limit);
+
+        for (uint256 i; i < in_limit; i++)
+        {
+            address voter = ballot.voters[in_offset + i];
             out_voters[i] = voter;
         }
     }

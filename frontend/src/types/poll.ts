@@ -33,9 +33,12 @@ export type RemainingTime = {
   seconds: number
 }
 
-export type ListOfVotes = {
+export type ListOfVoters = {
   out_count: bigint
   out_voters: string[]
+}
+
+export type ListOfVotes = ListOfVoters & {
   out_choices: PollManager.ChoiceStructOutput[]
 }
 
@@ -53,5 +56,6 @@ export type PollResults = {
   totalVotes: bigint
   choices: ListOfChoices
   winner: string
+  voters?: ListOfVoters
   votes?: ListOfVotes | undefined
 }

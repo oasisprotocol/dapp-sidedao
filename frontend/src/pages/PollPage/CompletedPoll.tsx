@@ -8,6 +8,7 @@ import { PollAccessIndicatorWrapper } from '../../components/PollCard/PollAccess
 import { getVerdict } from '../../components/InputFields'
 import { MotionDiv } from '../../components/Animations'
 import { VoteBrowser } from '../../components/VoteBrowser/VoteBrowser'
+import { VoterBrowser } from '../../components/VoterBrowser/VoterBrowser'
 
 export const CompletedPoll: FC<
   Pick<
@@ -22,7 +23,7 @@ export const CompletedPoll: FC<
   >
 > = ({ poll, pollResults, isMine, permissions, checkPermissions, hasWallet, hasWalletOnWrongNetwork }) => {
   const { name, description } = poll!.ipfsParams!
-  const { choices, votes, totalVotes } = pollResults!
+  const { choices, votes, voters, totalVotes } = pollResults!
   const { explanation: aclExplanation, canVote: aclCanVote } = permissions
 
   return (
@@ -98,6 +99,7 @@ export const CompletedPoll: FC<
         </>
       )}
       {!!votes?.out_count && <VoteBrowser choices={choices} votes={votes} totalVotes={totalVotes} />}
+      {!!voters?.out_count && <VoterBrowser voters={voters} />}
       <SocialShares
         label={'Share results on'}
         name={name}

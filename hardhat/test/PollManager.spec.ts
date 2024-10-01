@@ -124,17 +124,19 @@ describe('PollManager', function () {
         isHidden: false,
         numChoices: 4n,
         publishVotes: false,
+        publishVoters: false,
         closeTimestamp: BigInt(new Date().getTime() + 1),
         acl: acl_allowall_addr,
-        metadata: ''
+        metadata: '',
       },
       {
         isHidden: false,
         numChoices: 3n,
         publishVotes: true,
+        publishVoters: false,
         closeTimestamp: BigInt(new Date().getTime() + 2),
         acl: acl_allowall_addr,
-        metadata: ''
+        metadata: '',
       },
     ];
   });
@@ -194,6 +196,7 @@ describe('PollManager', function () {
         metadata: '',
         numChoices: 3n,
         publishVotes: false,
+        publishVoters: false,
         closeTimestamp: 0n,
         acl: await acl_tokenholder.getAddress(),
       },
@@ -256,6 +259,7 @@ describe('PollManager', function () {
         metadata: '',
         numChoices: 3n,
         publishVotes: false,
+        publishVoters: false,
         closeTimestamp: 0n,
         acl: await acl_storageproof.getAddress(),
       },
@@ -314,6 +318,7 @@ describe('PollManager', function () {
         metadata: '',
         numChoices: 3n,
         publishVotes: false,
+        publishVoters: false,
         closeTimestamp: 0n,
         acl: await acl_allowall.getAddress(),
       },
@@ -416,6 +421,7 @@ describe('PollManager', function () {
         metadata: '',
         numChoices: 3n,
         publishVotes: false,
+        publishVoters: false,
         closeTimestamp: 0n,
         acl: await acl_storageproof.getAddress(),
       },

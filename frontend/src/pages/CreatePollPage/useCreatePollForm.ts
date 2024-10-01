@@ -182,7 +182,6 @@ export const useCreatePollForm = () => {
         label: 'Show percentage for each answer, plus the list of voters',
         description:
           'The individual votes will still be hidden, only the existence of the vote will be published.',
-        enabled: deny('Coming soon'),
       },
       {
         value: 'percentages_and_votes',
@@ -342,6 +341,7 @@ export const useCreatePollForm = () => {
         aclOptions,
         subsidizeAmount: gasFree.value ? parseEther(amountOfSubsidy.value) : undefined,
         publishVotes: resultDisplayType.value === 'percentages_and_votes',
+        publishVoters: resultDisplayType.value === 'percentages_and_voters',
         completionTime: hasCompletionDate.value ? pollCompletionDate.value : undefined,
       }
 

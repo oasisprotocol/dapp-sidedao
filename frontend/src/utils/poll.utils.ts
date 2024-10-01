@@ -136,6 +136,7 @@ export type CreatePollProps = {
   aclOptions: AclOptions
   subsidizeAmount: bigint | undefined
   publishVotes: boolean
+  publishVoters: boolean
   completionTime: Date | undefined
 }
 
@@ -154,6 +155,7 @@ export const createPoll = async (
     isHidden,
     subsidizeAmount,
     publishVotes,
+    publishVoters,
     completionTime,
   } = props
 
@@ -165,6 +167,7 @@ export const createPoll = async (
     choices: answers,
     options: {
       publishVotes,
+      publishVoters,
       closeTimestamp: completionTime ? Math.round(completionTime.getTime() / 1000) : 0,
     },
     acl: aclOptions,
@@ -176,6 +179,7 @@ export const createPoll = async (
     metadata: encodeBase64(toUtf8Bytes(JSON.stringify(poll))),
     numChoices: answers.length,
     publishVotes: poll.options.publishVotes,
+    publishVoters: poll.options.publishVoters,
     closeTimestamp: poll.options.closeTimestamp,
     acl: aclOptions.address,
     isHidden,

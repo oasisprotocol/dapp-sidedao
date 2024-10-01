@@ -52,7 +52,7 @@ export const ActivePoll: FC<PollData> = ({
     name,
     description,
     choices,
-    options: { publishVotes },
+    options: { publishVotes, publishVoters },
   } = poll!.ipfsParams
 
   const handleSelect = useCallback(
@@ -152,6 +152,9 @@ export const ActivePoll: FC<PollData> = ({
         ))}
       {remainingTimeString && <h4>{remainingTimeString}</h4>}
       {publishVotes && <div>Votes will be made public when the poll is completed.</div>}
+      {publishVoters && (
+        <div>The addresses of the voters will be made public when the poll is completed.</div>
+      )}
       {isPastDue && (
         <h4>
           Voting results will be available when {isMine ? 'you complete' : 'the owner formally completes'} the
