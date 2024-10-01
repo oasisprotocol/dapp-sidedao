@@ -392,6 +392,25 @@ export const chain_info: Record<number,ChainDefinition> = {
             }
         ],
     },
+    32457: {
+        chainId: 0x7ec9,
+        networkId: 0x7ec9,
+        hardfork: 'london',
+        name: "Pontus-X Testnet",
+        chain: "oasis-testnet",
+        shortName: "pontusx-test",
+        cannotMakeStorageProofs: true,
+        infoURL: "https://docs.pontus-x.eu/",
+        rpcUrls: ["https://rpc.test.pontus-x.eu"],
+        nativeCurrency: { name: 'EUROe', symbol: 'EUROe', decimals: 18 },
+        explorers: [
+            {
+                url: 'https://explorer.pontus-x.eu/pontusx/test',
+                name: 'Pontus-X Testnet Explorer',
+                standard: 'EIP3091'
+            }
+        ],
+    },
     23295: {
         chainId: 0x5aff,
         networkId: 0x5aff,
