@@ -1,6 +1,6 @@
 // Don't import sapphire-hardhat, as it encrypts deployment transactions
 //import '@oasisprotocol/sapphire-hardhat';
-import "@nomicfoundation/hardhat-ethers"
+import '@nomicfoundation/hardhat-ethers';
 import 'hardhat-tracer';
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -43,11 +43,11 @@ task(TASK_EXPORT_ABIS, async (_args, hre) => {
 }).setDescription('Saves ABI and bytecode to the "abis" directory');
 
 const TEST_HDWALLET = {
-  mnemonic: "test test test test test test test test test test test junk",
+  mnemonic: 'test test test test test test test test test test test junk',
   path: "m/44'/60'/0'/0",
   initialIndex: 0,
   count: 20,
-  passphrase: "",
+  passphrase: '',
 };
 
 const accounts = process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : TEST_HDWALLET;
@@ -60,7 +60,7 @@ const config: HardhatUserConfig = {
     hardhat_local: {
       url: 'http://127.0.0.1:8545/',
     },
-    'sapphire': {
+    sapphire: {
       url: 'https://sapphire.oasis.io',
       chainId: 0x5afe,
       accounts,
@@ -73,6 +73,11 @@ const config: HardhatUserConfig = {
     'sapphire-localnet': {
       url: 'http://127.0.0.1:8545',
       chainId: 0x5afd,
+      accounts,
+    },
+    'pontusx-testnet': {
+      url: 'https://rpc.test.pontus-x.eu',
+      chainId: 0x7ec9,
       accounts,
     },
   },
@@ -88,7 +93,7 @@ const config: HardhatUserConfig = {
   },
   typechain: {
     target: 'ethers-v6',
-    outDir: 'src/contracts'
+    outDir: 'src/contracts',
   },
   mocha: {
     require: ['ts-node/register/files'],
