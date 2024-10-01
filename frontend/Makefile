@@ -8,6 +8,9 @@ dev:
 dev-staging:
 	$(NPM) dev -m staging
 
+dev-pontusxtest:
+	$(NPM) dev -m pontusxtest
+
 build:
 	$(NPM) $@
 
@@ -16,6 +19,9 @@ prettify:
 
 build-staging:
 	$(NPM) vite build -m staging
+
+build-pontusxtest:
+	$(NPM) vite build -m pontusxtest
 
 build-production:
 	$(NPM) vite build -m production
