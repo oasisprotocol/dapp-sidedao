@@ -3,7 +3,6 @@
   justify-items: center;
   align-items: center;
   gap: 1rem;
-  min-width: 350px;
   max-height: 48px;
   border-radius: 12px;
   background: var(--white);
@@ -17,14 +16,13 @@
   flex-wrap: nowrap;
   justify-content: space-between;
   align-items: center;
-  width: 270px;
   color: var(--navy-blue);
   text-align: end;
   margin-bottom: 0;
+  gap: 16px;
 }
 
 .connectedAccountAddress {
-  flex: 1 1 60%;
   font-family: monospace;
   text-decoration: none;
   font-size: 22px;
@@ -35,8 +33,6 @@
 }
 
 .network {
-  flex: 0 0 40%;
-  overflow: hidden;
   max-height: 28px;
   font-size: 20px;
   font-weight: 400;
@@ -44,6 +40,9 @@
   letter-spacing: 0;
   text-align: left;
   text-transform: capitalize;
+  overflow: hidden;
+  text-wrap: nowrap;
+  width: 80px;
 }
 
 @media screen and (max-width: 1000px) {

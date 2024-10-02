@@ -5,6 +5,7 @@ import { StringUtils } from '../../utils/string.utils'
 import classes from './index.module.css'
 import { useAppState } from '../../hooks/useAppState'
 import { AddressShower } from '../Addresses'
+import { motion } from 'framer-motion'
 
 interface Props {
   className?: string
@@ -21,7 +22,6 @@ export const ConnectedAccount: FC<Props> = ({ className, address, chainName }) =
   } = useAppState()
 
   const url = explorerBaseUrl ? StringUtils.getAccountUrl(explorerBaseUrl, address) : undefined
-  const networkName = StringUtils.getNetworkFriendlyName(chainName)
 
   return (
     <a
@@ -33,7 +33,13 @@ export const ConnectedAccount: FC<Props> = ({ className, address, chainName }) =
       <JazzIcon size={isDesktopScreen ? 30 : 20} address={address} />
       {isDesktopScreen && (
         <p className={classes.connectedAccountDetails}>
-          <span className={classes.network}>{networkName}</span>
+          <motion.span
+            className={classes.network}
+            whileHover={{ width: 'auto' }}
+            transition={{ ease: 'easeInOut' }}
+          >
+            {chainName}
+          </motion.span>
           <AddressShower address={address} className={classes.connectedAccountAddress} />
         </p>
       )}
