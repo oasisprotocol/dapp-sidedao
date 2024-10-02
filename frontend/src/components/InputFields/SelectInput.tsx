@@ -27,9 +27,9 @@ export const SelectInput: FC<OneOfFieldControls<any>> = props => {
                 return (
                   <option key={choice.value} value={choice.value} disabled={disabled}>
                     <MaybeWithTooltip overlay={getReasonForDenial(choice.enabled) ?? choice.description}>
-                      <span>
+                      <>
                         {choice.label} {disabled || choice.description ? '🛈' : ''}
-                      </span>
+                      </>
                     </MaybeWithTooltip>
                   </option>
                 )
