@@ -33,12 +33,14 @@
 }
 
 .network {
+  display: flex;
+  justify-content: center;
   max-height: 28px;
   font-size: 20px;
   font-weight: 400;
   line-height: 140%;
   letter-spacing: 0;
-  text-align: left;
+  /*text-align: left;*/
   text-transform: capitalize;
   overflow: hidden;
   text-wrap: nowrap;
