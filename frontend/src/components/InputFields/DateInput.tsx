@@ -5,6 +5,7 @@ import { DateFieldControls } from './useDateField'
 import { WithVisibility } from './WithVisibility'
 import { WithLabelAndDescription } from './WithLabelAndDescription'
 import { WithValidation } from './WithValidation'
+import { MaybeWithTooltip } from '../Tooltip/MaybeWithTooltip'
 
 const convertToDateTimeLocalString = (date: Date) => {
   const year = date.getFullYear()
@@ -27,16 +28,17 @@ export const DateInput: FC<DateFieldControls> = props => {
     <WithVisibility field={props}>
       <WithLabelAndDescription field={props}>
         <WithValidation field={props} problems={allProblems.root}>
-          <input
-            name={name}
-            placeholder={placeholder}
-            type={'datetime-local'}
-            value={value ? convertToDateTimeLocalString(value) : undefined}
-            onChange={handleChange}
-            className={classes.textValue}
-            disabled={!enabled}
-            title={whyDisabled}
-          />
+          <MaybeWithTooltip overlay={whyDisabled}>
+            <input
+              name={name}
+              placeholder={placeholder}
+              type={'datetime-local'}
+              value={value ? convertToDateTimeLocalString(value) : undefined}
+              onChange={handleChange}
+              className={classes.textValue}
+              disabled={!enabled}
+            />
+          </MaybeWithTooltip>
         </WithValidation>
       </WithLabelAndDescription>
     </WithVisibility>

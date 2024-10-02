@@ -3,6 +3,7 @@ import { ClosedLockIcon } from './ClosedLockIcon'
 import { IconProps } from '../../types'
 import classes from './index.module.css'
 import { designDecisions } from '../../constants/config'
+import { MaybeWithTooltip } from '../Tooltip/MaybeWithTooltip'
 
 export const RestrictedPollIcon: FC<
   IconProps & {
@@ -25,9 +26,8 @@ export const RestrictedPollIcon: FC<
   if (designDecisions.hideRestrictedPollHaveAccessIndicator && hasAccess) return
 
   return (
-    <span
-      className={canRetest ? classes.pointer : undefined}
-      title={`${explanation} ${
+    <MaybeWithTooltip
+      overlay={`${explanation} ${
         hasAccess
           ? completed
             ? 'You had access.'
@@ -36,9 +36,10 @@ export const RestrictedPollIcon: FC<
             ? "You didn't have access."
             : "You don't have access."
       } ${canRetest ? 'Click to retry!' : ''}`}
-      onClick={handleClick}
     >
-      <ClosedLockIcon color={hasAccess ? 'green' : 'red'} {...rest} />
-    </span>
+      <span className={canRetest ? classes.pointer : undefined} onClick={handleClick}>
+        <ClosedLockIcon color={hasAccess ? 'green' : 'red'} {...rest} />
+      </span>
+    </MaybeWithTooltip>
   )
 }

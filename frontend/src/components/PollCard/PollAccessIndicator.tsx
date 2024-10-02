@@ -45,7 +45,7 @@ export const PollAccessIndicator: FC<{
           onClick={retest}
         />
       )}
-      {isPending && <SpinnerIcon spinning height={32} title={'Checking access'} />}
+      {isPending && <SpinnerIcon spinning height={32} overlay={'Checking access'} />}
       {isBroken && <BrokenPollAccessIcon onClick={retest} />}
       {isMine && !designDecisions.hideMyPollIndicator && <MyPollIcon />}
       {/*<Button onClick={retest}>ASD</Button>*/}

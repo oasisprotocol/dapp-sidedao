@@ -5,6 +5,7 @@ import { InputFieldGroup } from '../InputFields'
 import { HighlightedText } from '../HighlightedText'
 import classes from './index.module.css'
 import { useEthereum } from '../../hooks/useEthereum'
+import { MaybeWithTooltip } from '../Tooltip/MaybeWithTooltip'
 
 const VOTES_ON_PAGE = 10
 
@@ -50,9 +51,13 @@ export const VoteBrowser: FC<{ choices: ListOfChoices; votes: ListOfVotes; total
               const mine = voter.toLowerCase() === userAddress.toLowerCase()
               return (
                 <tr key={voter}>
-                  <td className={mine ? classes.myVote : undefined} title={'This is my vote'}>
-                    <HighlightedText text={voter} patterns={searchPatterns} />
-                    {mine && ' 🛈'}
+                  <td className={mine ? classes.myVote : undefined}>
+                    <MaybeWithTooltip overlay={mine ? 'This is my vote' : undefined}>
+                      <span>
+                        <HighlightedText text={voter} patterns={searchPatterns} />
+                        {mine && ' 🛈'}
+                      </span>
+                    </MaybeWithTooltip>
                   </td>
                   <td>{weight.toString()}</td>
                   <td>
@@ -72,21 +77,21 @@ export const VoteBrowser: FC<{ choices: ListOfChoices; votes: ListOfVotes; total
         )}
         {numberOfPages > 1 && (
           <div className={classes.pagination}>
-            <a title={'Go to first page'} onClick={goToFirstPage}>
-              &lt;&lt;
-            </a>
-            <a title={'Go to previous page'} onClick={goToPrevPage}>
-              &lt;
-            </a>
+            <MaybeWithTooltip overlay={'Fo to first page'}>
+              <a onClick={goToFirstPage}>&lt;&lt;</a>
+            </MaybeWithTooltip>
+            <MaybeWithTooltip overlay={'Go to previous page'}>
+              <a onClick={goToPrevPage}>&lt;</a>
+            </MaybeWithTooltip>
             <span>
               {pageNumber} of {numberOfPages}
             </span>
-            <a title={'Go to next page'} onClick={goToNextPage}>
-              &gt;
-            </a>
-            <a title={'Go to last page'} onClick={goToLastPage}>
-              &gt;&gt;
-            </a>
+            <MaybeWithTooltip overlay={'Go to next page'}>
+              <a onClick={goToNextPage}>&gt;</a>
+            </MaybeWithTooltip>
+            <MaybeWithTooltip overlay={'Go to last page'}>
+              <a onClick={goToLastPage}>&gt;&gt;</a>
+            </MaybeWithTooltip>
           </div>
         )}
       </div>
