@@ -26,6 +26,7 @@ import { NOT_CHECKED } from '../../hooks/usePollPermissions'
 import { AnimatePresence } from 'framer-motion'
 import { Button } from '../Button'
 import { MotionDiv } from '../Animations'
+import { MaybeWithTooltip } from '../Tooltip/MaybeWithTooltip'
 
 const Arrow: FC<{ className: string }> = ({ className }) => (
   <svg
@@ -45,16 +46,15 @@ const Arrow: FC<{ className: string }> = ({ className }) => (
 
 const PollStatusIndicator: FC<{ active: boolean; isPastDue: boolean }> = ({ active, isPastDue }) => {
   return active ? (
-    <div
-      className={StringUtils.clsx(classes.pollStatusActive, 'niceLine')}
-      title={isPastDue ? 'Voting has already finished.' : 'Voting is currently active.'}
-    >
-      Active {isPastDue && <HourGlassIcon size={'small'} />}
-    </div>
+    <MaybeWithTooltip overlay={isPastDue ? 'Voting has already finished.' : 'Voting is currently active.'}>
+      <div className={StringUtils.clsx(classes.pollStatusActive, 'niceLine')}>
+        Active {isPastDue && <HourGlassIcon size={'small'} />}
+      </div>
+    </MaybeWithTooltip>
   ) : (
-    <div className={classes.pollStatusCompleted} title={'Poll is completed, results are available.'}>
-      Completed
-    </div>
+    <MaybeWithTooltip overlay={'Poll is completed, results are available.'}>
+      <div className={classes.pollStatusCompleted}>Completed</div>
+    </MaybeWithTooltip>
   )
 }
 

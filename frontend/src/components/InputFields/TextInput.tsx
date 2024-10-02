@@ -4,6 +4,7 @@ import { TextFieldControls } from './useTextField'
 import { WithValidation } from './WithValidation'
 import { WithLabelAndDescription } from './WithLabelAndDescription'
 import { WithVisibility } from './WithVisibility'
+import { MaybeWithTooltip } from '../Tooltip/MaybeWithTooltip'
 
 export const TextInput: FC<TextFieldControls> = props => {
   const { name, value, placeholder, setValue, allProblems, enabled, whyDisabled, autoFocus, onEnter } = props
@@ -25,17 +26,18 @@ export const TextInput: FC<TextFieldControls> = props => {
     <WithVisibility field={props}>
       <WithLabelAndDescription field={props}>
         <WithValidation field={props} problems={allProblems.root} fieldClasses={[classes.textValue]}>
-          <input
-            name={name}
-            placeholder={placeholder}
-            value={value}
-            onChange={handleChange}
-            className={classes.textValue}
-            disabled={!enabled}
-            title={whyDisabled}
-            autoFocus={autoFocus}
-            onKeyDown={handleKeyPress}
-          />
+          <MaybeWithTooltip overlay={whyDisabled}>
+            <input
+              name={name}
+              placeholder={placeholder}
+              value={value}
+              onChange={handleChange}
+              className={classes.textValue}
+              disabled={!enabled}
+              autoFocus={autoFocus}
+              onKeyDown={handleKeyPress}
+            />
+          </MaybeWithTooltip>
         </WithValidation>
       </WithLabelAndDescription>
     </WithVisibility>
