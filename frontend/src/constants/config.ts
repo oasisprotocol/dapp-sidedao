@@ -2,12 +2,6 @@
 import { ExtendedPoll } from '../types'
 import { randomchoice } from '@oasisprotocol/blockvote-contracts'
 
-export const NETWORK_NAMES: Record<string, string> = {
-  'Oasis Sapphire': 'Sapphire',
-  'Oasis Sapphire Testnet': 'Sapphire Testnet',
-  'Sapphire Localnet': 'Sapphire Localnet',
-}
-
 export const METAMASK_HOME_PAGE_URL = 'https://metamask.io/'
 // export const GITHUB_REPOSITORY_URL = 'https://github.com/oasisprotocol/dapp-votee/'
 
