@@ -19,7 +19,7 @@ import { useContracts } from '../../hooks/useContracts'
 import classes from './index.module.css'
 import { DateUtils } from '../../utils/date.utils'
 import { useTime } from '../../hooks/useTime'
-import { designDecisions, MIN_COMPLETION_TIME_MINUTES } from '../../constants/config'
+import { designDecisions, MIN_COMPLETION_TIME_MINUTES, nativeTokenName } from '../../constants/config'
 
 import { useNavigate } from 'react-router-dom'
 import { acls } from '../../components/ACLs'
@@ -134,8 +134,7 @@ export const useCreatePollForm = () => {
 
   const gasFreeExplanation = useLabel({
     name: 'gasFreeExplanation',
-    initialValue:
-      'We calculate and suggest the amount of ROSE needed for gas based on the amount of users that are expected to vote. Any remaining ROSE from the gas sponsoring wallet will be refunded to you once the poll is completed.',
+    initialValue: `We calculate and suggest the amount of ${nativeTokenName} needed for gas based on the amount of users that are expected to vote. Any remaining ${nativeTokenName} from the gas sponsoring wallet will be refunded to you once the poll is completed.`,
     visible: gasFree.value,
     classnames: classes.explanation,
   })
@@ -155,7 +154,7 @@ export const useCreatePollForm = () => {
   const amountOfSubsidy = useTextField({
     name: 'suggestedAmountOfRose',
     visible: gasFree.value,
-    label: 'Amount of ROSE to set aside',
+    label: `Amount of ${nativeTokenName} to set aside`,
   })
 
   useEffect(() => {

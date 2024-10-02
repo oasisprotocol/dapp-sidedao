@@ -55,14 +55,8 @@ export const isValidAddress = (address: string) => {
   return true
 }
 
-export const getSapphireTokenDetails = async (address: string) => {
-  const rpc = xchainRPC(VITE_NETWORK_NUMBER)
-  try {
-    return await erc20TokenDetailsFromProvider(getAddress(address), rpc)
-  } catch {
-    return undefined
-  }
-}
+export const getLocalContractDetails = async (address: string) =>
+  getContractDetails(VITE_NETWORK_NUMBER, address)
 
 /**
  *  Encode the %%values%% as the %%types%% into ABI data.
