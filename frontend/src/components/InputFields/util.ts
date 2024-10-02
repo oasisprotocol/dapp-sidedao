@@ -1,3 +1,5 @@
+import { ReactNode } from 'react'
+
 export type ProblemLevel = 'warning' | 'error'
 
 export type Problem = {
@@ -136,17 +138,17 @@ export const findDuplicates = (
 }
 
 type SimpleDecision = boolean
-type FullDecision = { verdict: boolean; reason?: string }
+type FullDecision = { verdict: boolean; reason?: ReactNode }
 export type Decision = SimpleDecision | FullDecision
 
-type FullPositiveDecision = { verdict: boolean; reason?: string }
-type FullNegativeDecision = { verdict: boolean; reason: string }
+type FullPositiveDecision = { verdict: boolean; reason?: ReactNode }
+type FullNegativeDecision = { verdict: boolean; reason: ReactNode }
 export type DecisionWithReason = true | FullPositiveDecision | FullNegativeDecision
 
-export const allow = (reason?: string): Decision => ({ verdict: true, reason })
+export const allow = (reason?: ReactNode): Decision => ({ verdict: true, reason })
 
-export const deny = (reason?: string): Decision => ({ verdict: false, reason })
-export const denyWithReason = (reason: string): FullNegativeDecision => ({ verdict: false, reason })
+export const deny = (reason?: ReactNode): Decision => ({ verdict: false, reason })
+export const denyWithReason = (reason: ReactNode): FullNegativeDecision => ({ verdict: false, reason })
 
 export const expandDecision = (decision: Decision): FullDecision =>
   typeof decision === 'boolean' ? { verdict: decision } : decision
@@ -179,17 +181,17 @@ export const andDecisions = (a: Decision, b: Decision): Decision => {
 export const getVerdict = (decision: Decision | undefined, defaultVerdict: boolean): boolean =>
   decision === undefined ? defaultVerdict : typeof decision === 'boolean' ? decision : decision.verdict
 
-export const getReason = (decision: Decision | undefined): string | undefined =>
+export const getReason = (decision: Decision | undefined): ReactNode | undefined =>
   decision === undefined ? undefined : typeof decision === 'boolean' ? undefined : decision.reason
 
-export const getReasonForDenial = (decision: Decision | undefined): string | undefined =>
+export const getReasonForDenial = (decision: Decision | undefined): ReactNode | undefined =>
   decision === undefined
     ? undefined
     : typeof decision === 'boolean' || decision.verdict
       ? undefined
       : decision.reason
 
-export const getReasonForAllowing = (decision: Decision | undefined): string | undefined =>
+export const getReasonForAllowing = (decision: Decision | undefined): ReactNode | undefined =>
   decision === undefined
     ? undefined
     : typeof decision === 'boolean' || !decision.verdict
