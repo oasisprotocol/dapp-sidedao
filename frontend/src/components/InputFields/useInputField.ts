@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { ReactNode, useEffect, useMemo, useState } from 'react'
 import {
   AllProblems,
   ValidatorControls,
@@ -159,7 +159,7 @@ export type InputFieldControls<DataType> = Pick<
   type: string
   visible: boolean
   enabled: boolean
-  whyDisabled?: string
+  whyDisabled?: ReactNode
   containerClassName?: string
   value: DataType
   setValue: (value: DataType) => void

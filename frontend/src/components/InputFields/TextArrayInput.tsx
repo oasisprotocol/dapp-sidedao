@@ -1,4 +1,4 @@
-import React, { FC, useCallback } from 'react'
+import React, { FC, ReactNode, useCallback } from 'react'
 import { TextArrayControls } from './useTextArrayField'
 import classes from './index.module.css'
 import { StringUtils } from '../../utils/string.utils'
@@ -13,7 +13,7 @@ import { MotionDiv } from '../Animations'
 import { MaybeWithTooltip } from '../Tooltip/MaybeWithTooltip'
 
 const TrashIcon: FC<{
-  label: string
+  label: ReactNode
   remove: () => void
   enabled?: boolean
 }> = ({ label, remove, enabled }) => {
