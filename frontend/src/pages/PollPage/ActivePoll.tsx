@@ -44,6 +44,7 @@ export const ActivePoll: FC<PollData> = ({
   isDestroying,
   destroyPoll,
   topUp,
+  correctiveAction,
 }) => {
   // console.log("hasWallet?", hasWallet, "hasWalletOnWrongNetwork?",hasWalletOnWrongNetwork)
   // console.log('isMine?', isMine, 'canComplete?', canComplete)
@@ -163,17 +164,28 @@ export const ActivePoll: FC<PollData> = ({
       )}
       {hasWallet && !hasWalletOnWrongNetwork && !getVerdict(canAclVote, false) ? (
         <AnimatePresence>
-          {!permissionsPending && (
-            <MotionDiv
-              reason={'permissionWarning'}
-              key={'warning-icon'}
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-            >
+          <MotionDiv
+            title={correctiveAction ? 'Click to check again' : undefined}
+            reason={'permissionWarning'}
+            key={'warning-icon'}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            onClick={() => {
+              if (correctiveAction) {
+                console.log('Retrying')
+                correctiveAction()
+              } else {
+                console.log('no corrective action')
+              }
+            }}
+          >
+            {permissionsPending ? (
+              <SpinnerIcon size={'large'} spinning />
+            ) : (
               <WarningCircleIcon size={'large'} />
-            </MotionDiv>
-          )}
+            )}
+          </MotionDiv>
           <MotionDiv
             reason={'permissionWarning'}
             key={'warning-message'}

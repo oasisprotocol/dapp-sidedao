@@ -61,6 +61,7 @@ export const usePollData = (pollId: string) => {
     permissions,
     permissionsPending,
     checkPermissions,
+    correctiveAction,
   } = useExtendedPoll(proposal, { onDashboard: false })
 
   const { now } = useTime()
@@ -443,6 +444,7 @@ export const usePollData = (pollId: string) => {
     voteCounts,
     winningChoice,
     pollResults,
+    correctiveAction,
   }
 }
 
