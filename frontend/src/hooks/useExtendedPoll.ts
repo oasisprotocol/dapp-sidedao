@@ -73,7 +73,7 @@ export const useExtendedPoll = (
           proposal,
           ipfsParams,
         })
-        setDeadline(ipfsParams.options.closeTimestamp)
+        setDeadline(Number(proposal.params.closeTimestamp))
       } else {
         setPoll(undefined)
       }

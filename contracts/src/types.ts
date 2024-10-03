@@ -29,11 +29,6 @@ export type Poll = {
   name: string;
   description: string;
   choices: string[];
-  options: {
-    publishVotes: boolean;
-    publishVoters: boolean;
-    closeTimestamp: number;
-  };
   acl: AclOptions;
 };
 
