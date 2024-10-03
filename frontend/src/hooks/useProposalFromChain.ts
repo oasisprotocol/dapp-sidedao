@@ -30,7 +30,7 @@ export const useProposalFromChain = (proposalId: string) => {
     try {
       setIsLoading(true)
       const data = await pollManager.PROPOSALS(proposalId)
-      const [active, topChoice, params] = data
+      const [topChoice, params] = data
       const acl = data?.params?.acl
       if (!acl || acl === ZeroAddress) {
         // setError('Found proposal with invalid ACL.')
@@ -39,7 +39,6 @@ export const useProposalFromChain = (proposalId: string) => {
       } else {
         setProposal({
           id: proposalId,
-          active,
           topChoice,
           params,
         })

@@ -121,20 +121,16 @@ describe('PollManager', function () {
 
     TEST_PROPOSALS = [
       {
-        isHidden: false,
+        flags: 1n,
         numChoices: 4n,
-        publishVotes: false,
-        publishVoters: false,
-        closeTimestamp: BigInt(new Date().getTime() + 1),
+        closeTimestamp: BigInt(Math.round(new Date().getTime()/1000) + 1),
         acl: acl_allowall_addr,
         metadata: '',
       },
       {
-        isHidden: false,
+        flags: 1n,
         numChoices: 3n,
-        publishVotes: true,
-        publishVoters: false,
-        closeTimestamp: BigInt(new Date().getTime() + 2),
+        closeTimestamp: BigInt(Math.round(new Date().getTime()/1000) + 2),
         acl: acl_allowall_addr,
         metadata: '',
       },
@@ -165,10 +161,9 @@ describe('PollManager', function () {
       expect(ap_paginated.out_proposals.length).eq(1);
 
       const x = ap_paginated.out_proposals[0].proposal.params;
-      expect(x.isHidden).eq(p.isHidden);
+      expect(x.flags).eq(p.flags);
       expect(x.metadata).eq(p.metadata);
       expect(x.numChoices).eq(p.numChoices);
-      expect(x.publishVotes).eq(p.publishVotes);
       expect(x.closeTimestamp).eq(p.closeTimestamp);
       expect(x.acl).eq(p.acl);
     }
@@ -192,11 +187,9 @@ describe('PollManager', function () {
     const propId = await addProposal(
       pm,
       {
-        isHidden: false,
+        flags: 0,
         metadata: '',
         numChoices: 3n,
-        publishVotes: false,
-        publishVoters: false,
         closeTimestamp: 0n,
         acl: await acl_tokenholder.getAddress(),
       },
@@ -255,11 +248,9 @@ describe('PollManager', function () {
     const propId = await addProposal(
       pm,
       {
-        isHidden: false,
+        flags: 0,
         metadata: '',
         numChoices: 3n,
-        publishVotes: false,
-        publishVoters: false,
         closeTimestamp: 0n,
         acl: await acl_storageproof.getAddress(),
       },
@@ -314,11 +305,9 @@ describe('PollManager', function () {
     const proposalId = await addProposal(
       pm,
       {
-        isHidden: false,
+        flags: 0,
         metadata: '',
         numChoices: 3n,
-        publishVotes: false,
-        publishVoters: false,
         closeTimestamp: 0n,
         acl: await acl_allowall.getAddress(),
       },
@@ -417,11 +406,9 @@ describe('PollManager', function () {
     const proposalId = await addProposal(
       pm,
       {
-        isHidden: false,
+        flags: 0,
         metadata: '',
         numChoices: 3n,
-        publishVotes: false,
-        publishVoters: false,
         closeTimestamp: 0n,
         acl: await acl_storageproof.getAddress(),
       },

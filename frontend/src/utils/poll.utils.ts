@@ -1,12 +1,6 @@
-import {
-  AbiCoder,
-  BytesLike,
-  encodeBase64,
-  getAddress,
-  JsonRpcProvider,
-  ParamType,
-  toUtf8Bytes,
-} from 'ethers'
+import { AbiCoder, BytesLike, getAddress, JsonRpcProvider, ParamType } from 'ethers'
+
+import { encode as cborEncode, decode as cborDecode } from 'cbor-web'
 
 import {
   chain_info,
@@ -25,7 +19,7 @@ import {
 } from '@oasisprotocol/blockvote-contracts'
 export type { ContractType, NftType } from '@oasisprotocol/blockvote-contracts'
 export { isToken } from '@oasisprotocol/blockvote-contracts'
-import { Poll, PollManager } from '../types'
+import { FLAG_HIDDEN, FLAG_PUBLISH_VOTERS, FLAG_PUBLISH_VOTES, Poll, PollManager } from '../types'
 import { EthereumContext } from '../providers/EthereumContext'
 import { DecisionWithReason, denyWithReason } from '../components/InputFields'
 import { FetcherFetchOptions } from './StoredLRUCache'
@@ -141,6 +135,27 @@ export type CreatePollProps = {
   completionTime: Date | undefined
 }
 
+const CURRENT_ENCODING_VERSION = 0
+
+const encodePollMetadata = (poll: Poll): Uint8Array => {
+  const encoded = cborEncode({ v: CURRENT_ENCODING_VERSION, data: poll })
+  // console.log('Encoded poll data', encoded)
+  return encoded
+}
+
+export const decodePollMetadata = (metadata: string): Poll => {
+  const { v, data } = cborDecode(metadata.substring(2), { preferWeb: true, encoding: 'hex' })
+
+  if (typeof v !== 'number') throw new Error('Unknown poll data format')
+
+  switch (v as number) {
+    case CURRENT_ENCODING_VERSION:
+      return data as Poll
+    default:
+      throw new Error(`Unrecognized poll data format version: ${v}`)
+  }
+}
+
 export const createPoll = async (
   pollManager: PollManager,
   creator: string,
@@ -176,14 +191,18 @@ export const createPoll = async (
 
   // console.log('Compiling poll', poll)
 
+  let pollFlags: bigint = 0n
+
+  if (poll.options.publishVoters) pollFlags |= FLAG_PUBLISH_VOTERS
+  if (poll.options.publishVotes) pollFlags |= FLAG_PUBLISH_VOTES
+  if (isHidden) pollFlags |= FLAG_HIDDEN
+
   const proposalParams: PollManager.ProposalParamsStruct = {
-    metadata: encodeBase64(toUtf8Bytes(JSON.stringify(poll))),
+    metadata: encodePollMetadata(poll),
     numChoices: answers.length,
-    publishVotes: poll.options.publishVotes,
-    publishVoters: poll.options.publishVoters,
     closeTimestamp: poll.options.closeTimestamp,
     acl: aclOptions.address,
-    isHidden,
+    flags: pollFlags,
   }
 
   console.log('params are', proposalParams)

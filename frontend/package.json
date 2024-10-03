@@ -26,6 +26,7 @@
     "@oasisprotocol/sapphire-ethers-v6": "^6.0.1",
     "@oasisprotocol/sapphire-paratime": "^2.0.1",
     "@phosphor-icons/core": "^2.0.8",
+    "cbor-web": "^9.0.2",
     "ethers": "6.10.0",
     "framer-motion": "^11.5.4",
     "lru-cache": "10.1.0",

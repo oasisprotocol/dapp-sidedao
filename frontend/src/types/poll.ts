@@ -12,7 +12,6 @@ export type {
 
 export type Proposal = {
   id: string
-  active: boolean
   topChoice: bigint
   params: PollManager.ProposalParamsStructOutput
 }
