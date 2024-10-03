@@ -73,7 +73,10 @@ export const abiEncode = (types: ReadonlyArray<string | ParamType>, values: Read
   return abi.encode(types, values)
 }
 
-export const getERC20TokenDetails = async (chainId: number, address: string) => {
+export const getERC20TokenDetails = async (
+  chainId: number,
+  address: string,
+): Promise<TokenInfo | undefined> => {
   const rpc = xchainRPC(chainId)
   try {
     return await erc20TokenDetailsFromProvider(getAddress(address), rpc)
@@ -82,7 +85,7 @@ export const getERC20TokenDetails = async (chainId: number, address: string) => 
   }
 }
 
-export const getNftDetails = async (chainId: number, address: string) => {
+export const getNftDetails = async (chainId: number, address: string): Promise<NFTInfo | undefined> => {
   const rpc = xchainRPC(chainId)
   try {
     return await nftDetailsFromProvider(getAddress(address), rpc)
@@ -91,10 +94,13 @@ export const getNftDetails = async (chainId: number, address: string) => {
   }
 }
 
-export const getContractDetails = async (chainId: number, address: string) =>
+export const getContractDetails = async (
+  chainId: number,
+  address: string,
+): Promise<TokenInfo | NFTInfo | undefined> =>
   (await getERC20TokenDetails(chainId, address)) ?? (await getNftDetails(chainId, address))
 
-export const getChainDefinition = (chainId: number): ChainDefinition => chain_info[chainId]
+export const getChainDefinition = (chainId: number): ChainDefinition | undefined => chain_info[chainId]
 
 export const checkXchainTokenHolder = async (
   chainId: number,
