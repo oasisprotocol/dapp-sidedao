@@ -4,7 +4,8 @@ import type { IconT, ChainDefinition } from '@oasisprotocol/blockvote-contracts'
 import { sha256 } from '@noble/hashes/sha256'
 import { VITE_NETWORK_NUMBER } from '../constants/config'
 
-const getIconUrl = (icon: IconT): string => (typeof icon === 'string' ? icon : (icon as any).url)
+export const getChainIconUrl = (icon: IconT | undefined): string =>
+  icon === undefined ? undefined : typeof icon === 'string' ? icon : (icon as any).url
 
 interface AddEthereumChainParameter {
   chainId: string
@@ -24,7 +25,7 @@ export const getAddEthereumChainParameterFromDefinition = (
 ): AddEthereumChainParameter => ({
   chainId: `0x${def.chainId.toString(16)}`,
   chainName: def.name,
-  iconUrls: def.icon ? [getIconUrl(def.icon)] : [],
+  iconUrls: def.icon ? [getChainIconUrl(def.icon)] : [],
   nativeCurrency: def.nativeCurrency,
   rpcUrls: def.rpcUrls,
   blockExplorerUrls: (def.explorers || []).map(e => e.url),

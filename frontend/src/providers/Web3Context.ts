@@ -7,6 +7,7 @@ export interface Web3ProviderState {
   sapphireEthProvider: BrowserProvider | null
   account: string | null
   explorerBaseUrl: string | null
+  chainId: number | null
   chainName: string | null
   isUnknownNetwork: boolean
 }

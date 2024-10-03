@@ -132,7 +132,12 @@ export const PollCard: FC<{
   const correctColumn = (isMine && column === 'mine') || (!isMine && column === 'others')
   const correctStatus = isPollStatusAcceptable(proposal, wantedStatus)
 
-  const visible = correctColumn && correctStatus && !hiddenByPermissionIssues && hasAllMatches
+  const visible =
+    correctColumn &&
+    correctStatus &&
+    !hiddenByPermissionIssues &&
+    hasAllMatches &&
+    !(!!error && designDecisions.hidePollCardsWithErrors)
 
   useEffect(() => {
     // console.log('Will report visibility change')

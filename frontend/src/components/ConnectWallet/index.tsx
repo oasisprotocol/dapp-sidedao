@@ -20,7 +20,7 @@ export const ConnectWallet: FC<Props> = ({ mobileSticky, avoidButtonClasses = fa
   const [providerAvailable, setProviderAvailable] = useState(true)
 
   const {
-    state: { isConnected, account, chainName, isUnknownNetwork },
+    state: { isConnected, account, chainId, isUnknownNetwork },
     connectWallet,
     switchNetwork,
     isProviderAvailable,
@@ -102,11 +102,11 @@ export const ConnectWallet: FC<Props> = ({ mobileSticky, avoidButtonClasses = fa
           <label className={classes.connectWalletBtnLabel}>Connect wallet</label>
         </Button>
       )}
-      {isConnected && account && (
+      {isConnected && account && chainId && (
         <ConnectedAccount
           className={mobileSticky ? classes.stickyConnectedAccount : undefined}
           address={account}
-          chainName={chainName!}
+          chainId={chainId}
         />
       )}
     </>

@@ -6,14 +6,16 @@ import classes from './index.module.css'
 import { useAppState } from '../../hooks/useAppState'
 import { AddressShower } from '../Addresses'
 import { motion } from 'framer-motion'
+import { getChainDefinition } from '../../utils/poll.utils'
+import { getChainIconUrl } from '../../utils/crypto.demo'
 
 interface Props {
   className?: string
   address: string
-  chainName: string
+  chainId: number
 }
 
-export const ConnectedAccount: FC<Props> = ({ className, address, chainName }) => {
+export const ConnectedAccount: FC<Props> = ({ className, address, chainId }) => {
   const {
     state: { explorerBaseUrl },
   } = useWeb3()
@@ -21,7 +23,10 @@ export const ConnectedAccount: FC<Props> = ({ className, address, chainName }) =
     state: { isDesktopScreen },
   } = useAppState()
 
+  const chainDefinition = getChainDefinition(chainId)!
+
   const url = explorerBaseUrl ? StringUtils.getAccountUrl(explorerBaseUrl, address) : undefined
+  const imageUrl = getChainIconUrl(chainDefinition.icon)
 
   return (
     <a
@@ -30,18 +35,22 @@ export const ConnectedAccount: FC<Props> = ({ className, address, chainName }) =
       target="_blank"
       rel="nofollow noreferrer"
     >
-      <JazzIcon size={isDesktopScreen ? 30 : 20} address={address} />
-      {isDesktopScreen && (
-        <p className={classes.connectedAccountDetails}>
+      {isDesktopScreen ? (
+        <div className={classes.connectedAccountDetails}>
           <motion.span
+            layout
             className={classes.network}
             whileHover={{ width: 'auto' }}
             transition={{ ease: 'easeInOut' }}
           >
-            {chainName}
+            <img src={imageUrl} width={30} height={30} />
+            {chainDefinition.name}
           </motion.span>
+          <JazzIcon size={30} address={address} />
           <AddressShower address={address} className={classes.connectedAccountAddress} />
-        </p>
+        </div>
+      ) : (
+        <JazzIcon size={20} address={address} />
       )}
     </a>
   )
