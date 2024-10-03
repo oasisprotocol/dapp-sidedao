@@ -67,7 +67,7 @@ export const Web3ContextProvider: FC<PropsWithChildren> = ({ children }) => {
     }
     const { explorers, name: chainName } = chain
     // blockExplorerUrls,
-    const explorerBaseUrl = (explorers || [])[0]?.url ?? 'null'
+    const explorerBaseUrl = (explorers || [])[0]?.url ?? null
 
     setState(prevState => ({
       ...prevState,
