@@ -29,9 +29,6 @@ export type Poll = {
   name: string;
   description: string;
   choices: string[];
-  options: {
-    closeTimestamp: number;
-  };
   acl: AclOptions;
 };
 

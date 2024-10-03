@@ -78,6 +78,7 @@ export const PollCard: FC<{
   wantedStatus: WantedStatus
 }> = ({ proposal, reportVisibility, column, showInaccessible, searchPatterns, wantedStatus }) => {
   const { userAddress } = useEthereum()
+  const { closeTimestamp } = proposal.params
   const {
     poll,
     proposalId,
@@ -95,12 +96,7 @@ export const PollCard: FC<{
   const {
     id: pollId,
     proposal: { params },
-    ipfsParams: {
-      name,
-      description,
-      options: { closeTimestamp },
-      // acl,
-    },
+    ipfsParams: { name, description },
   } = poll ?? {
     id: proposalId?.substring(2),
     proposal,

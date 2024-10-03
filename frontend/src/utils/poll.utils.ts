@@ -183,9 +183,6 @@ export const createPoll = async (
     name: question,
     description,
     choices: answers,
-    options: {
-      closeTimestamp: completionTime ? Math.round(completionTime.getTime() / 1000) : 0,
-    },
     acl: aclOptions,
   }
 
@@ -200,7 +197,7 @@ export const createPoll = async (
   const proposalParams: PollManager.ProposalParamsStruct = {
     metadata: encodePollMetadata(poll),
     numChoices: answers.length,
-    closeTimestamp: poll.options.closeTimestamp,
+    closeTimestamp: completionTime ? Math.round(completionTime.getTime() / 1000) : 0,
     acl: aclOptions.address,
     flags: pollFlags,
   }
