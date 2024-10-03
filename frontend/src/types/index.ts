@@ -1,4 +1,5 @@
 export type { DataEntry } from './data-entry'
 export type * from './poll'
+export * from './poll-flags'
 export type { IconSize } from './icon-size'
 export type { IconProps } from './icon-props'

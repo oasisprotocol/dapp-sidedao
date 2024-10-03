@@ -1,4 +1,4 @@
-import { Proposal } from '../../types'
+import { isPollActive, Proposal } from '../../types'
 import { FC, MouseEventHandler, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import classes from './index.module.css'
@@ -94,7 +94,7 @@ export const PollCard: FC<{
 
   const {
     id: pollId,
-    proposal: { active },
+    proposal: { params },
     ipfsParams: {
       name,
       description,
@@ -110,6 +110,8 @@ export const PollCard: FC<{
       options: {},
     },
   }
+
+  const active = isPollActive(params)
 
   const renderedDescription = description
 

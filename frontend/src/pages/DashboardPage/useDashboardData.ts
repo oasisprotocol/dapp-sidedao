@@ -1,6 +1,6 @@
 import { useContracts } from '../../hooks/useContracts'
 import { useEffect, useMemo, useState } from 'react'
-import { PollManager, Proposal } from '../../types'
+import { isPollActive, PollManager, Proposal } from '../../types'
 import { useEthereum } from '../../hooks/useEthereum'
 import { useBooleanField, useOneOfField, useTextField } from '../../components/InputFields'
 import { useNavigate } from 'react-router-dom'
@@ -22,9 +22,9 @@ export type WantedStatus = 'active' | 'completed' | 'all'
 export const isPollStatusAcceptable = (proposal: Proposal, wantedStatus: WantedStatus): boolean => {
   switch (wantedStatus) {
     case 'active':
-      return proposal.active
+      return isPollActive(proposal.params)
     case 'completed':
-      return !proposal.active
+      return !isPollActive(proposal.params)
     case 'all':
       return true
   }
@@ -135,8 +135,8 @@ async function fetchProposals(
     }
 
     result.out_proposals.forEach(({ id, proposal }) => {
-      const [active, topChoice, params] = proposal
-      proposalList.push({ id, active, topChoice, params })
+      const [topChoice, params] = proposal
+      proposalList.push({ id, topChoice, params })
     })
 
     if (result.out_proposals.length < FETCH_BATCH_SIZE) {
@@ -204,10 +204,7 @@ export const useDashboardData = () => {
   }
 
   const allProposals = useMemo(
-    () => [
-      ...activeProposals.map((p): Proposal => ({ ...p, active: true })),
-      ...pastProposals.map((p): Proposal => ({ ...p, active: false })),
-    ],
+    () => [...activeProposals, ...pastProposals],
     [activeProposals, pastProposals, userAddress],
   )
 

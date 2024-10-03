@@ -18,6 +18,7 @@ import { getVerdict } from '../../components/InputFields'
 import { useExtendedPoll } from '../../hooks/useExtendedPoll'
 import { useProposalFromChain } from '../../hooks/useProposalFromChain'
 import { useNavigate } from 'react-router-dom'
+import { isPollActive } from '../../types'
 
 export const usePollData = (pollId: string) => {
   const navigate = useNavigate()
@@ -362,7 +363,7 @@ export const usePollData = (pollId: string) => {
     () => {
       if (
         isDemo &&
-        poll?.proposal.active &&
+        isPollActive(poll?.proposal.params) &&
         remainingTime?.isPastDue &&
         remainingTime.totalSeconds < demoSettings.waitSecondsBeforeFormallyCompleting + 5 &&
         remainingTime.totalSeconds >= demoSettings.waitSecondsBeforeFormallyCompleting
@@ -380,7 +381,7 @@ export const usePollData = (pollId: string) => {
     if (hasCompleted) {
       if (!poll) {
         // console.log("No poll loaded, waiting to load")
-      } else if (poll.proposal.active) {
+      } else if (isPollActive(poll.proposal.params)) {
         // console.log("Apparently, we have completed a poll, but we still perceive it as active, so scheduling a reload...")
         setTimeout(() => {
           // console.log("Reloading now")
@@ -400,7 +401,7 @@ export const usePollData = (pollId: string) => {
     isLoading: isProposalLoading || isLoading,
     error: proposalError ?? error,
     poll,
-    active: !!poll?.proposal?.active,
+    active: isPollActive(poll?.proposal?.params),
 
     selectedChoice: winningChoice ?? selectedChoice,
     canSelect,

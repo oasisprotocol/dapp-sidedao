@@ -1,5 +1,5 @@
 // EIP-3085: wallet_addEthereumChain RPC Method
-import { ExtendedPoll } from '../types'
+import { ExtendedPoll, FLAG_ACTIVE } from '../types'
 import { randomchoice, chain_info } from '@oasisprotocol/blockvote-contracts'
 
 export const METAMASK_HOME_PAGE_URL = 'https://metamask.io/'
@@ -56,7 +56,9 @@ export const demoPoll1 = {
   id: 'demo',
   proposal: {
     id: '0xdemo',
-    active: true,
+    params: {
+      flags: FLAG_ACTIVE,
+    },
   },
   ipfsParams: {
     creator: 'demo',
@@ -73,7 +75,9 @@ export const demoPoll2 = {
   id: 'demo',
   proposal: {
     id: '0xdemo',
-    active: true,
+    params: {
+      flags: FLAG_ACTIVE,
+    },
   },
   ipfsParams: {
     creator: 'demo',
@@ -90,7 +94,9 @@ export const demoPoll3 = {
   id: 'demo',
   proposal: {
     id: '0xdemo',
-    active: true,
+    params: {
+      flags: FLAG_ACTIVE,
+    },
   },
   ipfsParams: {
     creator: 'demo',
@@ -107,7 +113,9 @@ export const demoPoll4 = {
   id: 'demo',
   proposal: {
     id: '0xdemo',
-    active: true,
+    params: {
+      flags: FLAG_ACTIVE,
+    },
   },
   ipfsParams: {
     creator: 'demo',

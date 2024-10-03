@@ -1,11 +1,22 @@
-import { ListOfVotes, ExtendedPoll, PollResults, Proposal, ListOfVoters } from '../types'
+import {
+  ListOfVotes,
+  ExtendedPoll,
+  PollResults,
+  Proposal,
+  ListOfVoters,
+  isPollActive,
+  shouldPublishVotes,
+  shouldPublishVoters,
+  inactivatePoll,
+  Poll,
+} from '../types'
 import { useEffect, useMemo, useState } from 'react'
 import { dashboard, demoSettings, getDemoPoll } from '../constants/config'
 import { usePollGaslessStatus } from './usePollGaslessStatus'
 import { usePollPermissions } from './usePollPermissions'
 import { useEthereum } from './useEthereum'
 import { useContracts } from './useContracts'
-import { decodeBase64, toUtf8String } from 'ethers'
+import { decodePollMetadata } from '../utils/poll.utils'
 import { getVerdict } from '../components/InputFields'
 
 const noVoters: ListOfVoters = { out_count: 0n, out_voters: [] }
@@ -36,10 +47,14 @@ export const useExtendedPoll = (
 
   let correctiveAction: (() => void) | undefined
 
-  const ipfsParams = useMemo(
-    () => (metadata ? JSON.parse(toUtf8String(decodeBase64(metadata))) : undefined),
-    [metadata],
-  )
+  const [ipfsParams, ipfsError] = useMemo((): [Poll | undefined, string | undefined] => {
+    try {
+      return metadata ? [decodePollMetadata(metadata), undefined] : [undefined, undefined]
+    } catch (e) {
+      console.log('metadata problem on poll', proposal?.id, e)
+      return [undefined, "Invalid metadata, poll can't be displayed."]
+    }
+  }, [metadata])
 
   useEffect(
     // Update poll object
@@ -77,10 +92,10 @@ export const useExtendedPoll = (
     correctiveAction = checkPermissions
   }
 
-  const isActive = !!proposal?.active
+  const isActive = isPollActive(proposal?.params)
 
   const loadVotes = async () => {
-    if (isDemo || !proposal || !pollManager || !ipfsParams || proposal.active) return
+    if (isDemo || !proposal || !pollManager || !ipfsParams || isActive) return
 
     if (params.onDashboard && !dashboard.showResults) return
 
@@ -90,7 +105,7 @@ export const useExtendedPoll = (
     setVoteCounts(voteCounts)
     setWinningChoice(proposal.topChoice)
 
-    if (proposal.params.publishVotes) {
+    if (shouldPublishVotes(proposal.params)) {
       const loadedVotes: ListOfVotes = {
         out_count: 1000n, // Fake number, will be updated when the first batch is loaded
         out_voters: [],
@@ -103,7 +118,7 @@ export const useExtendedPoll = (
         loadedVotes.out_choices.push(...newVotes.out_choices)
       }
       setVotes(loadedVotes)
-    } else if (proposal.params.publishVoters) {
+    } else if (shouldPublishVoters(proposal.params)) {
       const loadedVoters: ListOfVoters = {
         out_count: 1000n, // Fake number, will be updated when the first batch is loaded
         out_voters: [],
@@ -124,7 +139,7 @@ export const useExtendedPoll = (
   useEffect(
     // Load votes, when the stars are right
     () => void loadVotes(),
-    [proposal, proposal?.active, params.onDashboard, dashboard.showResults, pollManager, ipfsParams, isDemo],
+    [proposal, isActive, params.onDashboard, dashboard.showResults, pollManager, ipfsParams, isDemo],
   )
 
   const pollResults = useMemo(() => {
@@ -155,7 +170,7 @@ export const useExtendedPoll = (
       ...poll,
       proposal: {
         ...poll.proposal,
-        active: false,
+        params: inactivatePoll(poll.proposal.params),
         topChoice: 0n,
       },
     })
@@ -178,7 +193,7 @@ export const useExtendedPoll = (
     isActive,
     isDemo,
     isLoading: false,
-    error: undefined,
+    error: ipfsError,
     correctiveAction,
     poll,
     voteCounts,
