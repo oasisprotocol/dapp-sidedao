@@ -5,7 +5,6 @@ import { WithVisibility } from './WithVisibility'
 import { WithLabelAndDescription } from './WithLabelAndDescription'
 import { WithValidation } from './WithValidation'
 import classes from './index.module.css'
-import { MaybeWithTooltip } from '../Tooltip/MaybeWithTooltip'
 
 export const SelectInput: FC<OneOfFieldControls<any>> = props => {
   const { choices, allProblems, value, setValue, enabled } = props
@@ -25,12 +24,15 @@ export const SelectInput: FC<OneOfFieldControls<any>> = props => {
               .map(choice => {
                 const disabled = !getVerdict(choice.enabled, true)
                 return (
-                  <option key={choice.value} value={choice.value} disabled={disabled}>
-                    <MaybeWithTooltip overlay={getReasonForDenial(choice.enabled) ?? choice.description}>
-                      <>
-                        {choice.label} {disabled || choice.description ? '🛈' : ''}
-                      </>
-                    </MaybeWithTooltip>
+                  <option
+                    key={choice.value}
+                    value={choice.value}
+                    disabled={disabled}
+                    // TODO: we can't display HTML reason here, so we just _hope_ that it will be a string.
+                    // The proper solution is to use a custom select component.
+                    title={(getReasonForDenial(choice.enabled) as string) ?? choice.description}
+                  >
+                    {choice.label} {disabled || choice.description ? '🛈' : ''}
                   </option>
                 )
               })}

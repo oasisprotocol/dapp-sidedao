@@ -1,9 +1,15 @@
 import Tooltip from 'rc-tooltip'
-import { FC } from 'react'
+import { FC, forwardRef } from 'react'
 
 type TooltipProps = Parameters<typeof Tooltip>[0]
 
-export const MaybeWithTooltip: FC<TooltipProps> = props => {
-  const { overlay } = props
-  return overlay ? <Tooltip {...props} /> : props.children
-}
+export const MaybeWithTooltip: FC<TooltipProps> = forwardRef((props, ref) => {
+  const { children, ...rest } = props
+  return props.overlay ? (
+    <Tooltip {...rest} ref={ref}>
+      <span>{children}</span>
+    </Tooltip>
+  ) : (
+    props.children
+  )
+})
