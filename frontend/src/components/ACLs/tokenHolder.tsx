@@ -12,6 +12,7 @@ import { FLAG_WEIGHT_LOG10, FLAG_WEIGHT_ONE } from '../../types'
 
 export const tokenHolder = defineACL({
   value: 'acl_tokenHolder',
+  address: VITE_CONTRACT_ACL_TOKENHOLDER,
   costEstimation: 0.2,
   label: `Active Token or NFT balance on ${configuredNetworkName}`,
   description:
@@ -110,8 +111,6 @@ export const tokenHolder = defineACL({
       },
     }
   },
-
-  getAclAddress: () => VITE_CONTRACT_ACL_TOKENHOLDER,
 
   getAclOptions: props => {
     if (!props.tokenAddress) throw new Error('Internal errors: parameter mismatch, addresses missing.')

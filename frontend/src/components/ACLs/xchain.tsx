@@ -38,6 +38,7 @@ import { FLAG_WEIGHT_LOG10, FLAG_WEIGHT_ONE } from '../../types'
 
 export const xchain = defineACL({
   value: 'acl_xchain',
+  address: VITE_CONTRACT_ACL_STORAGEPROOF,
   label: 'Token Snapshot voting',
   costEstimation: 0.2,
   description: 'take a snapshot of token or NFT balances from another chain',
@@ -290,8 +291,6 @@ export const xchain = defineACL({
     }
   },
 
-  getAclAddress: () => VITE_CONTRACT_ACL_STORAGEPROOF,
-
   getAclOptions: async ({ chainId, contractAddress, slotNumber, blockHash, flags }, updateStatus) => {
     const showStatus = updateStatus ?? ((message?: string | undefined) => console.log(message))
     const rpc = xchainRPC(chainId)
@@ -333,8 +332,8 @@ export const xchain = defineACL({
     const {
       xchain: { c: chainId, s: slot },
     } = xChainOptions
-    const tokenAddress = hexlify(xChainOptions.xchain.a);
-    const blockHash = hexlify(xChainOptions.xchain.b);
+    const tokenAddress = hexlify(xChainOptions.xchain.a)
+    const blockHash = hexlify(xChainOptions.xchain.b)
     const provider = xchainRPC(chainId)
     const chainDefinition = getChainDefinition(chainId)
 

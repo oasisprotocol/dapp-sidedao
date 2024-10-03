@@ -20,7 +20,10 @@ export type ACL<Name, ConfigInputValues, Options extends AclOptions, Extra> = Ch
    */
   useConfiguration: (selected: boolean) => { fields: FieldConfiguration; values: ConfigInputValues }
 
-  getAclAddress: () => string
+  /**
+   * The address of the ACL contract to use
+   */
+  address: string
 
   /**
    * Compose the ACL options when creating a poll

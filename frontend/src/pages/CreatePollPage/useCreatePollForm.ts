@@ -340,7 +340,7 @@ export const useCreatePollForm = () => {
         description: description.value,
         answers: answers.value,
         isHidden: hidden.value,
-        aclAddress: currentAcl.getAclAddress(),
+        aclAddress: currentAcl.address,
         aclData,
         aclOptions,
         pollFlags,

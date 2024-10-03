@@ -4,6 +4,7 @@ import { denyWithReason, useOneOfField } from '../InputFields'
 
 export const allowAll = defineACL({
   value: 'acl_allowAll',
+  address: VITE_CONTRACT_ACL_ALLOWALL,
   label: 'Everybody',
   costEstimation: 0.1,
   useConfiguration: active => {
@@ -25,8 +26,6 @@ export const allowAll = defineACL({
       values: undefined,
     }
   },
-
-  getAclAddress: () => VITE_CONTRACT_ACL_ALLOWALL,
 
   getAclOptions: () => ({
     data: '0x', // Empty bytes is passed
