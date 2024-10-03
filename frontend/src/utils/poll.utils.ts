@@ -129,6 +129,7 @@ export type CreatePollProps = {
   isHidden: boolean
   aclData: string
   aclOptions: AclOptions
+  pollFlags: bigint
   subsidizeAmount: bigint | undefined
   publishVotes: boolean
   publishVoters: boolean
@@ -168,6 +169,7 @@ export const createPoll = async (
     answers,
     aclData,
     aclOptions,
+    pollFlags: extraFlags,
     isHidden,
     subsidizeAmount,
     publishVotes,
@@ -191,7 +193,7 @@ export const createPoll = async (
 
   // console.log('Compiling poll', poll)
 
-  let pollFlags: bigint = 0n
+  let pollFlags: bigint = extraFlags
 
   if (poll.options.publishVoters) pollFlags |= FLAG_PUBLISH_VOTERS
   if (poll.options.publishVotes) pollFlags |= FLAG_PUBLISH_VOTES

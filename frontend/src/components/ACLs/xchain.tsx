@@ -3,7 +3,6 @@ import {
   addMockValidation,
   Choice,
   DecisionWithReason,
-  deny,
   denyWithReason,
   useLabel,
   useOneOfField,
@@ -35,6 +34,7 @@ import classes from './index.module.css'
 import { BytesLike, getUint } from 'ethers'
 import { ReactNode, useMemo } from 'react'
 import { StringUtils } from '../../utils/string.utils'
+import { FLAG_WEIGHT_LOG10, FLAG_WEIGHT_ONE } from '../../types'
 
 export const xchain = defineACL({
   value: 'acl_xchain',
@@ -244,16 +244,30 @@ export const xchain = defineACL({
         {
           value: 'weight_perWallet',
           label: '1 vote per wallet',
-          enabled: deny('Coming soon'),
         },
         {
           value: 'weight_perToken',
           label: 'According to token distribution',
         },
+        {
+          value: 'weight_perLog10Token',
+          label: 'According to log10(token distribution)',
+        },
       ],
       hideDisabledChoices: designDecisions.hideDisabledSelectOptions,
       disableIfOnlyOneVisibleChoice: designDecisions.disableSelectsWithOnlyOneVisibleOption,
     } as const)
+
+    const weightToFlags = (selection: typeof voteWeighting.value): bigint => {
+      switch (selection) {
+        case 'weight_perWallet':
+          return FLAG_WEIGHT_ONE
+        case 'weight_perToken':
+          return 0n
+        case 'weight_perLog10Token':
+          return FLAG_WEIGHT_LOG10
+      }
+    }
 
     return {
       fields: [
@@ -271,10 +285,11 @@ export const xchain = defineACL({
         contractAddress: contractAddress.value,
         slotNumber: slotNumber.value,
         blockHash: blockHash.value,
+        flags: weightToFlags(voteWeighting.value),
       },
     }
   },
-  getAclOptions: async ({ chainId, contractAddress, slotNumber, blockHash }, updateStatus) => {
+  getAclOptions: async ({ chainId, contractAddress, slotNumber, blockHash, flags }, updateStatus) => {
     const showStatus = updateStatus ?? ((message?: string | undefined) => console.log(message))
     const rpc = xchainRPC(chainId)
     showStatus('Getting block header RLP')
@@ -293,16 +308,17 @@ export const xchain = defineACL({
       },
     }
 
-    return [
-      abiEncode(
+    return {
+      data: abiEncode(
         ['tuple(tuple(bytes32,address,uint256),bytes,bytes)'],
         [[[blockHash, contractAddress, slotNumber], headerRlpBytes, rlpAccountProof]],
       ),
-      {
+      options: {
         address: VITE_CONTRACT_ACL_STORAGEPROOF,
         options,
       },
-    ]
+      flags,
+    }
   },
 
   isThisMine: options => 'xchain' in options.options,

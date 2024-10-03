@@ -327,7 +327,11 @@ export const useCreatePollForm = () => {
     setIsCreating(true)
     try {
       const aclConfigValues = currentAclConfig.values
-      const [aclData, aclOptions] = await currentAcl.getAclOptions(
+      const {
+        data: aclData,
+        options: aclOptions,
+        flags: pollFlags,
+      } = await currentAcl.getAclOptions(
         aclConfigValues as never, // TODO: why is this conversion necessary?
         logger,
       )
@@ -338,6 +342,7 @@ export const useCreatePollForm = () => {
         isHidden: hidden.value,
         aclData,
         aclOptions,
+        pollFlags,
         subsidizeAmount: gasFree.value ? parseEther(amountOfSubsidy.value) : undefined,
         publishVotes: resultDisplayType.value === 'percentages_and_votes',
         publishVoters: resultDisplayType.value === 'percentages_and_voters',
