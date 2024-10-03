@@ -402,7 +402,7 @@ export const chain_info: Record<number, ChainDefinition> = {
     infoURL: 'https://docs.pontus-x.eu/',
     rpcUrls: ['https://rpc.test.pontus-x.eu'],
     nativeCurrency: { name: 'EUROe', symbol: 'EUROe', decimals: 18 },
-    icon: 'https://docs.pontus-x.eu/icon-light.png',
+    icon: 'https://raw.githubusercontent.com/deltaDAO/mvg-portal/refs/heads/main/src/%40images/pontusx_logo.svg',
     explorers: [
       {
         url: 'https://explorer.pontus-x.eu/pontusx/test',
