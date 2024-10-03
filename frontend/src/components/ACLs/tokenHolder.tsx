@@ -103,13 +103,14 @@ export const tokenHolder = defineACL({
 
   getAclOptions: props => {
     if (!props.tokenAddress) throw new Error('Internal errors: parameter mismatch, addresses missing.')
-    return [
-      abiEncode(['address'], [props.tokenAddress]),
-      {
+    return {
+      data: abiEncode(['address'], [props.tokenAddress]),
+      options: {
         address: VITE_CONTRACT_ACL_TOKENHOLDER,
         options: { token: props.tokenAddress },
       },
-    ]
+      flags: 0n,
+    }
   },
 
   isThisMine: options => 'token' in options.options,

@@ -24,8 +24,14 @@ export type ACL<Name, ConfigInputValues, Options extends AclOptions, Extra> = Ch
    * Compose the ACL options when creating a poll
    */
   getAclOptions:
-    | ((config: ConfigInputValues, statusUpdater?: StatusUpdater) => [string, Options])
-    | ((config: ConfigInputValues, statusUpdater?: StatusUpdater) => Promise<[string, Options]>)
+    | ((
+        config: ConfigInputValues,
+        statusUpdater?: StatusUpdater,
+      ) => { data: string; options: Options; flags: bigint })
+    | ((
+        config: ConfigInputValues,
+        statusUpdater?: StatusUpdater,
+      ) => Promise<{ data: string; options: Options; flags: bigint }>)
 
   /**
    * Attempt to recognize if this ACL is managing a given poll, based on ACL options

@@ -293,16 +293,17 @@ export const xchain = defineACL({
       },
     }
 
-    return [
-      abiEncode(
+    return {
+      data: abiEncode(
         ['tuple(tuple(bytes32,address,uint256),bytes,bytes)'],
         [[[blockHash, contractAddress, slotNumber], headerRlpBytes, rlpAccountProof]],
       ),
-      {
+      options: {
         address: VITE_CONTRACT_ACL_STORAGEPROOF,
         options,
       },
-    ]
+      flags: 0n,
+    }
   },
 
   isThisMine: options => 'xchain' in options.options,

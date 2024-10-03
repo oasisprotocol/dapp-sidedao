@@ -2,7 +2,6 @@ import { defineACL } from './common'
 import { designDecisions, VITE_CONTRACT_ACL_VOTERALLOWLIST } from '../../constants/config'
 import { abiEncode, isValidAddress } from '../../utils/poll.utils'
 import { denyWithReason, useOneOfField, useTextArrayField } from '../InputFields'
-import { AclOptions } from '@oasisprotocol/blockvote-contracts'
 
 // Split a list of addresses by newLine, comma or space
 const splitAddresses = (addressSoup: string): string[] =>
@@ -69,15 +68,18 @@ export const allowList = defineACL({
     }
   },
 
-  getAclOptions: (props): [string, AclOptions] => {
+  getAclOptions: props => {
     if (!props.addresses) throw new Error('Internal errors: parameter mismatch, addresses missing.')
-    return [
-      abiEncode(['address[]'], [props.addresses]),
-      {
+    return {
+      data: abiEncode(['address[]'], [props.addresses]),
+      options: {
         address: VITE_CONTRACT_ACL_VOTERALLOWLIST,
-        options: { allowList: true },
+        options: {
+          allowList: true,
+        },
       },
-    ]
+      flags: 0n,
+    }
   },
 
   isThisMine: options => 'allowList' in options.options,

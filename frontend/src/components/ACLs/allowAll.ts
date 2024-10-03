@@ -25,13 +25,16 @@ export const allowAll = defineACL({
       values: undefined,
     }
   },
-  getAclOptions: () => [
-    '0x', // Empty bytes is passed
-    {
+  getAclOptions: () => ({
+    data: '0x', // Empty bytes is passed
+    options: {
       address: VITE_CONTRACT_ACL_ALLOWALL,
-      options: { allowAll: true },
+      options: {
+        allowAll: true,
+      },
     },
-  ],
+    flags: 0n,
+  }),
   isThisMine: options => 'allowAll' in options.options,
 
   checkPermission: async (pollACL, daoAddress, proposalId, userAddress) => {
