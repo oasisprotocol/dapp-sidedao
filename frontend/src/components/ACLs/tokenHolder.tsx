@@ -1,12 +1,5 @@
 import { defineACL } from './common'
-import {
-  DecisionWithReason,
-  deny,
-  denyWithReason,
-  useLabel,
-  useOneOfField,
-  useTextField,
-} from '../InputFields'
+import { DecisionWithReason, denyWithReason, useLabel, useOneOfField, useTextField } from '../InputFields'
 import { abiEncode, getLocalContractDetails, isValidAddress } from '../../utils/poll.utils'
 import {
   configuredExplorerUrl,
@@ -15,6 +8,7 @@ import {
   VITE_CONTRACT_ACL_TOKENHOLDER,
 } from '../../constants/config'
 import { StringUtils } from '../../utils/string.utils'
+import { FLAG_WEIGHT_LOG10, FLAG_WEIGHT_ONE } from '../../types'
 
 export const tokenHolder = defineACL({
   value: 'acl_tokenHolder',
@@ -83,20 +77,36 @@ export const tokenHolder = defineACL({
         {
           value: 'weight_perWallet',
           label: '1 vote per wallet',
-          enabled: deny('Coming soon'),
         },
         {
           value: 'weight_perToken',
           label: 'According to token distribution',
         },
+        {
+          value: 'weight_perLog10Token',
+          label: 'According to log10(token distribution)',
+        },
       ],
+      initialValue: 'weight_perToken',
       disableIfOnlyOneVisibleChoice: designDecisions.disableSelectsWithOnlyOneVisibleOption,
     } as const)
+
+    const weightToFlags = (selection: typeof voteWeighting.value): bigint => {
+      switch (selection) {
+        case 'weight_perWallet':
+          return FLAG_WEIGHT_ONE
+        case 'weight_perToken':
+          return 0n
+        case 'weight_perLog10Token':
+          return FLAG_WEIGHT_LOG10
+      }
+    }
 
     return {
       fields: [contractAddress, [tokenName, tokenSymbol], voteWeighting],
       values: {
         tokenAddress: contractAddress.value,
+        flags: weightToFlags(voteWeighting.value),
       },
     }
   },
@@ -109,7 +119,7 @@ export const tokenHolder = defineACL({
         address: VITE_CONTRACT_ACL_TOKENHOLDER,
         options: { token: props.tokenAddress },
       },
-      flags: 0n,
+      flags: props.flags,
     }
   },
 
