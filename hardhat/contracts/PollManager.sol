@@ -15,6 +15,13 @@ contract PollManager is IERC165, IPollManager {
 
     uint256 public constant MAX_CHOICES = 8;
 
+    uint8 constant FLAG_ACTIVE = 1<<0;
+    uint8 constant FLAG_PUBLISH_VOTERS = 1<<1;
+    uint8 constant FLAG_PUBLISH_VOTES = 1<<2;
+    uint8 constant FLAG_HIDDEN = 1<<3;
+    uint8 constant FLAG_WEIGHT_LOG10 = 1<<4;
+    uint8 constant FLAG_WEIGHT_ONE = 1<<5;
+
     // ------------------------------------------------------------------------
     // ERRORS
 
@@ -54,16 +61,13 @@ contract PollManager is IERC165, IPollManager {
 
     struct ProposalParams {
         uint8 numChoices;
-        bool publishVoters;
-        bool publishVotes;
-        bool isHidden;
-        uint64 closeTimestamp;
+        uint8 flags;            // bit flag of FLAG_ vars
+        uint32 closeTimestamp;  // approx year 2106
         IPollACL acl;
-        string metadata;
+        bytes metadata;
     }
 
     struct Proposal {
-        bool active;
         uint8 topChoice;
         ProposalParams params;
     }
@@ -156,7 +160,7 @@ contract PollManager is IERC165, IPollManager {
     }
 
     function createFor(
-        ProposalParams calldata in_params,
+        ProposalParams memory in_params,
         bytes calldata in_aclData,
         address in_owner
     )
@@ -171,6 +175,8 @@ contract PollManager is IERC165, IPollManager {
         if( ! in_params.acl.supportsInterface(type(IPollACL).interfaceId) ) {
             revert Create_InvalidACL();
         }
+
+        in_params.flags |= FLAG_ACTIVE;
 
         if (in_params.numChoices == 0) {
             revert Create_NoChoices();
@@ -187,7 +193,6 @@ contract PollManager is IERC165, IPollManager {
         }
 
         PROPOSALS[proposalId] = Proposal({
-            active: true,
             params: in_params,
             topChoice:0
         });
@@ -209,7 +214,7 @@ contract PollManager is IERC165, IPollManager {
         }
 
         // Hidden proposals will not show in the public list
-        if( ! in_params.isHidden )
+        if( 0 == (in_params.flags & FLAG_HIDDEN) )
         {
             ACTIVE_PROPOSALS.add(proposalId);
 
@@ -235,7 +240,7 @@ contract PollManager is IERC165, IPollManager {
         Proposal storage proposal = PROPOSALS[in_proposalId];
 
         // Proposal must be active to vote
-        if (!proposal.active) {
+        if ( 0 == (proposal.params.flags & FLAG_ACTIVE) ) {
             revert Vote_NotActive();
         }
 
@@ -253,6 +258,17 @@ contract PollManager is IERC165, IPollManager {
         }
     }
 
+    function log10(uint x) internal pure returns (uint result)
+    {
+        // XXX: is it necessary to make it constant time?
+        unchecked {
+            while (x >= 10) {
+                x /= 10;
+                result++;
+            }
+        }
+    }
+
     function internal_castVote(
         address in_voter,
         bytes32 in_proposalId,
@@ -261,14 +277,34 @@ contract PollManager is IERC165, IPollManager {
     )
         internal
     {
+        Proposal storage proposal = PROPOSALS[in_proposalId];
+        uint8 flags = proposal.params.flags;
+
+        // Cannot vote if we have 0 weight. Prevents internal confusion with weight=0
+        if( 0 == (flags & FLAG_ACTIVE) )
+        {
+            revert Vote_NotActive();
+        }
+
         uint weight = canVoteOnPoll(in_proposalId, in_voter, in_data);
 
-        Proposal storage proposal = PROPOSALS[in_proposalId];
+        // User is not allowed to vote if they have zero-weight
+        if( weight == 0 ) {
+            revert Vote_NotAllowed();
+        }
+
+        if( 0 != flags & FLAG_WEIGHT_LOG10 ) {
+            weight = log10(weight);
+        }
+        else if( 0 != flags & FLAG_WEIGHT_ONE ) {
+            weight = 1;
+        }
 
         uint256 numChoices = proposal.params.numChoices;
 
-        if (in_choiceId >= numChoices) {
-            require(false, "Vote_UnknownChoice()");
+        if (in_choiceId >= numChoices)
+        {
+            revert Vote_UnknownChoice();
         }
 
         Ballot storage ballot = s_ballots[in_proposalId];
@@ -307,7 +343,7 @@ contract PollManager is IERC165, IPollManager {
         {
             ballot.totalVotes += existingWeight;
 
-            if (proposal.params.publishVotes || proposal.params.publishVoters)
+            if ( 0 != (flags & (FLAG_PUBLISH_VOTERS|FLAG_PUBLISH_VOTES)) )
             {
                 ballot.voters.push(in_voter);
             }
@@ -329,7 +365,7 @@ contract PollManager is IERC165, IPollManager {
         external
     {
         if( msg.sender != address(GASLESS_VOTER) ) {
-            require(false, "Vote_NotAllowed()");
+            revert Vote_NotAllowed();
         }
 
         internal_castVote(in_voter, in_proposalId, in_choiceId, in_data);
@@ -397,12 +433,12 @@ contract PollManager is IERC165, IPollManager {
 
     /// Permanently delete a proposal and associated data
     /// If the proposal isn't closed, it will be closed first
-    /// XXX:
     function close(bytes32 in_proposalId)
         public
     {
         Proposal storage proposal = PROPOSALS[in_proposalId];
-        if (!proposal.active) {
+        uint8 flags = proposal.params.flags;
+        if ( 0 == (flags & FLAG_ACTIVE) ) {
             revert Close_NotActive();
         }
 
@@ -436,11 +472,11 @@ contract PollManager is IERC165, IPollManager {
             }
         }
 
-        PROPOSALS[in_proposalId].topChoice = uint8(topChoice);
-        PROPOSALS[in_proposalId].active = false;
+        proposal.topChoice = uint8(topChoice);
+        proposal.params.flags = flags & ~FLAG_ACTIVE;
 
         // If proposal isn't hidden, remove from active list, to past list + emit events
-        if( ! proposal.params.isHidden )
+        if( 0 == flags & FLAG_HIDDEN )
         {
             ACTIVE_PROPOSALS.remove(in_proposalId);
             s_pastProposalsIndex[in_proposalId] = PAST_PROPOSALS.length;
@@ -459,11 +495,13 @@ contract PollManager is IERC165, IPollManager {
         external
     {
         Proposal storage proposal = PROPOSALS[in_proposalId];
-        if ( 0 == proposal.params.numChoices) {
+        if ( 0 == proposal.params.numChoices ) {
             revert Destroy_NotFound();
         }
 
-        if( proposal.active )
+        uint8 flags = proposal.params.flags;
+
+        if( 0 == flags & FLAG_ACTIVE )
         {
             close(in_proposalId);
         }
@@ -480,7 +518,7 @@ contract PollManager is IERC165, IPollManager {
         delete s_ballots[in_proposalId];
 
         // Remove proposal from past proposals list
-        if( ! proposal.params.isHidden )
+        if( 0 != (flags & FLAG_HIDDEN) )
         {
             uint idx = s_pastProposalsIndex[in_proposalId];
             uint cnt = PAST_PROPOSALS.length;
@@ -501,7 +539,7 @@ contract PollManager is IERC165, IPollManager {
         Ballot storage ballot = s_ballots[in_proposalId];
 
         // Cannot get vote counts while poll is still active
-        if (proposal.active) {
+        if ( 0 != (proposal.params.flags & FLAG_ACTIVE) ) {
             revert Poll_StillActive();
         }
 
@@ -513,6 +551,34 @@ contract PollManager is IERC165, IPollManager {
         return unmaskedVoteCounts;
     }
 
+    function internal_paginateBallot(bytes32 in_proposalId, uint in_offset, uint in_limit)
+        internal view
+        returns (uint out_count, uint out_limit, Ballot storage out_ballot)
+    {
+        Proposal storage proposal = PROPOSALS[in_proposalId];
+        out_ballot = s_ballots[in_proposalId];
+
+        uint8 flags = proposal.params.flags;
+
+        if ( 0 == (flags & FLAG_PUBLISH_VOTES) ) {
+            revert Poll_NotPublishingVotes();
+        }
+
+        if ( 0 != (flags & FLAG_ACTIVE) ) {
+            revert Poll_StillActive();
+        }
+
+        out_count = out_ballot.voters.length;
+
+        if ((in_offset + in_limit) > out_count)
+        {
+            out_limit = out_count - in_offset;
+        }
+        else {
+            out_limit = out_limit;
+        }
+    }
+
     function getVotes(bytes32 in_proposalId, uint in_offset, uint in_limit)
         external view
         returns (
@@ -521,23 +587,9 @@ contract PollManager is IERC165, IPollManager {
             Choice[] memory out_choices
         )
     {
-        Proposal storage proposal = PROPOSALS[in_proposalId];
-        Ballot storage ballot = s_ballots[in_proposalId];
+        Ballot storage ballot;
 
-        if (!proposal.params.publishVotes) {
-            revert Poll_NotPublishingVotes();
-        }
-
-        if (proposal.active) {
-            revert Poll_StillActive();
-        }
-
-        out_count = ballot.voters.length;
-
-        if ((in_offset + in_limit) > out_count)
-        {
-            in_limit = out_count - in_offset;
-        }
+        (out_count, in_limit, ballot) = internal_paginateBallot(in_proposalId, in_offset, in_limit);
 
         out_choices = new Choice[](in_limit);
         out_voters = new address[](in_limit);
@@ -557,23 +609,9 @@ contract PollManager is IERC165, IPollManager {
             address[] memory out_voters
         )
     {
-        Proposal storage proposal = PROPOSALS[in_proposalId];
-        Ballot storage ballot = s_ballots[in_proposalId];
+        Ballot storage ballot;
 
-        if (!proposal.params.publishVoters) {
-            revert Poll_NotPublishingVoters();
-        }
-
-        if (proposal.active) {
-            revert Poll_StillActive();
-        }
-
-        out_count = ballot.voters.length;
-
-        if ((in_offset + in_limit) > out_count)
-        {
-            in_limit = out_count - in_offset;
-        }
+        (out_count, in_limit, ballot) = internal_paginateBallot(in_proposalId, in_offset, in_limit);
 
         out_voters = new address[](in_limit);
 
@@ -588,11 +626,11 @@ contract PollManager is IERC165, IPollManager {
         external view
         returns (bool)
     {
-        return PROPOSALS[in_id].active;
+        return PROPOSALS[in_id].params.flags & FLAG_ACTIVE != 0;
     }
 
     function getProposalId(
-        ProposalParams calldata in_params,
+        ProposalParams memory in_params,
         bytes calldata in_aclData,
         address in_owner
     )
