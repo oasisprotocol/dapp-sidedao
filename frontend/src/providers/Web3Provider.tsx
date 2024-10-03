@@ -13,6 +13,7 @@ const web3ProviderInitialState: Web3ProviderState = {
   sapphireEthProvider: null,
   account: null,
   explorerBaseUrl: null,
+  chainId: null,
   chainName: null,
   isUnknownNetwork: false,
 }
@@ -71,6 +72,7 @@ export const Web3ContextProvider: FC<PropsWithChildren> = ({ children }) => {
     setState(prevState => ({
       ...prevState,
       explorerBaseUrl,
+      chainId: Number(chainId),
       chainName,
     }))
   }
