@@ -1,11 +1,11 @@
-import { AbiCoder, BytesLike, getAddress, getBytes, JsonRpcProvider, ParamType } from 'ethers'
+import { AbiCoder, BytesLike, getAddress, getBytes, hexlify, JsonRpcProvider, ParamType } from 'ethers'
 
 // XXX: cborg module types can cause error:
 //    There are types at './dapp-sidedao/frontend/node_modules/cborg/types/cborg.d.ts',
 //    but this result could not be resolved when respecting package.json "exports".
 //    The 'cborg' library may need to update its package.json or typings.
 // @ts-ignore
-import { decode as cborDecode, encode as cborEncode } from 'cborg';
+import { decode as cborDecode, encode as cborEncode } from 'cborg'
 
 import {
   chain_info,
@@ -24,7 +24,7 @@ import {
 } from '@oasisprotocol/blockvote-contracts'
 export type { ContractType, NftType } from '@oasisprotocol/blockvote-contracts'
 export { isToken } from '@oasisprotocol/blockvote-contracts'
-import { FLAG_HIDDEN, FLAG_PUBLISH_VOTERS, FLAG_PUBLISH_VOTES, Poll, PollManager } from '../types'
+import { FLAG_HIDDEN, FLAG_PUBLISH_VOTERS, FLAG_PUBLISH_VOTES, Poll, PollManager, StoredPoll } from '../types'
 import { EthereumContext } from '../providers/EthereumContext'
 import { DecisionWithReason, denyWithReason } from '../components/InputFields'
 import { FetcherFetchOptions } from './StoredLRUCache'
@@ -145,19 +145,36 @@ export type CreatePollProps = {
 const CURRENT_ENCODING_VERSION = 0
 
 const encodePollMetadata = (poll: Poll): Uint8Array => {
-  const encoded = cborEncode([CURRENT_ENCODING_VERSION, poll])
+  const storedPoll: StoredPoll = {
+    c: getBytes(poll.creator),
+    n: poll.name,
+    d: poll.description,
+    o: poll.choices,
+    a: poll.acl,
+  }
+
+  const encoded = cborEncode([CURRENT_ENCODING_VERSION, storedPoll])
   // console.log('Encoded poll data', encoded)
   return encoded
 }
 
 export const decodePollMetadata = (metadata: string): Poll => {
-  const [v, data] = cborDecode(getBytes(metadata))
+  const [v, storedPoll] = cborDecode(getBytes(metadata))
 
   if (typeof v !== 'number') throw new Error('Unknown poll data format')
 
+  let poll: Poll | undefined
+
   switch (v as number) {
     case CURRENT_ENCODING_VERSION:
-      return data as Poll
+      poll = {
+        creator: hexlify(storedPoll.c),
+        name: storedPoll.n,
+        description: storedPoll.d,
+        choices: storedPoll.o,
+        acl: storedPoll.a,
+      }
+      return poll
     default:
       throw new Error(`Unrecognized poll data format version: ${v}`)
   }
@@ -186,11 +203,11 @@ export const createPoll = async (
 
   updateStatus('Compiling data')
   const poll: Poll = {
-    c: getBytes(creator),
-    n: question,
-    d: description,
-    o: answers,
-    a: aclOptions,
+    creator,
+    name: question,
+    description,
+    choices: answers,
+    acl: aclOptions,
   }
 
   // console.log('Compiling poll', poll)

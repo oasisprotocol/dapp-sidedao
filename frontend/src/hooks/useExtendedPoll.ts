@@ -101,7 +101,7 @@ export const useExtendedPoll = (
 
     console.log('Loading results for', proposalId)
 
-    const voteCounts = (await pollManager.getVoteCounts(proposal.id)).slice(0, ipfsParams.o.length)
+    const voteCounts = (await pollManager.getVoteCounts(proposal.id)).slice(0, ipfsParams.choices.length)
     setVoteCounts(voteCounts)
     setWinningChoice(proposal.topChoice)
 
@@ -152,7 +152,7 @@ export const useExtendedPoll = (
       voters,
     }
     const zeroVotes = !results.totalVotes
-    poll.ipfsParams.o.forEach((choice, index) => {
+    poll.ipfsParams.choices.forEach((choice, index) => {
       results.choices[index.toString()] = {
         choice,
         votes: voteCounts[index],
@@ -176,7 +176,7 @@ export const useExtendedPoll = (
     })
 
     // Get some random vote numbers
-    const voteNumbers = poll.ipfsParams.o.map(() => Math.round(Math.random() * 100))
+    const voteNumbers = poll.ipfsParams.choices.map(() => Math.round(Math.random() * 100))
     const voteBigInts = voteNumbers.map(BigInt)
     // Let's pick a winner
     const winningIndexNumber = voteNumbers.indexOf(Math.max(...voteNumbers))

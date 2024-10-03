@@ -58,7 +58,7 @@ export const ActivePoll: FC<PollData> = ({
   const { params } = poll!.proposal
   const publishVotes = shouldPublishVotes(params)
   const publishVoters = shouldPublishVoters(params)
-  const { n: name, d: description, o: choices } = poll!.ipfsParams
+  const { name, description, choices } = poll!.ipfsParams
 
   const handleSelect = useCallback(
     (index: number) => {

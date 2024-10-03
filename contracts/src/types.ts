@@ -12,25 +12,18 @@ export type AclOptionsAllowList = {
 
 export type AclOptionsXchain = {
   xchain: {
-    c: number;      // chain Id
-    b: Uint8Array;  // block hash
-    a: Uint8Array;  // account / contract
-    s: number;      // slot
+    c: number; // chain Id
+    b: Uint8Array; // block hash
+    a: Uint8Array; // account / contract
+    s: number; // slot
   };
 };
 
-export type AclOptions = AclOptionsToken | AclOptionsAllowAll | AclOptionsAllowList | AclOptionsXchain;
-
-// NOTE: this is stored on-chain, so it's essential to keep the encoded size
-//       as small as possible! Such as using Uint8Array instead of hex encoded
-//       addresses.
-export type Poll = {
-  c: Uint8Array;  // creator address
-  n: string;      // name
-  d: string;      // description
-  o: string[];    // choices / options
-  a: AclOptions;  // ACL options
-};
+export type AclOptions =
+  | AclOptionsToken
+  | AclOptionsAllowAll
+  | AclOptionsAllowList
+  | AclOptionsXchain;
 
 export type StorageProof = {
   key: string;

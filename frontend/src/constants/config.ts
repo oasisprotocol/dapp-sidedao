@@ -52,8 +52,6 @@ export {
 
 export const MIN_COMPLETION_TIME_MINUTES = 3
 
-const demoNameBytes = new TextEncoder().encode('demo');
-
 export const demoPoll1 = {
   id: 'demo',
   proposal: {
@@ -63,10 +61,10 @@ export const demoPoll1 = {
     },
   },
   ipfsParams: {
-    c: demoNameBytes,
-    n: 'What is your favorite form of investment?',
-    d: '',
-    o: ['US dollar', 'Physical gold', 'Crypto'],
+    creator: 'demo',
+    name: 'What is your favorite form of investment?',
+    description: '',
+    choices: ['US dollar', 'Physical gold', 'Crypto'],
   },
 } as ExtendedPoll
 
@@ -79,10 +77,10 @@ export const demoPoll2 = {
     },
   },
   ipfsParams: {
-    c: demoNameBytes,
-    n: 'What is your greatest fear?',
-    d: '',
-    o: ['Climate change', 'Deadly pandemics', 'AI apocalypse', 'Dystopia and dictatorship'],
+    creator: 'demo',
+    name: 'What is your greatest fear?',
+    description: '',
+    choices: ['Climate change', 'Deadly pandemics', 'AI apocalypse', 'Dystopia and dictatorship'],
   },
 } as ExtendedPoll
 
@@ -95,10 +93,10 @@ export const demoPoll3 = {
     },
   },
   ipfsParams: {
-    c: demoNameBytes,
-    n: 'What is your favorite movie?',
-    d: '',
-    o: ['Terminator', 'The Matrix', 'Tron', 'The Godfather'],
+    creator: 'demo',
+    name: 'What is your favorite movie?',
+    description: '',
+    choices: ['Terminator', 'The Matrix', 'Tron', 'The Godfather'],
   },
 } as ExtendedPoll
 
@@ -111,10 +109,10 @@ export const demoPoll4 = {
     },
   },
   ipfsParams: {
-    c: demoNameBytes,
-    n: 'How should the change the laws?',
-    d: '',
-    o: ['Ban strong cryptography', 'Ban blockchains', "Withdraw the FED's monopoly on money printing"],
+    creator: 'demo',
+    name: 'How should the change the laws?',
+    description: '',
+    choices: ['Ban strong cryptography', 'Ban blockchains', "Withdraw the FED's monopoly on money printing"],
   },
 } as ExtendedPoll
 
