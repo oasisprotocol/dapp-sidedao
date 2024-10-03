@@ -63,6 +63,9 @@ export const xchain = defineACL({
       },
     })
 
+    const explorer = (chain_info[chain.value].explorers ?? [])[0]
+    const explorerUrl = explorer?.url
+
     const contractAddress = useTextField({
       name: 'contractAddress',
       label: 'Contract Address',
@@ -92,6 +95,8 @@ export const xchain = defineACL({
         }
       },
     })
+
+    const tokenUrl = explorerUrl ? StringUtils.getTokenUrl(explorerUrl, contractAddress.value) : undefined
 
     const hasValidTokenAddress =
       contractAddress.visible && contractAddress.isValidated && !contractAddress.hasProblems
@@ -126,6 +131,14 @@ export const xchain = defineACL({
       label: `${isToken(contractType.value as any) ? 'Token' : 'NFT'}:`,
       initialValue: '',
       compact: true,
+      renderer: name =>
+        explorerUrl ? (
+          <a href={tokenUrl} target={'_blank'}>
+            {name}
+          </a>
+        ) : (
+          name
+        ),
       ...addMockValidation,
     })
 
