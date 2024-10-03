@@ -27,6 +27,9 @@ const VITE_NETWORK_NUMBER: number = Number(VITE_NETWORK_BIGINT)
 const configuredChain = chain_info[VITE_NETWORK_NUMBER]
 const configuredExplorer = (configuredChain.explorers ?? [])[0]
 export const configuredExplorerUrl = configuredExplorer?.url
+export const configuredNetworkName = configuredChain.name
+export const nativeTokenName = configuredChain.nativeCurrency.name
+export const nativeTokenSymbol = configuredChain.nativeCurrency.symbol
 
 // const VITE_REACT_APP_BUILD_DATETIME = Number(ENV_VITE_REACT_APP_BUILD_DATETIME) ?? 0
 

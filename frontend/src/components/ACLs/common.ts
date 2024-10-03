@@ -1,6 +1,7 @@
 import { Choice, DecisionWithReason, FieldConfiguration } from '../InputFields'
 import { AclOptions, IPollACL } from '@oasisprotocol/blockvote-contracts'
 import { BytesLike } from 'ethers'
+import { ReactNode } from 'react'
 export type StatusUpdater = (status: string | undefined) => void
 
 /**
@@ -45,7 +46,7 @@ export type ACL<Name, ConfigInputValues, Options extends AclOptions, Extra> = Ch
     userAddress: string,
     options: Options,
   ) => Promise<
-    { canVote: DecisionWithReason; explanation?: string; proof: BytesLike; error?: string } & Extra
+    { canVote: DecisionWithReason; explanation?: ReactNode; proof: BytesLike; error?: string } & Extra
   >
 }
 

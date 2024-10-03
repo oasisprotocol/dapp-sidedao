@@ -1,4 +1,4 @@
-import { FC } from 'react'
+import { FC, ReactNode } from 'react'
 import { OpenPollIcon } from '../icons/OpenPollIcon'
 import { RestrictedPollIcon } from '../icons/RestrictedPollIcon'
 import { SpinnerIcon } from '../icons/SpinnerIcon'
@@ -14,7 +14,7 @@ export const PollAccessIndicator: FC<{
   hideRestrictedNoAccess?: boolean
   isPending: boolean
   isBroken: boolean
-  explanation: string | undefined
+  explanation: ReactNode
   hasAccess: boolean
   isCompleted: boolean
   isMine: boolean | undefined

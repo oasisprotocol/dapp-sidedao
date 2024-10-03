@@ -1,4 +1,4 @@
-import { FC, MouseEventHandler, useCallback } from 'react'
+import { FC, MouseEventHandler, ReactNode, useCallback } from 'react'
 import { ClosedLockIcon } from './ClosedLockIcon'
 import { IconProps } from '../../types'
 import classes from './index.module.css'
@@ -7,7 +7,7 @@ import { MaybeWithTooltip } from '../Tooltip/MaybeWithTooltip'
 
 export const RestrictedPollIcon: FC<
   IconProps & {
-    explanation: string
+    explanation: ReactNode
     completed?: boolean
     hasAccess: boolean
     onClick: () => void
