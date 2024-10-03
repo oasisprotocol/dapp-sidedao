@@ -158,6 +158,7 @@ export const designDecisions = {
   hideDisabledSelectOptions: true,
   disableSelectsWithOnlyOneVisibleOption: true,
   showSubmitButton: false,
+  hidePollCardsWithErrors: true,
 }
 
 export const appName = 'Oasis Blockvote'
