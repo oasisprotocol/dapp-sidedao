@@ -164,7 +164,7 @@ export const appName = 'Oasis Blockvote'
 export const appNameAndTagline = 'Oasis Blockvote, a poll creation tool for your DAO'
 export const appDescription =
   'Create polls for everyone or just your group, with public results but cryptographically secure and private votes.'
-export const appRootUrl = 'http://oasisprotocol.github.io/dapp-blockvote'
+export const appRootUrl = 'http://vote.oasis.io'
 
 export const allowedAnimations = [
   'dashboardNoPolls', // No poll indicator appearing on the dashboard
