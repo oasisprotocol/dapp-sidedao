@@ -34,17 +34,15 @@
 
 .network {
   display: flex;
-  justify-content: center;
-  max-height: 28px;
+  gap: 8px;
   font-size: 20px;
   font-weight: 400;
   line-height: 140%;
   letter-spacing: 0;
-  /*text-align: left;*/
   text-transform: capitalize;
   overflow: hidden;
   text-wrap: nowrap;
-  width: 80px;
+  width: 35px;
 }
 
 @media screen and (max-width: 1000px) {
