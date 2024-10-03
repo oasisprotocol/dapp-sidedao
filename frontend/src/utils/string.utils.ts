@@ -13,6 +13,8 @@ export abstract class StringUtils {
 
   static getAccountUrl = (baseUrl: string, address: string) => `${baseUrl}/address/${address}`
 
+  static getTokenUrl = (baseUrl: string, address: string) => `${baseUrl}/token/${address}`
+
   static clsx = (...classNames: (string | undefined)[]) => {
     return classNames
       .map(className => (className ? [className] : []))

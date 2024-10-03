@@ -28,11 +28,13 @@ import {
   fetchStorageValue,
   getBlockHeaderRLP,
   xchainRPC,
+  chain_info,
 } from '@oasisprotocol/blockvote-contracts'
 import { designDecisions, VITE_CONTRACT_ACL_STORAGEPROOF } from '../../constants/config'
 import classes from './index.module.css'
 import { BytesLike, getUint } from 'ethers'
 import { useMemo } from 'react'
+import { StringUtils } from '../../utils/string.utils'
 
 export const xchain = defineACL({
   value: 'acl_xchain',
@@ -322,7 +324,26 @@ export const xchain = defineACL({
         }
       }
       if (!isBalancePositive) {
-        canVote = denyWithReason(`you don't hold any ${tokenInfo.name} tokens on ${chainDefinition.name}`)
+        const explorer = (chain_info[chainId].explorers ?? [])[0]
+        const explorerUrl = explorer?.url
+
+        const tokenUrl = explorerUrl ? StringUtils.getTokenUrl(explorerUrl, tokenAddress) : undefined
+        canVote = denyWithReason(
+          tokenUrl ? (
+            <span>
+              you don't hold any{' '}
+              <a href={tokenUrl} target={'_blank'}>
+                {tokenInfo.name}
+              </a>{' '}
+              on{' '}
+              <a href={explorerUrl} target={'_blank'}>
+                {chainDefinition.name}
+              </a>
+            </span>
+          ) : (
+            `you don't hold any ${tokenInfo.name} tokens on ${chainDefinition.name}`
+          ),
+        )
       }
     } catch (e) {
       const problem = e as any

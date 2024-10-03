@@ -193,7 +193,10 @@ export const ActivePoll: FC<PollData> = ({
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
           >
-            <h4>You can&apos;t vote on this poll, since {getReason(canAclVote)}.</h4>
+            <h4>
+              You can&apos;t vote on this poll,
+              <br /> since {getReason(canAclVote)}.
+            </h4>
           </MotionDiv>
         </AnimatePresence>
       ) : (
