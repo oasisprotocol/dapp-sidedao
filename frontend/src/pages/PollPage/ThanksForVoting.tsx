@@ -135,9 +135,9 @@ export const ThanksForVote: FC<PollData> = ({
   destroyPoll,
 }) => {
   const {
-    name,
+    n: name,
     // description,
-    choices,
+    c: choices,
   } = poll!.ipfsParams
   return (
     <Card>

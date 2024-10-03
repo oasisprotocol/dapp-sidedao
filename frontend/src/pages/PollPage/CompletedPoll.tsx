@@ -22,7 +22,7 @@ export const CompletedPoll: FC<
     | 'hasWalletOnWrongNetwork'
   >
 > = ({ poll, pollResults, isMine, permissions, checkPermissions, hasWallet, hasWalletOnWrongNetwork }) => {
-  const { name, description } = poll!.ipfsParams!
+  const { n: name, d: description } = poll!.ipfsParams!
   const { choices, votes, voters, totalVotes } = pollResults!
   const { explanation: aclExplanation, canVote: aclCanVote } = permissions
 

@@ -6,6 +6,7 @@ import { ExtendedPoll } from '../types'
 import { CheckPermissionContext, CheckPermissionInputs, PollPermissions } from '../utils/poll.utils'
 import { PermissionCache } from './PermissionCache'
 import { dashboard } from '../constants/config'
+import { hexlify } from 'ethers'
 
 export const NOT_CHECKED = "the permission test hasn't finished yet"
 
@@ -22,7 +23,7 @@ const blackPermissions: PollPermissions = {
 export const usePollPermissions = (poll: ExtendedPoll | undefined, onDashboard: boolean) => {
   const proposalId = (poll?.proposal as any)?.id as string
   const aclAddress = poll?.proposal.params?.acl
-  const creator = poll?.ipfsParams.creator
+  const creator = poll?.ipfsParams.c ? hexlify(poll?.ipfsParams.c) : undefined;
 
   const eth = useEthereum()
   const { pollManagerAddress: daoAddress, pollACL } = useContracts(eth, aclAddress)
@@ -76,7 +77,7 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined, onDashboard: 
       userAddress,
       proposalId,
       aclAddress: poll.proposal.params.acl,
-      options: poll.ipfsParams.acl,
+      options: poll.ipfsParams.a,
     }
 
     const context: CheckPermissionContext = {

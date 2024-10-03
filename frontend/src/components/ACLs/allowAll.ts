@@ -25,17 +25,15 @@ export const allowAll = defineACL({
       values: undefined,
     }
   },
+
+  getAclAddress: () => VITE_CONTRACT_ACL_ALLOWALL,
+
   getAclOptions: () => ({
     data: '0x', // Empty bytes is passed
-    options: {
-      address: VITE_CONTRACT_ACL_ALLOWALL,
-      options: {
-        allowAll: true,
-      },
-    },
+    options: { allowAll: true },
     flags: 0n,
   }),
-  isThisMine: options => 'allowAll' in options.options,
+  isThisMine: options => 'allowAll' in options,
 
   checkPermission: async (pollACL, daoAddress, proposalId, userAddress) => {
     const proof = new Uint8Array()

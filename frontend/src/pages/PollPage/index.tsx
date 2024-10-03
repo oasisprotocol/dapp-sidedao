@@ -87,8 +87,8 @@ export const PollPage: FC = () => {
   const { poll } = pollData
   const params = poll?.ipfsParams
   if (params) {
-    const title = `${params!.name} - ${appName}`
-    const description = params!.description
+    const title = `${params!.n} - ${appName}`
+    const description = params!.d
     return (
       <>
         <Helmet>

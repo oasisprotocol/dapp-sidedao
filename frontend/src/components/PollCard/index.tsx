@@ -96,7 +96,7 @@ export const PollCard: FC<{
   const {
     id: pollId,
     proposal: { params },
-    ipfsParams: { name, description },
+    ipfsParams: { n: name, d: description },
   } = poll ?? {
     id: proposalId?.substring(2),
     proposal,

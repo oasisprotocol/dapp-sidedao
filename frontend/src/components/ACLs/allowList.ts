@@ -68,21 +68,18 @@ export const allowList = defineACL({
     }
   },
 
+  getAclAddress: () => VITE_CONTRACT_ACL_VOTERALLOWLIST,
+
   getAclOptions: props => {
     if (!props.addresses) throw new Error('Internal errors: parameter mismatch, addresses missing.')
     return {
       data: abiEncode(['address[]'], [props.addresses]),
-      options: {
-        address: VITE_CONTRACT_ACL_VOTERALLOWLIST,
-        options: {
-          allowList: true,
-        },
-      },
+      options: { allowList: true },
       flags: 0n,
     }
   },
 
-  isThisMine: options => 'allowList' in options.options,
+  isThisMine: options => 'allowList' in options,
 
   checkPermission: async (pollACL, daoAddress, proposalId, userAddress) => {
     const proof = new Uint8Array()

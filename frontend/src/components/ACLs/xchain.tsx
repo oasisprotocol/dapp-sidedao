@@ -31,7 +31,7 @@ import {
 import type { TokenInfo, NFTInfo } from '@oasisprotocol/blockvote-contracts'
 import { designDecisions, VITE_CONTRACT_ACL_STORAGEPROOF } from '../../constants/config'
 import classes from './index.module.css'
-import { BytesLike, getUint } from 'ethers'
+import { BytesLike, getBytes, getUint, hexlify } from 'ethers'
 import { ReactNode, useMemo } from 'react'
 import { StringUtils } from '../../utils/string.utils'
 import { FLAG_WEIGHT_LOG10, FLAG_WEIGHT_ONE } from '../../types'
@@ -289,6 +289,9 @@ export const xchain = defineACL({
       },
     }
   },
+
+  getAclAddress: () => VITE_CONTRACT_ACL_STORAGEPROOF,
+
   getAclOptions: async ({ chainId, contractAddress, slotNumber, blockHash, flags }, updateStatus) => {
     const showStatus = updateStatus ?? ((message?: string | undefined) => console.log(message))
     const rpc = xchainRPC(chainId)
@@ -301,10 +304,10 @@ export const xchain = defineACL({
 
     const options: AclOptionsXchain = {
       xchain: {
-        chainId,
-        blockHash,
-        address: contractAddress,
-        slot: parseInt(slotNumber),
+        c: chainId,
+        b: getBytes(blockHash),
+        a: getBytes(contractAddress),
+        s: parseInt(slotNumber),
       },
     }
 
@@ -313,26 +316,25 @@ export const xchain = defineACL({
         ['tuple(tuple(bytes32,address,uint256),bytes,bytes)'],
         [[[blockHash, contractAddress, slotNumber], headerRlpBytes, rlpAccountProof]],
       ),
-      options: {
-        address: VITE_CONTRACT_ACL_STORAGEPROOF,
-        options,
-      },
+      options,
       flags,
     }
   },
 
-  isThisMine: options => 'xchain' in options.options,
+  isThisMine: options => 'xchain' in options,
 
   checkPermission: async (pollACL, daoAddress, proposalId, userAddress, options) => {
-    const xChainOptions = options.options
+    const xChainOptions = options
     let explanation: ReactNode = ''
     let error = ''
     let proof: BytesLike = ''
     let tokenInfo: TokenInfo | NFTInfo | undefined
     let canVote: DecisionWithReason = true
     const {
-      xchain: { chainId, blockHash, address: tokenAddress, slot },
+      xchain: { c: chainId, s: slot },
     } = xChainOptions
+    const tokenAddress = hexlify(xChainOptions.xchain.a);
+    const blockHash = hexlify(xChainOptions.xchain.b);
     const provider = xchainRPC(chainId)
     const chainDefinition = getChainDefinition(chainId)
 

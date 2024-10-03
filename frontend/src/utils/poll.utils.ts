@@ -1,6 +1,11 @@
-import { AbiCoder, BytesLike, getAddress, JsonRpcProvider, ParamType } from 'ethers'
+import { AbiCoder, BytesLike, getAddress, getBytes, JsonRpcProvider, ParamType } from 'ethers'
 
-import { encode as cborEncode, decode as cborDecode } from 'cbor-web'
+// XXX: cborg module types can cause error:
+//    There are types at './dapp-sidedao/frontend/node_modules/cborg/types/cborg.d.ts',
+//    but this result could not be resolved when respecting package.json "exports".
+//    The 'cborg' library may need to update its package.json or typings.
+// @ts-ignore
+import { decode as cborDecode, encode as cborEncode } from 'cborg';
 
 import {
   chain_info,
@@ -128,6 +133,7 @@ export type CreatePollProps = {
   answers: string[]
   isHidden: boolean
   aclData: string
+  aclAddress: string
   aclOptions: AclOptions
   pollFlags: bigint
   subsidizeAmount: bigint | undefined
@@ -139,13 +145,13 @@ export type CreatePollProps = {
 const CURRENT_ENCODING_VERSION = 0
 
 const encodePollMetadata = (poll: Poll): Uint8Array => {
-  const encoded = cborEncode({ v: CURRENT_ENCODING_VERSION, data: poll })
+  const encoded = cborEncode([CURRENT_ENCODING_VERSION, poll])
   // console.log('Encoded poll data', encoded)
   return encoded
 }
 
 export const decodePollMetadata = (metadata: string): Poll => {
-  const { v, data } = cborDecode(metadata.substring(2), { preferWeb: true, encoding: 'hex' })
+  const [v, data] = cborDecode(getBytes(metadata))
 
   if (typeof v !== 'number') throw new Error('Unknown poll data format')
 
@@ -167,6 +173,7 @@ export const createPoll = async (
     question,
     description,
     answers,
+    aclAddress,
     aclData,
     aclOptions,
     pollFlags: extraFlags,
@@ -179,11 +186,11 @@ export const createPoll = async (
 
   updateStatus('Compiling data')
   const poll: Poll = {
-    creator,
-    name: question,
-    description,
-    choices: answers,
-    acl: aclOptions,
+    c: getBytes(creator),
+    n: question,
+    d: description,
+    o: answers,
+    a: aclOptions,
   }
 
   // console.log('Compiling poll', poll)
@@ -198,7 +205,7 @@ export const createPoll = async (
     metadata: encodePollMetadata(poll),
     numChoices: answers.length,
     closeTimestamp: completionTime ? Math.round(completionTime.getTime() / 1000) : 0,
-    acl: aclOptions.address,
+    acl: aclAddress,
     flags: pollFlags,
   }
 
