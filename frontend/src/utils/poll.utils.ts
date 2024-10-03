@@ -184,8 +184,6 @@ export const createPoll = async (
     description,
     choices: answers,
     options: {
-      publishVotes,
-      publishVoters,
       closeTimestamp: completionTime ? Math.round(completionTime.getTime() / 1000) : 0,
     },
     acl: aclOptions,
@@ -195,8 +193,8 @@ export const createPoll = async (
 
   let pollFlags: bigint = extraFlags
 
-  if (poll.options.publishVoters) pollFlags |= FLAG_PUBLISH_VOTERS
-  if (poll.options.publishVotes) pollFlags |= FLAG_PUBLISH_VOTES
+  if (publishVoters) pollFlags |= FLAG_PUBLISH_VOTERS
+  if (publishVotes) pollFlags |= FLAG_PUBLISH_VOTES
   if (isHidden) pollFlags |= FLAG_HIDDEN
 
   const proposalParams: PollManager.ProposalParamsStruct = {

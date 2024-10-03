@@ -21,6 +21,7 @@ import {
 import { SpinnerIcon } from '../../components/icons/SpinnerIcon'
 import { AnimatePresence } from 'framer-motion'
 import { MotionDiv } from '../../components/Animations'
+import { shouldPublishVoters, shouldPublishVotes } from '../../types'
 
 export const ActivePoll: FC<PollData> = ({
   hasWallet,
@@ -54,12 +55,10 @@ export const ActivePoll: FC<PollData> = ({
   // console.log("hasWallet?", hasWallet, "hasWalletOnWrongNetwork?",hasWalletOnWrongNetwork)
   // console.log('isMine?', isMine, 'canComplete?', canComplete)
 
-  const {
-    name,
-    description,
-    choices,
-    options: { publishVotes, publishVoters },
-  } = poll!.ipfsParams
+  const { params } = poll!.proposal
+  const publishVotes = shouldPublishVotes(params)
+  const publishVoters = shouldPublishVoters(params)
+  const { name, description, choices } = poll!.ipfsParams
 
   const handleSelect = useCallback(
     (index: number) => {

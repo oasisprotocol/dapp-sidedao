@@ -65,9 +65,6 @@ export const demoPoll1 = {
     name: 'What is your favorite form of investment?',
     description: '',
     choices: ['US dollar', 'Physical gold', 'Crypto'],
-    options: {
-      publishVotes: false,
-    },
   },
 } as ExtendedPoll
 
@@ -84,9 +81,6 @@ export const demoPoll2 = {
     name: 'What is your greatest fear?',
     description: '',
     choices: ['Climate change', 'Deadly pandemics', 'AI apocalypse', 'Dystopia and dictatorship'],
-    options: {
-      publishVotes: false,
-    },
   },
 } as ExtendedPoll
 
@@ -103,9 +97,6 @@ export const demoPoll3 = {
     name: 'What is your favorite movie?',
     description: '',
     choices: ['Terminator', 'The Matrix', 'Tron', 'The Godfather'],
-    options: {
-      publishVotes: false,
-    },
   },
 } as ExtendedPoll
 
@@ -122,9 +113,6 @@ export const demoPoll4 = {
     name: 'How should the change the laws?',
     description: '',
     choices: ['Ban strong cryptography', 'Ban blockchains', "Withdraw the FED's monopoly on money printing"],
-    options: {
-      publishVotes: false,
-    },
   },
 } as ExtendedPoll
 
