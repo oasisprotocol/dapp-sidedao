@@ -176,8 +176,9 @@ export class StoredLRUCache<K, V extends {}, FC> {
               return valueString
             },
             decode: (valueString: string) => {
+              console.log(`[${name ?? 'unnamed'}]:`, 'decoding', valueString)
               const value = transformValues.decode(valueString)
-              console.log(`[${name ?? 'unnamed'}]:`, 'decoded', valueString, 'into', value)
+              console.log(`[${name ?? 'unnamed'}]:`, 'decoded into', value)
               return value
             },
           }

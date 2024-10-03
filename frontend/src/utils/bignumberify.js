@@ -9,6 +9,7 @@ function isObject(o) {
 
 function isBN(bn) {
   const result =
+    bn !== null &&
     Object.keys(bn).length === 2 &&
     (bn.type === 'BigNumber' || bn.type === 'BigInt') &&
     /^0x(?:[a-fA-F0-9]{2})*$/.test(bn.hex || '')

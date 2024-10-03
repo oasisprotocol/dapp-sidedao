@@ -6,6 +6,7 @@ import { usePollPermissions } from './usePollPermissions'
 import { useEthereum } from './useEthereum'
 import { useContracts } from './useContracts'
 import { decodeBase64, toUtf8String } from 'ethers'
+import { getVerdict } from '../components/InputFields'
 
 const noVoters: ListOfVoters = { out_count: 0n, out_voters: [] }
 const noVotes: ListOfVotes = { ...noVoters, out_choices: [] }
@@ -71,6 +72,10 @@ export const useExtendedPoll = (
     checkPermissions,
     isPending: permissionsPending,
   } = usePollPermissions(poll, params.onDashboard)
+
+  if (!permissionsPending && !getVerdict(permissions?.canVote, false)) {
+    correctiveAction = checkPermissions
+  }
 
   const isActive = !!proposal?.active
 

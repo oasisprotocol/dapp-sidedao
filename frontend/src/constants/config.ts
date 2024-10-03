@@ -1,6 +1,6 @@
 // EIP-3085: wallet_addEthereumChain RPC Method
 import { ExtendedPoll } from '../types'
-import { randomchoice } from '@oasisprotocol/blockvote-contracts'
+import { randomchoice, chain_info } from '@oasisprotocol/blockvote-contracts'
 
 export const METAMASK_HOME_PAGE_URL = 'https://metamask.io/'
 // export const GITHUB_REPOSITORY_URL = 'https://github.com/oasisprotocol/dapp-votee/'
@@ -23,6 +23,10 @@ const {
 
 const VITE_NETWORK_BIGINT: bigint = BigInt(ENV_VITE_NETWORK) ?? 0n
 const VITE_NETWORK_NUMBER: number = Number(VITE_NETWORK_BIGINT)
+
+const configuredChain = chain_info[VITE_NETWORK_NUMBER]
+const configuredExplorer = (configuredChain.explorers ?? [])[0]
+export const configuredExplorerUrl = configuredExplorer?.url
 
 // const VITE_REACT_APP_BUILD_DATETIME = Number(ENV_VITE_REACT_APP_BUILD_DATETIME) ?? 0
 
