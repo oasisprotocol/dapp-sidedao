@@ -31,6 +31,7 @@ import { DecisionWithReason, denyWithReason } from '../components/InputFields'
 import { FetcherFetchOptions } from './StoredLRUCache'
 import { findACLForOptions } from '../components/ACLs'
 import { VITE_NETWORK_NUMBER } from '../constants/config'
+import { ReactNode } from 'react'
 
 export { parseEther } from 'ethers'
 
@@ -248,7 +249,7 @@ export const destroyPoll = async (eth: EthereumContext, pollManager: PollManager
 
 export type PollPermissions = {
   proof: BytesLike
-  explanation: string | undefined
+  explanation: ReactNode
   canVote: DecisionWithReason
   canManage: boolean
   tokenInfo?: TokenInfo | NFTInfo | undefined

@@ -28,12 +28,12 @@ import {
   fetchStorageValue,
   getBlockHeaderRLP,
   xchainRPC,
-  chain_info,
 } from '@oasisprotocol/blockvote-contracts'
+import type { TokenInfo, NFTInfo } from '@oasisprotocol/blockvote-contracts'
 import { designDecisions, VITE_CONTRACT_ACL_STORAGEPROOF } from '../../constants/config'
 import classes from './index.module.css'
 import { BytesLike, getUint } from 'ethers'
-import { useMemo } from 'react'
+import { ReactNode, useMemo } from 'react'
 import { StringUtils } from '../../utils/string.utils'
 
 export const xchain = defineACL({
@@ -63,7 +63,7 @@ export const xchain = defineACL({
       },
     })
 
-    const explorer = (chain_info[chain.value].explorers ?? [])[0]
+    const explorer = (getChainDefinition(chain.value)?.explorers ?? [])[0]
     const explorerUrl = explorer?.url
 
     const contractAddress = useTextField({
@@ -132,7 +132,7 @@ export const xchain = defineACL({
       initialValue: '',
       compact: true,
       renderer: name =>
-        explorerUrl ? (
+        tokenUrl ? (
           <a href={tokenUrl} target={'_blank'}>
             {name}
           </a>
@@ -309,20 +309,50 @@ export const xchain = defineACL({
 
   checkPermission: async (pollACL, daoAddress, proposalId, userAddress, options) => {
     const xChainOptions = options.options
-    let explanation = ''
+    let explanation: ReactNode = ''
     let error = ''
     let proof: BytesLike = ''
-    let tokenInfo
+    let tokenInfo: TokenInfo | NFTInfo | undefined
     let canVote: DecisionWithReason = true
     const {
       xchain: { chainId, blockHash, address: tokenAddress, slot },
     } = xChainOptions
     const provider = xchainRPC(chainId)
     const chainDefinition = getChainDefinition(chainId)
+
+    if (!chainDefinition) {
+      return {
+        canVote: denyWithReason('this poll references an unknown chain'),
+        explanation: 'This poll is invalid, since it references and unknown chain.',
+        error,
+        proof,
+        tokenInfo,
+        xChainOptions,
+      }
+    }
+
+    const explorer = (chainDefinition.explorers ?? [])[0]
+    const explorerUrl = explorer?.url
+
+    const tokenUrl = explorerUrl ? StringUtils.getTokenUrl(explorerUrl, tokenAddress) : undefined
     try {
       tokenInfo = await getContractDetails(chainId, tokenAddress)
       if (!tokenInfo) throw new Error("Can't load token details")
-      explanation = `This poll is only for those who have hold ${tokenInfo?.name} token on ${chainDefinition.name} when the poll was created.`
+      explanation = tokenUrl ? (
+        <span>
+          This poll is only for those who have hold{' '}
+          <a href={tokenUrl} target={'_blank'}>
+            {tokenInfo?.name ?? StringUtils.truncateAddress(tokenInfo.addr)}
+          </a>{' '}
+          on{' '}
+          <a href={explorerUrl} target={'_blank'}>
+            {chainDefinition.name}
+          </a>{' '}
+          when the poll was created.
+        </span>
+      ) : (
+        `This poll is only for those who have hold ${tokenInfo?.name} on ${chainDefinition.name} when the poll was created.`
+      )
       let isBalancePositive = false
       const holderBalance = getUint(
         await fetchStorageValue(provider, blockHash, tokenAddress, slot, userAddress),
@@ -337,10 +367,6 @@ export const xchain = defineACL({
         }
       }
       if (!isBalancePositive) {
-        const explorer = (chain_info[chainId].explorers ?? [])[0]
-        const explorerUrl = explorer?.url
-
-        const tokenUrl = explorerUrl ? StringUtils.getTokenUrl(explorerUrl, tokenAddress) : undefined
         canVote = denyWithReason(
           tokenUrl ? (
             <span>

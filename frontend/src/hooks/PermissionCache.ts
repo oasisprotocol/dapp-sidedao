@@ -30,7 +30,7 @@ export abstract class PermissionCache {
     ],
     // debug: ['load', 'save'],
     storageKey: 'blockvote.pollPermissions2',
-    dataVersion: 7,
+    dataVersion: 9,
     transformValues: {
       encode: data => JSON.stringify(data, bigNumberify.stringify),
       decode: (stringData): PollPermissions => {
@@ -39,6 +39,7 @@ export abstract class PermissionCache {
           ...rawData,
           proof: new Uint8Array(Object.values(rawData.proof)),
           canVote: deserializeDecision(rawData.canVote),
+          explanation: deserializeReactElement(rawData.explanation),
         }
       },
     },
