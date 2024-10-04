@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import svgr from 'vite-plugin-svgr'
 import react from '@vitejs/plugin-react-swc'
-import { viteSingleFile } from "vite-plugin-singlefile"
+import { viteSingleFile } from 'vite-plugin-singlefile'
 import { visualizer } from 'rollup-plugin-visualizer'
 
 // https://vitejs.dev/config/
@@ -11,9 +11,9 @@ export default defineConfig({
     react(),
     viteSingleFile({
       useRecommendedBuildConfig: false,
-      inlinePattern: ['assets/style-*.css',]
+      inlinePattern: ['assets/style-*.css'],
     }),
-    visualizer()
+    visualizer(),
   ],
   base: './',
   build: {
@@ -24,7 +24,7 @@ export default defineConfig({
         inlineDynamicImports: false,
         manualChunks(id: string) {
           if (id.includes('ethers')) {
-            return 'ethers';
+            return 'ethers'
           }
         },
       },

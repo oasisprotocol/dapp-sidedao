@@ -12,13 +12,8 @@ interface ITokenWithBalance {
 /// Uses balanceOf() protocol, supports ERC-20 & ERC-721 tokens
 contract TokenHolderACL is IPollACL
 {
-    struct PollSettings {
-        address owner;
-        address token;
-    }
-
     /// User that's allowed to modify the voter list
-    mapping (bytes32 => PollSettings) polls;
+    mapping (bytes32 => ITokenWithBalance) polls;
 
     function supportsInterface(bytes4 interfaceId)
         public pure
@@ -28,19 +23,16 @@ contract TokenHolderACL is IPollACL
     }
 
     /// Initialize ACL for the poll with the list of voters
-    function onPollCreated(bytes32 in_proposalId, address in_creator, bytes calldata in_data)
+    function onPollCreated(bytes32 in_proposalId, address /*in_creator*/, bytes calldata in_data)
         external
     {
-        address token = abi.decode(in_data, (address));
+        ITokenWithBalance token = ITokenWithBalance(abi.decode(in_data, (address)));
 
         bytes32 pid = keccak256(abi.encode(msg.sender, in_proposalId));
 
-        require( polls[pid].owner == address(0) );
+        require( address(polls[pid]) == address(0) );
 
-        polls[pid] = PollSettings({
-            owner: in_creator,
-            token: token
-        });
+        polls[pid] = token;
     }
 
     /// Clean up storage when the poll is closed
@@ -52,16 +44,6 @@ contract TokenHolderACL is IPollACL
         delete polls[pid];
     }
 
-    /// Can user modify the allow list for voters
-    function canManagePoll(address in_dao, bytes32 in_proposalId, address in_user)
-        external view
-        returns(bool)
-    {
-        bytes32 pid = keccak256(abi.encode(in_dao, in_proposalId));
-
-        return polls[pid].owner == in_user;
-    }
-
     /// Does user hold a non-zero balance of the token required to vote?
     function canVoteOnPoll(address in_dao, bytes32 in_proposalId, address in_user, bytes calldata in_data)
         external view
@@ -71,11 +53,9 @@ contract TokenHolderACL is IPollACL
 
         bytes32 pid = keccak256(abi.encode(in_dao, in_proposalId));
 
-        PollSettings storage poll = polls[pid];
+        ITokenWithBalance token = polls[pid];
 
-        require( poll.owner != address(0), "404!" );
-
-        ITokenWithBalance token = ITokenWithBalance(poll.token);
+        require( address(token) != address(0), "404!" );
 
         return token.balanceOf(in_user);
     }

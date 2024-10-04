@@ -23,7 +23,9 @@ function convert(bn) {
     } else if (bn.type === 'BigInt') {
       return BigInt(bn.hex)
     }
-  } catch (e) {}
+  } catch (e) {
+    // We don't care
+  }
   return bn
 }
 
@@ -47,13 +49,13 @@ function stringify(key, value) {
     // Change the key and value if the person is alive
     let hex = value.toString(16)
     if (hex.length % 2) {
-      hex = '0' + hex
+      hex = `0${hex}`
     }
     return (
       'status',
       {
         type: 'BigInt',
-        hex: '0x' + hex,
+        hex: `0x${hex}`,
       }
     )
   }
@@ -76,7 +78,9 @@ function scan(obj) {
     for (let i = 0; i < obj.length; i++) {
       try {
         manage(obj, i)
-      } catch (e) {}
+      } catch (e) {
+        // Don't care
+      }
     }
   } else if (isObject(obj)) {
     if (isBN(obj)) {
@@ -85,7 +89,9 @@ function scan(obj) {
       for (let i in obj) {
         try {
           manage(obj, i)
-        } catch (e) {}
+        } catch (e) {
+          // Don't care
+        }
       }
   }
   return obj

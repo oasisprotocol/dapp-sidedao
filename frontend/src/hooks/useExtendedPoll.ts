@@ -50,7 +50,7 @@ export const useExtendedPoll = (
     try {
       return metadata ? [decodePollMetadata(metadata), undefined] : [undefined, undefined]
     } catch (e) {
-      console.log('metadata problem on poll', proposal?.id, e)
+      // console.log('metadata problem on poll', proposal?.id, e)
       return [undefined, "Invalid metadata, poll can't be displayed."]
     }
   }, [metadata])

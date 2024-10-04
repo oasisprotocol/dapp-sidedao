@@ -18,7 +18,7 @@ import {
   Circumstances,
   Column,
   isPollStatusAcceptable,
-  VisibilityReport,
+  VisibilityReporter,
   WantedStatus,
 } from '../../pages/DashboardPage/useDashboardData'
 import { useEthereum } from '../../hooks/useEthereum'
@@ -72,7 +72,7 @@ const GaslessStatusIndicator: FC<{ possible: boolean | undefined }> = ({ possibl
 export const PollCard: FC<{
   column: Column
   proposal: Proposal
-  reportVisibility: (report: VisibilityReport) => void
+  reportVisibility: VisibilityReporter
   showInaccessible: boolean
   searchPatterns: string[]
   wantedStatus: WantedStatus

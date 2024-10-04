@@ -115,8 +115,9 @@ export const usePollData = (pollId: string) => {
   const hasWallet = isDemo || (isHomeChain && userAddress !== ZeroAddress)
   const hasWalletOnWrongNetwork = !isDemo && !isHomeChain && userAddress !== ZeroAddress
 
-  const canComplete = permissions.canManage && (!deadline || isPastDue) && (!isDestroying || !isCompleting)
-  const canDestroy = permissions.canManage && (!isDestroying || !isCompleting)
+  const canComplete =
+      isMine && (!deadline || isPastDue) && (!isDestroying || !isCompleting)
+  const canDestroy = isMine && (!isDestroying || !isCompleting)
 
   // console.log("canAclManage?", canAclManage, "deadline:", deadline, "isPastDue?", isPastDue, "canComplete?", canComplete)
 
@@ -286,7 +287,7 @@ export const usePollData = (pollId: string) => {
         if (receipt === null || receipt.status != 1) {
           // TODO: how can we tell if it failed due to out of gas?
           // Give them the option to re-submit their vote
-          let tx_hash: string = ''
+          let tx_hash = ''
           if (receipt) {
             tx_hash = `\n\nFailed tx: ${receipt.hash}`
           }

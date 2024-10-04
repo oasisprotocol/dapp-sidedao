@@ -118,11 +118,4 @@ contract StorageProofACL is IPollACL
             in_rlpStorageProof
         ));
     }
-
-    function canManagePoll(address in_dao, bytes32 in_proposalId, address)
-        external view
-        returns(bool)
-    {
-        return s_polls[internal_id(in_dao, in_proposalId)].block_hash != 0;
-    }
 }

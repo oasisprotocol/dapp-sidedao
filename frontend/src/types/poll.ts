@@ -12,6 +12,7 @@ export type {
 
 export type Proposal = {
   id: string
+  owner: string
   topChoice: bigint
   params: PollManager.ProposalParamsStructOutput
 }
@@ -20,7 +21,6 @@ export type Proposal = {
  * This is the decoded version of StoredPoll. More verbose and intuitive to use.
  */
 export type Poll = {
-  creator: string
   name: string
   description: string
   choices: string[]

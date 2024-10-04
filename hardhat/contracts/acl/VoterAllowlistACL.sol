@@ -7,9 +7,6 @@ import { IPollACL } from "../../interfaces/IPollACL.sol";
 /// Whitelist of voters
 contract VoterAllowListACL is IPollACL
 {
-    /// User that's allowed to modify the voter list
-    mapping (bytes32 => address) pollManager;
-
     /// Addresses that are allowed to vote
     mapping (bytes32 => mapping(address => bool)) eligibleVoters;
 
@@ -31,7 +28,7 @@ contract VoterAllowListACL is IPollACL
     }
 
     /// Initialize ACL for the poll with the list of voters
-    function onPollCreated(bytes32 in_proposalId, address in_creator, bytes calldata in_data)
+    function onPollCreated(bytes32 in_proposalId, address /*in_creator*/, bytes calldata in_data)
         external
     {
         address[] memory voters = abi.decode(in_data, (address[]));
@@ -44,8 +41,6 @@ contract VoterAllowListACL is IPollACL
         {
             eligibleVoters[pid][voters[i]] = true;
         }
-
-        pollManager[pid] = in_creator;
     }
 
     /// Clean up storage when the poll is closed
@@ -62,16 +57,6 @@ contract VoterAllowListACL is IPollACL
         }
 
         delete eligibleVotersList[pid];
-    }
-
-    /// Can user modify the allow list for voters
-    function canManagePoll(address in_dao, bytes32 in_proposalId, address in_user)
-        external view
-        returns(bool)
-    {
-        bytes32 pid = id(in_dao, in_proposalId);
-
-        return pollManager[pid] == in_user;
     }
 
     /// Is user allowed to vote on the poll?
