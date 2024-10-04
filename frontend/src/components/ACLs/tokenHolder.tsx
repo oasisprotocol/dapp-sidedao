@@ -155,7 +155,7 @@ export const tokenHolder = defineACL({
         canVote = denyWithReason(
           url ? (
             <>
-              you don't hold any{' '}
+              you don&apos;t hold any{' '}
               <a href={url} target={'_blank'}>
                 {tokenInfo?.name ?? StringUtils.truncateAddress(tokenAddress)}
               </a>

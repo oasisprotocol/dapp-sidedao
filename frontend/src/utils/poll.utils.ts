@@ -4,6 +4,7 @@ import { AbiCoder, BytesLike, getAddress, getBytes, hexlify, JsonRpcProvider, Pa
 //    There are types at './dapp-sidedao/frontend/node_modules/cborg/types/cborg.d.ts',
 //    but this result could not be resolved when respecting package.json "exports".
 //    The 'cborg' library may need to update its package.json or typings.
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { decode as cborDecode, encode as cborEncode } from 'cborg'
 

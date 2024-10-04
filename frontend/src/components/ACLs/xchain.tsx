@@ -385,7 +385,7 @@ export const xchain = defineACL({
         canVote = denyWithReason(
           tokenUrl ? (
             <span>
-              you don't hold any{' '}
+              you don&apos;t hold any{' '}
               <a href={tokenUrl} target={'_blank'}>
                 {tokenInfo.name}
               </a>{' '}

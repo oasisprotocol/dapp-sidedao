@@ -22,7 +22,7 @@ export const wrapProblem = (
   if (typeof problem === 'string') {
     const cutPos = problem.indexOf(':')
     if (cutPos !== -1) {
-      let signature = problem.substring(0, cutPos)
+      const signature = problem.substring(0, cutPos)
       if (!signature.includes(' ')) {
         return {
           signature,
@@ -168,7 +168,7 @@ export const andDecisions = (a: Decision, b: Decision): Decision => {
     if (bVerdict) {
       return {
         verdict: true,
-        reason: getReason(a) + '; ' + getReason(b),
+        reason: `${getReason(a)}; ${getReason(b)}`,
       }
     } else {
       return b

@@ -7,7 +7,7 @@ export const WithDescription: FC<
 > = props => {
   const { field, children } = props
   const { description } = field
-  return !!description ? (
+  return description ? (
     <label>
       <div className={classes.fieldDescription}>{description}</div>
       {children}
