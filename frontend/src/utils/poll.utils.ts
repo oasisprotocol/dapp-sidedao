@@ -1,4 +1,4 @@
-import { AbiCoder, BytesLike, getAddress, getBytes, hexlify, JsonRpcProvider, ParamType } from 'ethers'
+import { AbiCoder, BytesLike, getAddress, getBytes, JsonRpcProvider, ParamType } from 'ethers'
 
 // XXX: cborg module types can cause error:
 //    There are types at './dapp-sidedao/frontend/node_modules/cborg/types/cborg.d.ts',
@@ -154,7 +154,7 @@ const CURRENT_ENCODING_VERSION = 0
 
 const encodePollMetadata = (poll: Poll): Uint8Array => {
   const storedPoll: StoredPoll = {
-    c: getBytes(poll.creator),
+    //c: getBytes(poll.creator),
     n: poll.name,
     d: poll.description,
     o: poll.choices,
@@ -176,7 +176,7 @@ export const decodePollMetadata = (metadata: string): Poll => {
   switch (v as number) {
     case CURRENT_ENCODING_VERSION:
       poll = {
-        creator: hexlify(storedPoll.c),
+        //creator: hexlify(storedPoll.c),
         name: storedPoll.n,
         description: storedPoll.d,
         choices: storedPoll.o,
@@ -211,7 +211,7 @@ export const createPoll = async (
 
   updateStatus('Compiling data')
   const poll: Poll = {
-    creator,
+    //creator,
     name: question,
     description,
     choices: answers,
@@ -293,7 +293,7 @@ export type PollPermissions = {
   proof: BytesLike
   explanation: ReactNode
   canVote: DecisionWithReason
-  canManage: boolean
+  //canManage: boolean
   error: string
 }
 
@@ -318,7 +318,7 @@ export const checkPollPermission = async (
   const { userAddress, proposalId, aclAddress, options } = input
 
   const pollACL = IPollACL__factory.connect(aclAddress, provider)
-  const canManage = await pollACL.canManagePoll(daoAddress, proposalId, userAddress)
+  //const canManage = userAddress == ; // await pollACL.canManagePoll(daoAddress, proposalId, userAddress)
   const acl = findACLForOptions(options)
 
   if (!acl) {
@@ -329,7 +329,7 @@ export const checkPollPermission = async (
         'this poll has some unknown access control settings. (Poll created by newer version of software?)',
       ),
       error: '',
-      canManage,
+      //canManage,
     }
   }
 
@@ -349,6 +349,6 @@ export const checkPollPermission = async (
     error,
     ...extra,
     canVote,
-    canManage,
+    //canManage,
   }
 }

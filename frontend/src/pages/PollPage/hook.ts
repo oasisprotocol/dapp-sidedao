@@ -115,8 +115,8 @@ export const usePollData = (pollId: string) => {
   const hasWallet = isDemo || (isHomeChain && userAddress !== ZeroAddress)
   const hasWalletOnWrongNetwork = !isDemo && !isHomeChain && userAddress !== ZeroAddress
 
-  const canComplete = permissions.canManage && (!deadline || isPastDue) && (!isDestroying || !isCompleting)
-  const canDestroy = permissions.canManage && (!isDestroying || !isCompleting)
+  const canComplete =  proposal?.owner == userAddress && (!deadline || isPastDue) && (!isDestroying || !isCompleting)
+  const canDestroy = proposal?.owner == userAddress && (!isDestroying || !isCompleting)
 
   // console.log("canAclManage?", canAclManage, "deadline:", deadline, "isPastDue?", isPastDue, "canComplete?", canComplete)
 

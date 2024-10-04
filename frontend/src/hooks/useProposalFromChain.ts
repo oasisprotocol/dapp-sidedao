@@ -29,9 +29,9 @@ export const useProposalFromChain = (proposalId: string) => {
 
     try {
       setIsLoading(true)
-      const data = await pollManager.PROPOSALS(proposalId)
-      const [topChoice, params] = data
-      const acl = data?.params?.acl
+      const pollWithId = await pollManager.getProposalById(proposalId)
+      const [topChoice, params] = pollWithId.proposal;
+      const acl = pollWithId.proposal.params.acl;
       if (!acl || acl === ZeroAddress) {
         // setError('Found proposal with invalid ACL.')
         setError('Poll not found. Are you sure the link is correct?')
@@ -39,6 +39,7 @@ export const useProposalFromChain = (proposalId: string) => {
       } else {
         setProposal({
           id: proposalId,
+          owner: pollWithId.owner,
           topChoice,
           params,
         })
