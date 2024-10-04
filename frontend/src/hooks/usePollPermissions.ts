@@ -13,14 +13,13 @@ const blackPermissions: PollPermissions = {
   proof: '',
   explanation: undefined,
   canVote: denyWithReason(NOT_CHECKED),
-  //canManage: false,
   error: '',
 }
 
 export const usePollPermissions = (poll: ExtendedPoll | undefined, onDashboard: boolean) => {
   const proposalId = (poll?.proposal as any)?.id as string
   const aclAddress = poll?.proposal.params?.acl
-  const creator = poll?.proposal.owner; // .ipfsParams.creator
+  const creator = poll?.proposal.owner;
 
   const eth = useEthereum()
   const { pollManagerAddress: daoAddress, pollACL } = useContracts(eth, aclAddress)
@@ -47,7 +46,6 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined, onDashboard: 
         proof: '',
         explanation: '',
         canVote: true,
-        //canManage: false,
         error: '',
       })
     }

@@ -25,7 +25,6 @@ export type AclOptions = AclOptionsToken | AclOptionsAllowAll | AclOptionsAllowL
 //       as small as possible! Such as using Uint8Array instead of hex encoded
 //       addresses.
 export type Poll = {
-  //c: Uint8Array;  // creator address
   n: string;      // name
   d: string;      // description
   o: string[];    // choices / options
