@@ -12,7 +12,7 @@ export type {
 
 export type Proposal = {
   id: string
-  owner: string;
+  owner: string
   topChoice: bigint
   params: PollManager.ProposalParamsStructOutput
 }
