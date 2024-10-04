@@ -42,15 +42,6 @@ contract PasswordACL is IPollACL
         s_passwords[id] = 0;
     }
 
-    function canManagePoll(address in_dao, bytes32 in_proposalId, address)
-        external view
-        returns(bool)
-    {
-        bytes32 id = internal_id(in_dao, in_proposalId);
-
-        return s_passwords[id] != 0;
-    }
-
     function canVoteOnPoll(address in_dao, bytes32 in_proposalId, address, bytes calldata in_password)
         external view
         returns(uint)

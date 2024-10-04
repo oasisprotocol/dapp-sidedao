@@ -38,6 +38,7 @@ contract PollManager is IERC165, IPollManager {
     error Vote_UnknownChoice();
 
     // Errors relating to the closing of polls
+    error Close_NotOwner();
     error Close_NotAllowed();
     error Close_NotActive();
 
@@ -46,6 +47,10 @@ contract PollManager is IERC165, IPollManager {
     error Poll_NotPublishingVoters();
     error Poll_StillActive();
     error Poll_NotActive();
+
+    // Errors relating to destroying polls
+    error Destroy_NotOwner();
+    error Destroy_NotFound();
 
 
     // ------------------------------------------------------------------------
@@ -74,11 +79,12 @@ contract PollManager is IERC165, IPollManager {
 
     struct ProposalWithId {
         bytes32 id;
+        address owner;
         Proposal proposal;
     }
 
     struct Choice {
-        uint weight;
+        uint248 weight;
         uint8 choice;
     }
 
@@ -87,10 +93,11 @@ contract PollManager is IERC165, IPollManager {
         mapping(address => Choice) votes;
         /// list of voters that submitted their vote
         address[] voters;
-        /// Obscure votes using this xor mask
+        /// Obscure votes using this xor mask, this is randomized on every vote to ensure every vote modifies every key
         uint256 xorMask;
         /// choice id -> vote count
         uint256[MAX_CHOICES] voteCounts;
+        /// total weight of all the votes
         uint totalVotes;
     }
 
@@ -104,17 +111,19 @@ contract PollManager is IERC165, IPollManager {
 
     mapping(bytes32 => uint256) private s_pastProposalsIndex;
 
+    mapping(bytes32 => address) private OWNERS;
+
+    mapping(bytes32 => Proposal) private PROPOSALS;
+
+    EnumerableSet.Bytes32Set private ACTIVE_PROPOSALS;
+
+    bytes32[] private PAST_PROPOSALS;
+
 
     // ------------------------------------------------------------------------
     // PUBLIC STORAGE
 
     IGaslessVoter public immutable GASLESS_VOTER;
-
-    mapping(bytes32 => Proposal) public PROPOSALS;
-
-    EnumerableSet.Bytes32Set private ACTIVE_PROPOSALS;
-
-    bytes32[] public PAST_PROPOSALS;
 
 
     // ------------------------------------------------------------------------
@@ -176,8 +185,6 @@ contract PollManager is IERC165, IPollManager {
             revert Create_InvalidACL();
         }
 
-        in_params.flags |= FLAG_ACTIVE;
-
         if (in_params.numChoices == 0) {
             revert Create_NoChoices();
         }
@@ -191,6 +198,10 @@ contract PollManager is IERC165, IPollManager {
         if (PROPOSALS[proposalId].params.numChoices != 0) {
             revert Create_AlreadyExists();
         }
+
+        OWNERS[proposalId] = in_owner;
+
+        in_params.flags |= FLAG_ACTIVE;
 
         PROPOSALS[proposalId] = Proposal({
             params: in_params,
@@ -269,6 +280,10 @@ contract PollManager is IERC165, IPollManager {
         }
     }
 
+    /**
+     * Common function, called by both proxy() and vote()
+     * The `in_voter` parameter is a trusted source for `msg.sender`
+     */
     function internal_castVote(
         address in_voter,
         bytes32 in_proposalId,
@@ -289,7 +304,8 @@ contract PollManager is IERC165, IPollManager {
         uint weight = canVoteOnPoll(in_proposalId, in_voter, in_data);
 
         // User is not allowed to vote if they have zero-weight
-        if( weight == 0 ) {
+        // It must also fit into a uint248
+        if( weight == 0 || weight >= (1<<248) ) {
             revert Vote_NotAllowed();
         }
 
@@ -349,7 +365,7 @@ contract PollManager is IERC165, IPollManager {
             }
         }
 
-        existingVote.weight = weight;
+        existingVote.weight = uint24(weight);
         existingVote.choice = in_choiceId;
     }
 
@@ -377,6 +393,33 @@ contract PollManager is IERC165, IPollManager {
         internal_castVote(msg.sender, in_proposalId, in_choiceId, in_data);
     }
 
+    /**
+     * Retrieve the proposal and owner information
+     */
+    function getProposalById(bytes32 in_proposalId)
+        public view
+        returns (ProposalWithId memory)
+    {
+        return ProposalWithId({
+            id: in_proposalId,
+            owner: OWNERS[in_proposalId],
+            proposal: PROPOSALS[in_proposalId]
+        });
+    }
+
+    function internal_paginateLimit(uint in_offset, uint in_limit, uint in_count)
+        internal pure
+        returns (uint out_limit)
+    {
+        if ((in_offset + in_limit) > in_count)
+        {
+            out_limit = in_count - in_offset;
+        }
+        else {
+            out_limit = in_limit;
+        }
+    }
+
     /// Paginated access to the active proposals
     /// Pagination is in reverse order, so most recent first
     /// Hidden proposals are not included in this list
@@ -386,10 +429,7 @@ contract PollManager is IERC165, IPollManager {
     {
         out_count = ACTIVE_PROPOSALS.length();
 
-        if ((in_offset + in_limit) > out_count)
-        {
-            in_limit = out_count - in_offset;
-        }
+        in_limit = internal_paginateLimit(in_offset, in_limit, out_count);
 
         out_proposals = new ProposalWithId[](in_limit);
 
@@ -397,10 +437,7 @@ contract PollManager is IERC165, IPollManager {
         {
             bytes32 id = ACTIVE_PROPOSALS.at(out_count - 1 - in_offset - i);
 
-            out_proposals[i] = ProposalWithId({
-                id: id,
-                proposal: PROPOSALS[id]
-            });
+            out_proposals[i] = getProposalById(id);
         }
     }
 
@@ -413,10 +450,7 @@ contract PollManager is IERC165, IPollManager {
     {
         out_count = PAST_PROPOSALS.length;
 
-        if ((in_offset + in_limit) > out_count)
-        {
-            in_limit = out_count - in_offset;
-        }
+        in_limit = internal_paginateLimit(in_offset, in_limit, out_count);
 
         out_proposals = new ProposalWithId[](in_limit);
 
@@ -424,10 +458,7 @@ contract PollManager is IERC165, IPollManager {
         {
             bytes32 id = PAST_PROPOSALS[out_count - 1 - in_offset - i];
 
-            out_proposals[i] = ProposalWithId({
-                id: id,
-                proposal: PROPOSALS[id]
-            });
+            out_proposals[i] = getProposalById(id);
         }
     }
 
@@ -446,14 +477,17 @@ contract PollManager is IERC165, IPollManager {
         uint closeTimestamp = proposal.params.closeTimestamp;
         if( closeTimestamp == 0 )
         {
-            if (!proposal.params.acl.canManagePoll(address(this), in_proposalId, msg.sender)) {
-                revert Close_NotAllowed();
+            if( OWNERS[in_proposalId] != msg.sender ) {
+                revert Close_NotOwner();
             }
         }
         else {
-            // Otherwise, anybody can close, $now >= closeTimestamp
-            if( block.timestamp < closeTimestamp ) {
-                revert Close_NotAllowed();
+            // Owner can always close the poll early
+            if( OWNERS[in_proposalId] != msg.sender ) {
+                // But anybody can close, if $now >= closeTimestamp
+                if( block.timestamp < closeTimestamp ) {
+                    revert Close_NotAllowed();
+                }
             }
         }
 
@@ -489,8 +523,9 @@ contract PollManager is IERC165, IPollManager {
         GASLESS_VOTER.onPollClosed(in_proposalId);
     }
 
-    error Destroy_NotFound();
-
+    /**
+     * Permanently delete the poll
+     */
     function destroy(bytes32 in_proposalId)
         external
     {
@@ -499,9 +534,14 @@ contract PollManager is IERC165, IPollManager {
             revert Destroy_NotFound();
         }
 
+        if( OWNERS[in_proposalId] != msg.sender ) {
+            revert Destroy_NotOwner();
+        }
+
         uint8 flags = proposal.params.flags;
 
-        if( 0 == flags & FLAG_ACTIVE )
+        // If poll is still active, close it!
+        if( 0 != (flags & FLAG_ACTIVE) )
         {
             close(in_proposalId);
         }
@@ -517,6 +557,8 @@ contract PollManager is IERC165, IPollManager {
 
         delete s_ballots[in_proposalId];
 
+        delete OWNERS[in_proposalId];
+
         // Remove proposal from past proposals list
         if( 0 != (flags & FLAG_HIDDEN) )
         {
@@ -530,6 +572,9 @@ contract PollManager is IERC165, IPollManager {
         }
     }
 
+    /**
+     * Retrieve the number of votes for each option
+     */
     function getVoteCounts(bytes32 in_proposalId)
         external view
         returns (uint256[] memory)
@@ -553,32 +598,25 @@ contract PollManager is IERC165, IPollManager {
 
     function internal_paginateBallot(bytes32 in_proposalId, uint in_offset, uint in_limit)
         internal view
-        returns (uint out_count, uint out_limit, Ballot storage out_ballot)
+        returns (uint8 out_flags, uint out_count, uint out_limit, Ballot storage out_ballot)
     {
         Proposal storage proposal = PROPOSALS[in_proposalId];
         out_ballot = s_ballots[in_proposalId];
 
-        uint8 flags = proposal.params.flags;
+        out_flags = proposal.params.flags;
 
-        if ( 0 == (flags & FLAG_PUBLISH_VOTES) ) {
-            revert Poll_NotPublishingVotes();
-        }
-
-        if ( 0 != (flags & FLAG_ACTIVE) ) {
+        if ( 0 != (out_flags & FLAG_ACTIVE) ) {
             revert Poll_StillActive();
         }
 
         out_count = out_ballot.voters.length;
 
-        if ((in_offset + in_limit) > out_count)
-        {
-            out_limit = out_count - in_offset;
-        }
-        else {
-            out_limit = out_limit;
-        }
+        out_limit = internal_paginateLimit(in_offset, in_limit, out_count);
     }
 
+    /**
+     * Retrieve the list of voters, and which choice they made (paginated)
+     */
     function getVotes(bytes32 in_proposalId, uint in_offset, uint in_limit)
         external view
         returns (
@@ -589,7 +627,13 @@ contract PollManager is IERC165, IPollManager {
     {
         Ballot storage ballot;
 
-        (out_count, in_limit, ballot) = internal_paginateBallot(in_proposalId, in_offset, in_limit);
+        uint8 flags;
+
+        (flags, out_count, in_limit, ballot) = internal_paginateBallot(in_proposalId, in_offset, in_limit);
+
+        if ( 0 == (flags & FLAG_PUBLISH_VOTES) ) {
+            revert Poll_NotPublishingVotes();
+        }
 
         out_choices = new Choice[](in_limit);
         out_voters = new address[](in_limit);
@@ -602,6 +646,9 @@ contract PollManager is IERC165, IPollManager {
         }
     }
 
+    /**
+     * Retrieve only the list of voters (not what they voted for) - paginated
+     */
     function getVoters(bytes32 in_proposalId, uint in_offset, uint in_limit)
         external view
         returns (
@@ -611,7 +658,13 @@ contract PollManager is IERC165, IPollManager {
     {
         Ballot storage ballot;
 
-        (out_count, in_limit, ballot) = internal_paginateBallot(in_proposalId, in_offset, in_limit);
+        uint8 flags;
+
+        (flags, out_count, in_limit, ballot) = internal_paginateBallot(in_proposalId, in_offset, in_limit);
+
+        if ( 0 == (flags & FLAG_PUBLISH_VOTERS) ) {
+            revert Poll_NotPublishingVoters();
+        }
 
         out_voters = new address[](in_limit);
 
@@ -620,13 +673,6 @@ contract PollManager is IERC165, IPollManager {
             address voter = ballot.voters[in_offset + i];
             out_voters[i] = voter;
         }
-    }
-
-    function ballotIsActive(bytes32 in_id)
-        external view
-        returns (bool)
-    {
-        return PROPOSALS[in_id].params.flags & FLAG_ACTIVE != 0;
     }
 
     function getProposalId(

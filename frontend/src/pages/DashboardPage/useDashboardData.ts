@@ -136,9 +136,9 @@ async function fetchProposals(
       break
     }
 
-    result.out_proposals.forEach(({ id, proposal }) => {
+    result.out_proposals.forEach(({ id, owner, proposal }) => {
       const [topChoice, params] = proposal
-      proposalList.push({ id, topChoice, params })
+      proposalList.push({ id, owner, topChoice, params })
     })
 
     if (result.out_proposals.length < FETCH_BATCH_SIZE) {

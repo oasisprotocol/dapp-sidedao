@@ -14,6 +14,9 @@ dev-pontusxtest:
 build:
 	$(NPM) $@
 
+lint:
+	$(NPM) $@
+
 prettify:
 	$(NPM) $@
 
