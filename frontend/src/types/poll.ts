@@ -7,23 +7,13 @@ export type {
   IPollManagerACL,
   TokenInfo,
   AclOptionsXchain,
+  Poll as StoredPoll,
 } from '@oasisprotocol/blockvote-contracts'
 
 export type Proposal = {
   id: string
   topChoice: bigint
   params: PollManager.ProposalParamsStructOutput
-}
-
-// NOTE: this is stored on-chain, so it's essential to keep the encoded size
-//       as small as possible! Such as using Uint8Array instead of hex encoded
-//       addresses.
-export type StoredPoll = {
-  c: Uint8Array // creator address
-  n: string // name
-  d: string // description
-  o: string[] // choices / options
-  a: AclOptions // ACL options
 }
 
 /**
