@@ -15,7 +15,6 @@ import { dashboard, demoSettings } from '../constants/config'
 import { getDemoPoll } from '../constants/demoPolls'
 import { usePollGaslessStatus } from './usePollGaslessStatus'
 import { usePollPermissions } from './usePollPermissions'
-import { useEthereum } from './useEthereum'
 import { useContracts } from './useContracts'
 import { decodePollMetadata } from '../utils/poll.utils'
 import { getVerdict } from '../components/InputFields'
@@ -29,8 +28,7 @@ export const useExtendedPoll = (
     onDashboard: boolean
   },
 ) => {
-  const eth = useEthereum()
-  const { pollManager } = useContracts(eth)
+  const { pollManager } = useContracts()
 
   const proposalId = proposal?.id
   const isDemo = proposalId === '0xdemo'

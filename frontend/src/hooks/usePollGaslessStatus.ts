@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useContracts } from './useContracts'
-import { useEthereum } from './useEthereum'
 import { dashboard } from '../constants/config'
 
 export const usePollGaslessStatus = (proposalId: string | undefined, onDashboard: boolean) => {
-  const eth = useEthereum()
-  const { pollManagerAddress: daoAddress, gaslessVoting } = useContracts(eth)
+  const { pollManagerAddress: daoAddress, gaslessVoting } = useContracts()
 
   const [version, setVersion] = useState(0)
   const [gvAddresses, setGvAddresses] = useState<string[]>([])
