@@ -323,17 +323,17 @@ export const xchain = defineACL({
   isThisMine: options => 'xchain' in options,
 
   checkPermission: async (pollACL, daoAddress, proposalId, userAddress, options) => {
-    const xChainOptions = options
+    const { xchain } = options
+    const chainId = xchain.c
+    const blockHash = hexlify(xchain.b)
+    const tokenAddress = hexlify(xchain.a)
+    const slot = xchain.s
+
     let explanation: ReactNode = ''
     let error = ''
     let proof: BytesLike = ''
     let tokenInfo: TokenInfo | NFTInfo | undefined
     let canVote: DecisionWithReason = true
-    const {
-      xchain: { c: chainId, s: slot },
-    } = xChainOptions
-    const tokenAddress = hexlify(xChainOptions.xchain.a)
-    const blockHash = hexlify(xChainOptions.xchain.b)
     const provider = xchainRPC(chainId)
     const chainDefinition = getChainDefinition(chainId)
 
@@ -343,8 +343,6 @@ export const xchain = defineACL({
         explanation: 'This poll is invalid, since it references and unknown chain.',
         error,
         proof,
-        tokenInfo,
-        xChainOptions,
       }
     }
 
@@ -408,6 +406,6 @@ export const xchain = defineACL({
       console.error('proof:', proof)
       canVote = denyWithReason(`there was a technical problem verifying your permissions`)
     }
-    return { canVote, explanation, error, proof, tokenInfo, xChainOptions }
+    return { canVote, explanation, error, proof }
   },
 } as const)

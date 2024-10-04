@@ -15,7 +15,6 @@ import {
   guessStorageSlot,
   getNftContractType,
   ChainDefinition,
-  AclOptionsXchain,
   IPollACL__factory,
   TokenInfo,
   NFTInfo,
@@ -286,8 +285,6 @@ export type PollPermissions = {
   explanation: ReactNode
   canVote: DecisionWithReason
   canManage: boolean
-  tokenInfo?: TokenInfo | NFTInfo | undefined
-  xChainOptions?: AclOptionsXchain | undefined
   error: string
 }
 
@@ -322,8 +319,6 @@ export const checkPollPermission = async (
       canVote: denyWithReason(
         'this poll has some unknown access control settings. (Poll created by newer version of software?)',
       ),
-      tokenInfo: undefined,
-      xChainOptions: undefined,
       error: '',
       canManage,
     }
