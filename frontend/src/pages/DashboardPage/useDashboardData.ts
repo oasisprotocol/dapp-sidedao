@@ -153,7 +153,7 @@ DashboardData.export()
 
 export const useDashboardData = () => {
   const eth = useEthereum()
-  const { pollManager, pollManagerAddress: daoAddress, pollManagerACL } = useContracts(eth)
+  const { pollManager, pollManagerAddress: daoAddress, pollManagerACL } = useContracts()
 
   const { userAddress } = eth
 

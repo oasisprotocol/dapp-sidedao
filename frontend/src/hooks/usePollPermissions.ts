@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useContracts } from './useContracts'
-import { useEthereum } from './useEthereum'
 import { denyWithReason } from '../components/InputFields'
 import { ExtendedPoll } from '../types'
 import { CheckPermissionContext, CheckPermissionInputs, PollPermissions } from '../utils/poll.utils'
@@ -21,10 +20,7 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined, onDashboard: 
   const aclAddress = poll?.proposal.params.acl
   const creator = poll?.proposal.owner
 
-  const eth = useEthereum()
-  const { pollManagerAddress: daoAddress, pollACL } = useContracts(eth, aclAddress)
-
-  const { userAddress } = eth
+  const { eth, pollManagerAddress: daoAddress, pollACL } = useContracts(aclAddress)
 
   const [isPending, setIsPending] = useState(false)
   const [isMine, setIsMine] = useState<boolean | undefined>()
@@ -32,6 +28,10 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined, onDashboard: 
 
   const checkPermissions = async (force = false) => {
     const isDemo = proposalId === '0xdemo'
+    const {
+      userAddress,
+      state: { provider },
+    } = eth
 
     setIsMine(
       isDemo
@@ -75,7 +75,7 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined, onDashboard: 
 
     const context: CheckPermissionContext = {
       daoAddress,
-      provider: eth.state.provider,
+      provider,
     }
 
     setIsPending(true)
@@ -84,7 +84,10 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined, onDashboard: 
     if (newStatus) setPermissions(newStatus)
   }
 
-  useEffect(() => void checkPermissions(), [proposalId, pollACL, daoAddress, poll?.ipfsParams, userAddress])
+  useEffect(
+    () => void checkPermissions(),
+    [proposalId, pollACL, daoAddress, poll?.ipfsParams, eth.userAddress],
+  )
 
   return {
     isMine,

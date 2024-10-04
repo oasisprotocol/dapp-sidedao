@@ -14,7 +14,6 @@ import {
   useTextField,
 } from '../../components/InputFields'
 import { createPoll as doCreatePoll, parseEther, CreatePollProps } from '../../utils/poll.utils'
-import { useEthereum } from '../../hooks/useEthereum'
 import { useContracts } from '../../hooks/useContracts'
 import classes from './index.module.css'
 import { DateUtils } from '../../utils/date.utils'
@@ -43,8 +42,8 @@ const expectedRanges = {
 } as const
 
 export const useCreatePollForm = () => {
-  const eth = useEthereum()
-  const { pollManagerWithSigner: daoSigner } = useContracts(eth)
+  // const eth = useEthereum()
+  const { eth, pollManagerWithSigner: daoSigner } = useContracts()
 
   const [isCreating, setIsCreating] = useState<boolean>(false)
   const [step, setStep] = useState<CreationStep>('basics')

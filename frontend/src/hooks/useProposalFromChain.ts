@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Proposal } from '../types'
-import { useEthereum } from './useEthereum'
 import { useContracts } from './useContracts'
 import { ZeroAddress } from 'ethers'
 
 export const useProposalFromChain = (proposalId: string) => {
-  const eth = useEthereum()
-  const { pollManager } = useContracts(eth)
+  const { pollManager } = useContracts()
 
   const [isLoading, setIsLoading] = useState(false)
   const [proposal, setProposal] = useState<Proposal>()

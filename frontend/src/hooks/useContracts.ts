@@ -5,15 +5,16 @@ import {
   IPollACL__factory,
 } from '@oasisprotocol/blockvote-contracts'
 import type { PollManager, GaslessVoting, IPollACL, IPollManagerACL } from '../types'
-import { EthereumContext } from '../providers/EthereumContext'
 import { useEffect, useState } from 'react'
 import {
   VITE_CONTRACT_GASLESSVOTING,
   VITE_CONTRACT_POLLMANAGER,
   VITE_CONTRACT_POLLMANAGER_ACL,
 } from '../constants/config'
+import { useEthereum } from './useEthereum'
 
-export const useContracts = (eth: EthereumContext, aclAddress?: string | undefined) => {
+export const useContracts = (aclAddress?: string | undefined) => {
+  const eth = useEthereum()
   const [pollManager, setPollManager] = useState<PollManager | undefined>()
   const [pollManagerAddress, setPollManagerAddress] = useState<string | undefined>()
   const [pollManagerWithSigner, setPollManagerWithSigner] = useState<PollManager | undefined>()
@@ -69,6 +70,7 @@ export const useContracts = (eth: EthereumContext, aclAddress?: string | undefin
   }, [aclAddress, eth.state.provider])
 
   return {
+    eth,
     pollManager,
     pollManagerAddress,
     pollManagerWithSigner,
