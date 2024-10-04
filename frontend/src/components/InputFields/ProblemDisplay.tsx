@@ -39,7 +39,7 @@ export const ProblemDisplay: FC<{
 
 export const ProblemList: FC<{
   problems: Problem[] | undefined
-  onRemove: () => void
+  onRemove: Remover
 }> = ({ problems = [], onRemove }) => (
   <AnimatePresence mode={'wait'} initial={false}>
     {problems.map(p => (
