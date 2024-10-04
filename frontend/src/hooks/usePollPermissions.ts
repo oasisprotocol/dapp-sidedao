@@ -18,7 +18,7 @@ const blackPermissions: PollPermissions = {
 
 export const usePollPermissions = (poll: ExtendedPoll | undefined, onDashboard: boolean) => {
   const proposalId = (poll?.proposal as any)?.id as string
-  const aclAddress = poll?.proposal.params?.acl
+  const aclAddress = poll?.proposal.params.acl
   const creator = poll?.proposal.owner
 
   const eth = useEthereum()
