@@ -23,7 +23,15 @@ import {
 } from '@oasisprotocol/blockvote-contracts'
 export type { ContractType, NftType } from '@oasisprotocol/blockvote-contracts'
 export { isToken } from '@oasisprotocol/blockvote-contracts'
-import { FLAG_HIDDEN, FLAG_PUBLISH_VOTERS, FLAG_PUBLISH_VOTES, Poll, PollManager, StoredPoll } from '../types'
+import {
+  FLAG_ACTIVE,
+  FLAG_HIDDEN,
+  FLAG_PUBLISH_VOTERS,
+  FLAG_PUBLISH_VOTES,
+  Poll,
+  PollManager,
+  StoredPoll,
+} from '../types'
 import { EthereumContext } from '../providers/EthereumContext'
 import { DecisionWithReason, denyWithReason } from '../components/InputFields'
 import { FetcherFetchOptions } from './StoredLRUCache'
@@ -211,7 +219,7 @@ export const createPoll = async (
 
   // console.log('Compiling poll', poll)
 
-  let pollFlags: bigint = extraFlags
+  let pollFlags: bigint = FLAG_ACTIVE | extraFlags
 
   if (publishVoters) pollFlags |= FLAG_PUBLISH_VOTERS
   if (publishVotes) pollFlags |= FLAG_PUBLISH_VOTES
