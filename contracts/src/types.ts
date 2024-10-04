@@ -12,25 +12,18 @@ export type AclOptionsAllowList = {
 
 export type AclOptionsXchain = {
   xchain: {
-    chainId: number;
-    blockHash: string;
-    address: string;
-    slot: number;
+    c: number; // chain Id
+    b: Uint8Array; // block hash
+    a: Uint8Array; // account / contract
+    s: number; // slot
   };
 };
 
-export type AclOptions = {
-  address: string;
-  options: AclOptionsToken | AclOptionsAllowAll | AclOptionsAllowList | AclOptionsXchain;
-};
-
-export type Poll = {
-  creator: string;
-  name: string;
-  description: string;
-  choices: string[];
-  acl: AclOptions;
-};
+export type AclOptions =
+  | AclOptionsToken
+  | AclOptionsAllowAll
+  | AclOptionsAllowList
+  | AclOptionsXchain;
 
 export type StorageProof = {
   key: string;

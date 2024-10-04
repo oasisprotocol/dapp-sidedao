@@ -13,8 +13,6 @@ const blackPermissions: PollPermissions = {
   proof: '',
   explanation: undefined,
   canVote: denyWithReason(NOT_CHECKED),
-  tokenInfo: undefined,
-  xChainOptions: undefined,
   canManage: false,
   error: '',
 }
@@ -49,8 +47,6 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined, onDashboard: 
         proof: '',
         explanation: '',
         canVote: true,
-        tokenInfo: undefined,
-        xChainOptions: undefined,
         canManage: false,
         error: '',
       })

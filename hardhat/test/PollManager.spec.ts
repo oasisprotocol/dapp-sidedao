@@ -9,6 +9,7 @@ import {
   decodeRlp,
   encodeRlp,
   getBytes,
+  hexlify,
   parseEther,
 } from 'ethers';
 
@@ -125,14 +126,14 @@ describe('PollManager', function () {
         numChoices: 4n,
         closeTimestamp: BigInt(Math.round(new Date().getTime()/1000) + 1),
         acl: acl_allowall_addr,
-        metadata: '',
+        metadata: new Uint8Array(),
       },
       {
         flags: 1n,
         numChoices: 3n,
         closeTimestamp: BigInt(Math.round(new Date().getTime()/1000) + 2),
         acl: acl_allowall_addr,
-        metadata: '',
+        metadata: new Uint8Array(),
       },
     ];
   });
@@ -162,7 +163,7 @@ describe('PollManager', function () {
 
       const x = ap_paginated.out_proposals[0].proposal.params;
       expect(x.flags).eq(p.flags);
-      expect(x.metadata).eq(p.metadata);
+      expect(x.metadata).eq(hexlify(p.metadata));
       expect(x.numChoices).eq(p.numChoices);
       expect(x.closeTimestamp).eq(p.closeTimestamp);
       expect(x.acl).eq(p.acl);
@@ -188,7 +189,7 @@ describe('PollManager', function () {
       pm,
       {
         flags: 0,
-        metadata: '',
+        metadata: new Uint8Array(),
         numChoices: 3n,
         closeTimestamp: 0n,
         acl: await acl_tokenholder.getAddress(),
@@ -249,7 +250,7 @@ describe('PollManager', function () {
       pm,
       {
         flags: 0,
-        metadata: '',
+        metadata: new Uint8Array(),
         numChoices: 3n,
         closeTimestamp: 0n,
         acl: await acl_storageproof.getAddress(),
@@ -306,7 +307,7 @@ describe('PollManager', function () {
       pm,
       {
         flags: 0,
-        metadata: '',
+        metadata: new Uint8Array(),
         numChoices: 3n,
         closeTimestamp: 0n,
         acl: await acl_allowall.getAddress(),
@@ -407,7 +408,7 @@ describe('PollManager', function () {
       pm,
       {
         flags: 0,
-        metadata: '',
+        metadata: new Uint8Array(),
         numChoices: 3n,
         closeTimestamp: 0n,
         acl: await acl_storageproof.getAddress(),

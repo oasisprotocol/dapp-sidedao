@@ -7,7 +7,7 @@ export type StatusUpdater = (status: string | undefined) => void
 /**
  * This data structure describes an ACL
  */
-export type ACL<Name, ConfigInputValues, Options extends AclOptions, Extra> = Choice<Name> & {
+export type ACL<Name, ConfigInputValues, Options extends AclOptions> = Choice<Name> & {
   /**
    * Estimated cost per vote
    *
@@ -19,6 +19,11 @@ export type ACL<Name, ConfigInputValues, Options extends AclOptions, Extra> = Ch
    * Specify the fields and values needed for configuring the ACL when creating a poll
    */
   useConfiguration: (selected: boolean) => { fields: FieldConfiguration; values: ConfigInputValues }
+
+  /**
+   * The address of the ACL contract to use
+   */
+  address: string
 
   /**
    * Compose the ACL options when creating a poll
@@ -51,13 +56,11 @@ export type ACL<Name, ConfigInputValues, Options extends AclOptions, Extra> = Ch
     proposalId: string,
     userAddress: string,
     options: Options,
-  ) => Promise<
-    { canVote: DecisionWithReason; explanation?: ReactNode; proof: BytesLike; error?: string } & Extra
-  >
+  ) => Promise<{ canVote: DecisionWithReason; explanation?: ReactNode; proof: BytesLike; error?: string }>
 }
 
-export function defineACL<Name, ConfigInputValues, Options extends AclOptions, Extra>(
-  acl: ACL<Name, ConfigInputValues, Options, Extra>,
-): ACL<Name, ConfigInputValues, Options, Extra> {
+export function defineACL<Name, ConfigInputValues, Options extends AclOptions>(
+  acl: ACL<Name, ConfigInputValues, Options>,
+): ACL<Name, ConfigInputValues, Options> {
   return acl
 }

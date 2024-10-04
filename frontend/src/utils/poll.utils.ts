@@ -1,6 +1,11 @@
-import { AbiCoder, BytesLike, getAddress, JsonRpcProvider, ParamType } from 'ethers'
+import { AbiCoder, BytesLike, getAddress, getBytes, hexlify, JsonRpcProvider, ParamType } from 'ethers'
 
-import { encode as cborEncode, decode as cborDecode } from 'cbor-web'
+// XXX: cborg module types can cause error:
+//    There are types at './dapp-sidedao/frontend/node_modules/cborg/types/cborg.d.ts',
+//    but this result could not be resolved when respecting package.json "exports".
+//    The 'cborg' library may need to update its package.json or typings.
+// @ts-ignore
+import { decode as cborDecode, encode as cborEncode } from 'cborg'
 
 import {
   chain_info,
@@ -10,7 +15,6 @@ import {
   guessStorageSlot,
   getNftContractType,
   ChainDefinition,
-  AclOptionsXchain,
   IPollACL__factory,
   TokenInfo,
   NFTInfo,
@@ -19,7 +23,7 @@ import {
 } from '@oasisprotocol/blockvote-contracts'
 export type { ContractType, NftType } from '@oasisprotocol/blockvote-contracts'
 export { isToken } from '@oasisprotocol/blockvote-contracts'
-import { FLAG_HIDDEN, FLAG_PUBLISH_VOTERS, FLAG_PUBLISH_VOTES, Poll, PollManager } from '../types'
+import { FLAG_HIDDEN, FLAG_PUBLISH_VOTERS, FLAG_PUBLISH_VOTES, Poll, PollManager, StoredPoll } from '../types'
 import { EthereumContext } from '../providers/EthereumContext'
 import { DecisionWithReason, denyWithReason } from '../components/InputFields'
 import { FetcherFetchOptions } from './StoredLRUCache'
@@ -128,6 +132,7 @@ export type CreatePollProps = {
   answers: string[]
   isHidden: boolean
   aclData: string
+  aclAddress: string
   aclOptions: AclOptions
   pollFlags: bigint
   subsidizeAmount: bigint | undefined
@@ -139,19 +144,36 @@ export type CreatePollProps = {
 const CURRENT_ENCODING_VERSION = 0
 
 const encodePollMetadata = (poll: Poll): Uint8Array => {
-  const encoded = cborEncode({ v: CURRENT_ENCODING_VERSION, data: poll })
+  const storedPoll: StoredPoll = {
+    c: getBytes(poll.creator),
+    n: poll.name,
+    d: poll.description,
+    o: poll.choices,
+    a: poll.acl,
+  }
+
+  const encoded = cborEncode([CURRENT_ENCODING_VERSION, storedPoll])
   // console.log('Encoded poll data', encoded)
   return encoded
 }
 
 export const decodePollMetadata = (metadata: string): Poll => {
-  const { v, data } = cborDecode(metadata.substring(2), { preferWeb: true, encoding: 'hex' })
+  const [v, storedPoll] = cborDecode(getBytes(metadata))
 
   if (typeof v !== 'number') throw new Error('Unknown poll data format')
 
+  let poll: Poll | undefined
+
   switch (v as number) {
     case CURRENT_ENCODING_VERSION:
-      return data as Poll
+      poll = {
+        creator: hexlify(storedPoll.c),
+        name: storedPoll.n,
+        description: storedPoll.d,
+        choices: storedPoll.o,
+        acl: storedPoll.a,
+      }
+      return poll
     default:
       throw new Error(`Unrecognized poll data format version: ${v}`)
   }
@@ -167,6 +189,7 @@ export const createPoll = async (
     question,
     description,
     answers,
+    aclAddress,
     aclData,
     aclOptions,
     pollFlags: extraFlags,
@@ -198,7 +221,7 @@ export const createPoll = async (
     metadata: encodePollMetadata(poll),
     numChoices: answers.length,
     closeTimestamp: completionTime ? Math.round(completionTime.getTime() / 1000) : 0,
-    acl: aclOptions.address,
+    acl: aclAddress,
     flags: pollFlags,
   }
 
@@ -262,8 +285,6 @@ export type PollPermissions = {
   explanation: ReactNode
   canVote: DecisionWithReason
   canManage: boolean
-  tokenInfo?: TokenInfo | NFTInfo | undefined
-  xChainOptions?: AclOptionsXchain | undefined
   error: string
 }
 
@@ -298,8 +319,6 @@ export const checkPollPermission = async (
       canVote: denyWithReason(
         'this poll has some unknown access control settings. (Poll created by newer version of software?)',
       ),
-      tokenInfo: undefined,
-      xChainOptions: undefined,
       error: '',
       canManage,
     }

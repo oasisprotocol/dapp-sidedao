@@ -14,6 +14,7 @@ const splitAddresses = (addressSoup: string): string[] =>
 
 export const allowList = defineACL({
   value: 'acl_allowList',
+  address: VITE_CONTRACT_ACL_VOTERALLOWLIST,
   label: 'Address Whitelist',
   costEstimation: 0.1,
   description: 'You can specify a list of addresses that are allowed to vote.',
@@ -72,17 +73,12 @@ export const allowList = defineACL({
     if (!props.addresses) throw new Error('Internal errors: parameter mismatch, addresses missing.')
     return {
       data: abiEncode(['address[]'], [props.addresses]),
-      options: {
-        address: VITE_CONTRACT_ACL_VOTERALLOWLIST,
-        options: {
-          allowList: true,
-        },
-      },
+      options: { allowList: true },
       flags: 0n,
     }
   },
 
-  isThisMine: options => 'allowList' in options.options,
+  isThisMine: options => 'allowList' in options,
 
   checkPermission: async (pollACL, daoAddress, proposalId, userAddress) => {
     const proof = new Uint8Array()

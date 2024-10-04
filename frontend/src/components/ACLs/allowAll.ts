@@ -4,6 +4,7 @@ import { denyWithReason, useOneOfField } from '../InputFields'
 
 export const allowAll = defineACL({
   value: 'acl_allowAll',
+  address: VITE_CONTRACT_ACL_ALLOWALL,
   label: 'Everybody',
   costEstimation: 0.1,
   useConfiguration: active => {
@@ -25,17 +26,13 @@ export const allowAll = defineACL({
       values: undefined,
     }
   },
+
   getAclOptions: () => ({
     data: '0x', // Empty bytes is passed
-    options: {
-      address: VITE_CONTRACT_ACL_ALLOWALL,
-      options: {
-        allowAll: true,
-      },
-    },
+    options: { allowAll: true },
     flags: 0n,
   }),
-  isThisMine: options => 'allowAll' in options.options,
+  isThisMine: options => 'allowAll' in options,
 
   checkPermission: async (pollACL, daoAddress, proposalId, userAddress) => {
     const proof = new Uint8Array()

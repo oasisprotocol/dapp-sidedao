@@ -12,6 +12,7 @@ import { FLAG_WEIGHT_LOG10, FLAG_WEIGHT_ONE } from '../../types'
 
 export const tokenHolder = defineACL({
   value: 'acl_tokenHolder',
+  address: VITE_CONTRACT_ACL_TOKENHOLDER,
   costEstimation: 0.2,
   label: `Active Token or NFT balance on ${configuredNetworkName}`,
   description:
@@ -115,18 +116,15 @@ export const tokenHolder = defineACL({
     if (!props.tokenAddress) throw new Error('Internal errors: parameter mismatch, addresses missing.')
     return {
       data: abiEncode(['address'], [props.tokenAddress]),
-      options: {
-        address: VITE_CONTRACT_ACL_TOKENHOLDER,
-        options: { token: props.tokenAddress },
-      },
+      options: { token: props.tokenAddress },
       flags: props.flags,
     }
   },
 
-  isThisMine: options => 'token' in options.options,
+  isThisMine: options => 'token' in options,
 
   checkPermission: async (pollACL, daoAddress, proposalId, userAddress, options) => {
-    const tokenAddress = options.options.token
+    const tokenAddress = options.token
     const tokenInfo = await getLocalContractDetails(tokenAddress)
     const url = configuredExplorerUrl
       ? StringUtils.getTokenUrl(configuredExplorerUrl, tokenAddress)

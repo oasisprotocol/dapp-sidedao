@@ -31,13 +31,14 @@ import {
 import type { TokenInfo, NFTInfo } from '@oasisprotocol/blockvote-contracts'
 import { designDecisions, VITE_CONTRACT_ACL_STORAGEPROOF } from '../../constants/config'
 import classes from './index.module.css'
-import { BytesLike, getUint } from 'ethers'
+import { BytesLike, getBytes, getUint, hexlify } from 'ethers'
 import { ReactNode, useMemo } from 'react'
 import { StringUtils } from '../../utils/string.utils'
 import { FLAG_WEIGHT_LOG10, FLAG_WEIGHT_ONE } from '../../types'
 
 export const xchain = defineACL({
   value: 'acl_xchain',
+  address: VITE_CONTRACT_ACL_STORAGEPROOF,
   label: 'Token Snapshot voting',
   costEstimation: 0.2,
   description: 'take a snapshot of token or NFT balances from another chain',
@@ -289,6 +290,7 @@ export const xchain = defineACL({
       },
     }
   },
+
   getAclOptions: async ({ chainId, contractAddress, slotNumber, blockHash, flags }, updateStatus) => {
     const showStatus = updateStatus ?? ((message?: string | undefined) => console.log(message))
     const rpc = xchainRPC(chainId)
@@ -301,10 +303,10 @@ export const xchain = defineACL({
 
     const options: AclOptionsXchain = {
       xchain: {
-        chainId,
-        blockHash,
-        address: contractAddress,
-        slot: parseInt(slotNumber),
+        c: chainId,
+        b: getBytes(blockHash),
+        a: getBytes(contractAddress),
+        s: parseInt(slotNumber),
       },
     }
 
@@ -313,26 +315,25 @@ export const xchain = defineACL({
         ['tuple(tuple(bytes32,address,uint256),bytes,bytes)'],
         [[[blockHash, contractAddress, slotNumber], headerRlpBytes, rlpAccountProof]],
       ),
-      options: {
-        address: VITE_CONTRACT_ACL_STORAGEPROOF,
-        options,
-      },
+      options,
       flags,
     }
   },
 
-  isThisMine: options => 'xchain' in options.options,
+  isThisMine: options => 'xchain' in options,
 
   checkPermission: async (pollACL, daoAddress, proposalId, userAddress, options) => {
-    const xChainOptions = options.options
+    const { xchain } = options
+    const chainId = xchain.c
+    const blockHash = hexlify(xchain.b)
+    const tokenAddress = hexlify(xchain.a)
+    const slot = xchain.s
+
     let explanation: ReactNode = ''
     let error = ''
     let proof: BytesLike = ''
     let tokenInfo: TokenInfo | NFTInfo | undefined
     let canVote: DecisionWithReason = true
-    const {
-      xchain: { chainId, blockHash, address: tokenAddress, slot },
-    } = xChainOptions
     const provider = xchainRPC(chainId)
     const chainDefinition = getChainDefinition(chainId)
 
@@ -342,8 +343,6 @@ export const xchain = defineACL({
         explanation: 'This poll is invalid, since it references and unknown chain.',
         error,
         proof,
-        tokenInfo,
-        xChainOptions,
       }
     }
 
@@ -407,6 +406,6 @@ export const xchain = defineACL({
       console.error('proof:', proof)
       canVote = denyWithReason(`there was a technical problem verifying your permissions`)
     }
-    return { canVote, explanation, error, proof, tokenInfo, xChainOptions }
+    return { canVote, explanation, error, proof }
   },
 } as const)
