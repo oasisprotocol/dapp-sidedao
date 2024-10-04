@@ -34,14 +34,6 @@ contract AllowAllACL is IPollACL, IPollManagerACL
         // Do nothing
     }
 
-    function canManagePoll(address, bytes32, address)
-        external pure
-        returns(bool)
-    {
-        // Anyone can manage any poll
-        return true;
-    }
-
     function canVoteOnPoll(address, bytes32, address, bytes calldata)
         external pure
         returns(uint)

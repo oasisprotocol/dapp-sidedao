@@ -17,9 +17,6 @@ interface IPollACL is IERC165 {
 
     function onPollClosed(bytes32 proposalId) external;
 
-    // Can a given user manage poll (e.g. close the poll, add eligible voters).
-    function canManagePoll(address dao, bytes32 proposalId, address user) external view returns(bool);
-
     // Is a given user eligible voter for the given poll.
     // Returns the weight of their votes, 0 if they're not allowed to vote!
     function canVoteOnPoll(address dao, bytes32 proposalId, address user, bytes calldata data) external view returns(uint);
