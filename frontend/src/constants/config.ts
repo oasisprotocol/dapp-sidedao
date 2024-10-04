@@ -20,7 +20,7 @@ const {
 } = import.meta.env
 
 const VITE_NETWORK_BIGINT: bigint = BigInt(ENV_VITE_NETWORK) ?? 0n
-const VITE_NETWORK_NUMBER: number = Number(VITE_NETWORK_BIGINT)
+const VITE_NETWORK_NUMBER = Number(VITE_NETWORK_BIGINT)
 
 const configuredChain = chain_info[VITE_NETWORK_NUMBER]
 const configuredExplorer = (configuredChain.explorers ?? [])[0]
@@ -97,7 +97,7 @@ export const appRootUrl = 'http://vote.oasis.io'
 
 export const allowedAnimations = [
   'dashboardNoPolls', // No poll indicator appearing on the dashboard
-  'dashboardPollCards', // Poll cards appearing and disappearing on search etc
+  'dashboardPollCards', // Poll cards appearing and disappearing on search etc.
   // 'conditionalField', // A field is conditionally hidden or shown
   'fieldStatus', // Field validation pending, error, correct status indication
   'fieldValidationErrors', // Field validation errors

@@ -9,9 +9,11 @@ const problemClass: Record<ProblemLevel, string> = {
   warning: classes.fieldWarning,
 }
 
+type Remover = (id: string) => void
+
 export const ProblemDisplay: FC<{
   problem: Problem
-  onRemove: (id: string) => void
+  onRemove: Remover
 }> = forwardRef(({ problem, onRemove }, ref: ForwardedRef<HTMLDivElement>) => {
   // console.log('Displaying problem', problem)
   return (
@@ -37,7 +39,7 @@ export const ProblemDisplay: FC<{
 
 export const ProblemList: FC<{
   problems: Problem[] | undefined
-  onRemove: (id: string) => void
+  onRemove: () => void
 }> = ({ problems = [], onRemove }) => (
   <AnimatePresence mode={'wait'} initial={false}>
     {problems.map(p => (

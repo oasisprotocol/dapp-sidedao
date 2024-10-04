@@ -115,7 +115,7 @@ type SavedData = {
   records: [string, LRUCache.Entry<string>][]
 }
 
-export class StoredLRUCache<K, V extends {}, FC> {
+export class StoredLRUCache<K, V extends object, FC> {
   readonly #storageItemName: string
   readonly #storageFormat = 2
   readonly #cache: LRUCache<string, V, FC>

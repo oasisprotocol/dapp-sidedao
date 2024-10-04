@@ -46,6 +46,8 @@ export type VisibilityReport = {
   visible: boolean
 }
 
+export type VisibilityReporter = (report: VisibilityReport) => void
+
 type VisibilityInCircumstances = Record<Column, Set<string>>
 
 /**

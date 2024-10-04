@@ -95,7 +95,7 @@ export const CompletedPoll: FC<
       {aclExplanation && (
         <>
           <h4>{aclExplanation}</h4>
-          {getVerdict(aclCanVote, false) ? <h4>You had access.</h4> : <h4>You didn't have access.</h4>}
+          {getVerdict(aclCanVote, false) ? <h4>You had access.</h4> : <h4>You didn&apos;t have access.</h4>}
         </>
       )}
       {!!votes?.out_count && <VoteBrowser choices={choices} votes={votes} totalVotes={totalVotes} />}

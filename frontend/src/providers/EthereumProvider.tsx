@@ -189,7 +189,7 @@ export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => 
 
     const chain = chain_info[network]
     if (!chain) {
-      throw new Error('Unknown network ' + network)
+      throw new Error(`Unknown network ${network}`)
     }
 
     await ethProvider.request({
