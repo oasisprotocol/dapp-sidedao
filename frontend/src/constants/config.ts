@@ -1,6 +1,4 @@
-// EIP-3085: wallet_addEthereumChain RPC Method
-import { ExtendedPoll, FLAG_ACTIVE } from '../types'
-import { randomchoice, chain_info } from '@oasisprotocol/blockvote-contracts'
+import { chain_info } from '@oasisprotocol/blockvote-contracts'
 
 export const METAMASK_HOME_PAGE_URL = 'https://metamask.io/'
 // export const GITHUB_REPOSITORY_URL = 'https://github.com/oasisprotocol/dapp-votee/'
@@ -51,72 +49,6 @@ export {
 }
 
 export const MIN_COMPLETION_TIME_MINUTES = 3
-
-export const demoPoll1 = {
-  id: 'demo',
-  proposal: {
-    id: '0xdemo',
-    params: {
-      flags: FLAG_ACTIVE,
-    },
-  },
-  ipfsParams: {
-    creator: 'demo',
-    name: 'What is your favorite form of investment?',
-    description: '',
-    choices: ['US dollar', 'Physical gold', 'Crypto'],
-  },
-} as ExtendedPoll
-
-export const demoPoll2 = {
-  id: 'demo',
-  proposal: {
-    id: '0xdemo',
-    params: {
-      flags: FLAG_ACTIVE,
-    },
-  },
-  ipfsParams: {
-    creator: 'demo',
-    name: 'What is your greatest fear?',
-    description: '',
-    choices: ['Climate change', 'Deadly pandemics', 'AI apocalypse', 'Dystopia and dictatorship'],
-  },
-} as ExtendedPoll
-
-export const demoPoll3 = {
-  id: 'demo',
-  proposal: {
-    id: '0xdemo',
-    params: {
-      flags: FLAG_ACTIVE,
-    },
-  },
-  ipfsParams: {
-    creator: 'demo',
-    name: 'What is your favorite movie?',
-    description: '',
-    choices: ['Terminator', 'The Matrix', 'Tron', 'The Godfather'],
-  },
-} as ExtendedPoll
-
-export const demoPoll4 = {
-  id: 'demo',
-  proposal: {
-    id: '0xdemo',
-    params: {
-      flags: FLAG_ACTIVE,
-    },
-  },
-  ipfsParams: {
-    creator: 'demo',
-    name: 'How should the change the laws?',
-    description: '',
-    choices: ['Ban strong cryptography', 'Ban blockchains', "Withdraw the FED's monopoly on money printing"],
-  },
-} as ExtendedPoll
-
-export const getDemoPoll = (): ExtendedPoll => randomchoice([demoPoll1, demoPoll2, demoPoll3, demoPoll4])
 
 export const demoSettings = {
   timeForVoting: 610,

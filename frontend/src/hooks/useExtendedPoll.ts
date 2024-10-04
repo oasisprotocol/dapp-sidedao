@@ -11,7 +11,8 @@ import {
   Poll,
 } from '../types'
 import { useEffect, useMemo, useState } from 'react'
-import { dashboard, demoSettings, getDemoPoll } from '../constants/config'
+import { dashboard, demoSettings } from '../constants/config'
+import { getDemoPoll } from '../constants/demoPolls'
 import { usePollGaslessStatus } from './usePollGaslessStatus'
 import { usePollPermissions } from './usePollPermissions'
 import { useEthereum } from './useEthereum'
