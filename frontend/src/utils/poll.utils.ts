@@ -253,11 +253,11 @@ export const createPoll = async (
   updateStatus('Created poll')
   if (isHidden) {
     const proposalId = await pollManager.getProposalId(proposalParams, aclData, creator)
-    // console.log('Hidden proposal id is:', proposalId)
+    console.log('Created poll with hidden (predicted) proposal id is:', proposalId)
     return proposalId
   } else {
     const proposalId = receipt.logs[0].data
-    // console.log('doCreatePoll: Proposal ID', proposalId);
+    console.log('doCreatePoll: Proposal ID is', proposalId)
     return proposalId
   }
 }
