@@ -1,4 +1,4 @@
-import { defineACL } from './common'
+import { CheckPermissionResults, defineACL } from './common'
 import {
   addMockValidation,
   Choice,
@@ -32,9 +32,11 @@ import type { TokenInfo, NFTInfo } from '@oasisprotocol/blockvote-contracts'
 import { designDecisions, VITE_CONTRACT_ACL_STORAGEPROOF } from '../../constants/config'
 import classes from './index.module.css'
 import { BytesLike, getBytes, getUint, hexlify } from 'ethers'
-import { ReactNode, useMemo } from 'react'
+import { useMemo } from 'react'
 import { StringUtils } from '../../utils/string.utils'
 import { FLAG_WEIGHT_LOG10, FLAG_WEIGHT_ONE } from '../../types'
+import { renderMarkdown } from '../Markdown'
+import { getLink } from '../../utils/markdown.utils'
 
 export const xchain = defineACL({
   value: 'acl_xchain',
@@ -132,14 +134,7 @@ export const xchain = defineACL({
       label: `${isToken(contractType.value as any) ? 'Token' : 'NFT'}:`,
       initialValue: '',
       compact: true,
-      renderer: name =>
-        tokenUrl ? (
-          <a href={tokenUrl} target={'_blank'}>
-            {name}
-          </a>
-        ) : (
-          name
-        ),
+      renderer: name => renderMarkdown(getLink({ label: name, href: tokenUrl })),
       ...addMockValidation,
     })
 
@@ -322,14 +317,20 @@ export const xchain = defineACL({
 
   isThisMine: options => 'xchain' in options,
 
-  checkPermission: async (pollACL, daoAddress, proposalId, userAddress, options) => {
+  checkPermission: async (
+    pollACL,
+    daoAddress,
+    proposalId,
+    userAddress,
+    options,
+  ): Promise<CheckPermissionResults> => {
     const { xchain } = options
     const chainId = xchain.c
     const blockHash = hexlify(xchain.b)
     const tokenAddress = hexlify(xchain.a)
     const slot = xchain.s
 
-    let explanation: ReactNode = ''
+    let explanation = ''
     let error = ''
     let proof: BytesLike = ''
     let tokenInfo: TokenInfo | NFTInfo | undefined
@@ -353,21 +354,7 @@ export const xchain = defineACL({
     try {
       tokenInfo = await getContractDetails(chainId, tokenAddress)
       if (!tokenInfo) throw new Error("Can't load token details")
-      explanation = tokenUrl ? (
-        <span>
-          This poll is only for those who have hold{' '}
-          <a href={tokenUrl} target={'_blank'}>
-            {tokenInfo?.name ?? StringUtils.truncateAddress(tokenInfo.addr)}
-          </a>{' '}
-          on{' '}
-          <a href={explorerUrl} target={'_blank'}>
-            {chainDefinition.name}
-          </a>{' '}
-          when the poll was created.
-        </span>
-      ) : (
-        `This poll is only for those who have hold ${tokenInfo?.name} on ${chainDefinition.name} when the poll was created.`
-      )
+      explanation = `This poll is only for those who have hold ${getLink({ label: tokenInfo?.name ?? StringUtils.truncateAddress(tokenInfo.addr), href: tokenUrl })} on ${getLink({ label: chainDefinition.name, href: explorerUrl })} when the poll was created.`
       let isBalancePositive = false
       const holderBalance = getUint(
         await fetchStorageValue(provider, blockHash, tokenAddress, slot, userAddress),
@@ -383,20 +370,7 @@ export const xchain = defineACL({
       }
       if (!isBalancePositive) {
         canVote = denyWithReason(
-          tokenUrl ? (
-            <span>
-              you don&apos;t hold any{' '}
-              <a href={tokenUrl} target={'_blank'}>
-                {tokenInfo.name}
-              </a>{' '}
-              on{' '}
-              <a href={explorerUrl} target={'_blank'}>
-                {chainDefinition.name}
-              </a>
-            </span>
-          ) : (
-            `you don't hold any ${tokenInfo.name} tokens on ${chainDefinition.name}`
-          ),
+          `you don't hold any ${getLink({ label: tokenInfo.name ?? StringUtils.truncateAddress(tokenAddress), href: tokenUrl })} on ${getLink({ label: chainDefinition.name, href: explorerUrl })}`,
         )
       }
     } catch (e) {

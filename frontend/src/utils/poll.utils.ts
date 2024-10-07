@@ -29,6 +29,7 @@ import {
   FLAG_HIDDEN,
   FLAG_PUBLISH_VOTERS,
   FLAG_PUBLISH_VOTES,
+  MarkdownCode,
   Poll,
   PollManager,
   StoredPoll,
@@ -38,7 +39,6 @@ import { DecisionWithReason, denyWithReason } from '../components/InputFields'
 import { FetcherFetchOptions } from './StoredLRUCache'
 import { findACLForOptions } from '../components/ACLs'
 import { VITE_NETWORK_NUMBER } from '../constants/config'
-import { ReactNode } from 'react'
 
 export { parseEther } from 'ethers'
 
@@ -288,7 +288,7 @@ export const destroyPoll = async (eth: EthereumContext, pollManager: PollManager
 
 export type PollPermissions = {
   proof: BytesLike
-  explanation: ReactNode
+  explanation: MarkdownCode | undefined
   canVote: DecisionWithReason
   error: string
 }

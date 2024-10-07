@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   AllProblems,
   ValidatorControls,
@@ -14,6 +14,7 @@ import {
   ValidatorFunction,
   wrapProblem,
 } from './util'
+import { MarkdownCode } from '../../types'
 
 type ValidatorBundle<DataType> = SingleOrArray<undefined | ValidatorFunction<DataType>>
 
@@ -159,7 +160,7 @@ export type InputFieldControls<DataType> = Pick<
   type: string
   visible: boolean
   enabled: boolean
-  whyDisabled?: ReactNode
+  whyDisabled?: MarkdownCode
   containerClassName?: string
   value: DataType
   setValue: (value: DataType) => void

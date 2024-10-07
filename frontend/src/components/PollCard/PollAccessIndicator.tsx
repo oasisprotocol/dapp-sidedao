@@ -1,4 +1,5 @@
-import { FC, ReactNode } from 'react'
+import { FC } from 'react'
+import { MarkdownCode } from '../../types'
 import { OpenPollIcon } from '../icons/OpenPollIcon'
 import { RestrictedPollIcon } from '../icons/RestrictedPollIcon'
 import { SpinnerIcon } from '../icons/SpinnerIcon'
@@ -14,7 +15,7 @@ export const PollAccessIndicator: FC<{
   hideRestrictedNoAccess?: boolean
   isPending: boolean
   isBroken: boolean
-  explanation: ReactNode
+  explanation: MarkdownCode | undefined
   hasAccess: boolean
   isCompleted: boolean
   isMine: boolean | undefined

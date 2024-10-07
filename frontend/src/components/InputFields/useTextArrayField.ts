@@ -15,6 +15,7 @@ import {
   flatten,
 } from './util'
 import { useState } from 'react'
+import { MarkdownCode } from '../../types'
 
 /**
  * Parameters for defining an input field that accepts a list of strings
@@ -138,11 +139,11 @@ export type TextArrayControls = InputFieldControls<string[]> & {
   placeholders: string[]
 
   canAddItem: boolean
-  addItemLabel: string
+  addItemLabel: MarkdownCode
   addItem: () => void
 
   canRemoveItem: (index: number) => boolean
-  removeItemLabel: string
+  removeItemLabel: MarkdownCode
   removeItem: (index: number) => void
 
   pendingValidationIndex: number | undefined

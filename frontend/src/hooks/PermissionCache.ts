@@ -10,14 +10,6 @@ import {
   PollPermissions,
 } from '../utils/poll.utils'
 import { StoredLRUCache } from '../utils/StoredLRUCache'
-import { DecisionWithReason } from '../components/InputFields'
-import { deserializeReactElement } from '../utils/react.utils'
-
-const deserializeDecision = (input: any): DecisionWithReason => {
-  return typeof input === 'object'
-    ? { verdict: input.vertict, reason: deserializeReactElement(input.reason) }
-    : input
-}
 
 export abstract class PermissionCache {
   static #cache = new StoredLRUCache<CheckPermissionInputs, PollPermissions, CheckPermissionContext>({
@@ -31,7 +23,7 @@ export abstract class PermissionCache {
     ],
     // debug: ['load', 'save'],
     storageKey: 'blockvote.pollPermissions2',
-    dataVersion: 9,
+    dataVersion: 10,
     transformValues: {
       encode: data => JSON.stringify(data, bigNumberify.stringify),
       decode: (stringData): PollPermissions => {
@@ -39,8 +31,6 @@ export abstract class PermissionCache {
         return {
           ...rawData,
           proof: new Uint8Array(Object.values(rawData.proof)),
-          canVote: deserializeDecision(rawData.canVote),
-          explanation: deserializeReactElement(rawData.explanation),
         }
       },
     },

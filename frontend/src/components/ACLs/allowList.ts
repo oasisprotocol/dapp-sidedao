@@ -1,4 +1,4 @@
-import { defineACL } from './common'
+import { CheckPermissionResults, defineACL } from './common'
 import { designDecisions, VITE_CONTRACT_ACL_VOTERALLOWLIST } from '../../constants/config'
 import { abiEncode, isValidAddress } from '../../utils/poll.utils'
 import { denyWithReason, useOneOfField, useTextArrayField } from '../InputFields'
@@ -80,7 +80,7 @@ export const allowList = defineACL({
 
   isThisMine: options => 'allowList' in options,
 
-  checkPermission: async (pollACL, daoAddress, proposalId, userAddress) => {
+  checkPermission: async (pollACL, daoAddress, proposalId, userAddress): Promise<CheckPermissionResults> => {
     const proof = new Uint8Array()
     const explanation = 'This poll is only for a predefined list of addresses.'
     const result = 0n !== (await pollACL.canVoteOnPoll(daoAddress, proposalId, userAddress, proof))

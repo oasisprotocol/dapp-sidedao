@@ -1,4 +1,4 @@
-import React, { FC, ReactNode, useCallback } from 'react'
+import React, { FC, useCallback } from 'react'
 import { TextArrayControls } from './useTextArrayField'
 import classes from './index.module.css'
 import { StringUtils } from '../../utils/string.utils'
@@ -11,9 +11,11 @@ import { WithLabelAndDescription } from './WithLabelAndDescription'
 import { WithValidation } from './WithValidation'
 import { MotionDiv } from '../Animations'
 import { MaybeWithTooltip } from '../Tooltip/MaybeWithTooltip'
+import { MarkdownCode } from '../../types'
+import { MarkdownBlock } from '../Markdown'
 
 const TrashIcon: FC<{
-  label: ReactNode
+  label: MarkdownCode | undefined
   remove: () => void
   enabled?: boolean
 }> = ({ label, remove, enabled }) => {
@@ -35,10 +37,10 @@ const TrashIcon: FC<{
 }
 
 const AddIcon: FC<{
-  label: string
+  label: MarkdownCode
   add: () => void
   enabled?: boolean
-  overlay?: string | undefined
+  overlay?: MarkdownCode | undefined
 }> = ({ label, add, enabled, overlay }) => {
   const handleClick = useCallback(() => {
     if (enabled) add()
@@ -59,7 +61,7 @@ const AddIcon: FC<{
             </clipPath>
           </defs>
         </svg>
-        {label}
+        <MarkdownBlock code={label} />
       </div>
     </MaybeWithTooltip>
   )
