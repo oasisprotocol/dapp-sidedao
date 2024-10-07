@@ -326,8 +326,8 @@ export const xchain = defineACL({
   ): Promise<CheckPermissionResults> => {
     const { xchain } = options
     const chainId = xchain.c
-    const blockHash = hexlify(xchain.b)
-    const tokenAddress = hexlify(xchain.a)
+    const blockHash = hexlify(Uint8Array.from(Object.values(xchain.b)))
+    const tokenAddress = hexlify(Uint8Array.from(Object.values(xchain.a)))
     const slot = xchain.s
 
     let explanation = ''
