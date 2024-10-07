@@ -9,6 +9,7 @@ interface ImportMetaEnv {
   VITE_CONTRACT_POLLMANAGER_ACL: string
   VITE_REACT_APP_BUILD_VERSION: string
   VITE_REACT_APP_BUILD_DATETIME: string
+  VOTE_APP_ROOT_URL: string
 }
 
 interface ImportMeta {
