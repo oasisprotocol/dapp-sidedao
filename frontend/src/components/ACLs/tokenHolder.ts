@@ -44,7 +44,7 @@ export const tokenHolder = defineACL({
     })
 
     const tokenUrl = configuredExplorerUrl
-      ? StringUtils.getTokenUrl(configuredExplorerUrl, contractAddress.value)
+      ? StringUtils.getAccountUrl(configuredExplorerUrl, contractAddress.value)
       : undefined
 
     const hasValidSapphireTokenAddress =
@@ -128,7 +128,7 @@ export const tokenHolder = defineACL({
     const tokenAddress = options.token
     const tokenInfo = await getLocalContractDetails(tokenAddress)
     const url = configuredExplorerUrl
-      ? StringUtils.getTokenUrl(configuredExplorerUrl, tokenAddress)
+      ? StringUtils.getAccountUrl(configuredExplorerUrl, tokenAddress)
       : undefined
     const explanation = `You need to hold some ${getLink({ label: tokenInfo?.name ?? StringUtils.truncateAddress(tokenAddress), href: url })} on ${getLink({ label: configuredNetworkName, href: configuredExplorerUrl })} to vote.`
     const proof = new Uint8Array()

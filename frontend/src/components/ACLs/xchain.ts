@@ -99,7 +99,7 @@ export const xchain = defineACL({
       },
     })
 
-    const tokenUrl = explorerUrl ? StringUtils.getTokenUrl(explorerUrl, contractAddress.value) : undefined
+    const tokenUrl = explorerUrl ? StringUtils.getAccountUrl(explorerUrl, contractAddress.value) : undefined
 
     const hasValidTokenAddress =
       contractAddress.visible && contractAddress.isValidated && !contractAddress.hasProblems
@@ -350,7 +350,7 @@ export const xchain = defineACL({
     const explorer = (chainDefinition.explorers ?? [])[0]
     const explorerUrl = explorer?.url
 
-    const tokenUrl = explorerUrl ? StringUtils.getTokenUrl(explorerUrl, tokenAddress) : undefined
+    const tokenUrl = explorerUrl ? StringUtils.getAccountUrl(explorerUrl, tokenAddress) : undefined
     try {
       tokenInfo = await getContractDetails(chainId, tokenAddress)
       if (!tokenInfo) throw new Error("Can't load token details")
