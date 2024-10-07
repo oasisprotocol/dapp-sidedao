@@ -17,6 +17,7 @@ const {
   VITE_PINATA_JWT,
   VITE_IPFS_GATEWAY,
   VITE_CONTRACT_GASLESSVOTING,
+  VITE_APP_ROOT_URL,
 } = import.meta.env
 
 const VITE_NETWORK_BIGINT: bigint = BigInt(ENV_VITE_NETWORK) ?? 0n
@@ -93,7 +94,7 @@ export const appName = 'Oasis Blockvote'
 export const appNameAndTagline = 'Oasis Blockvote, a poll creation tool for your DAO'
 export const appDescription =
   'Create polls for everyone or just your group, with public results but cryptographically secure and private votes.'
-export const appRootUrl = 'http://vote.oasis.io'
+export const appRootUrl = VITE_APP_ROOT_URL
 
 export const allowedAnimations = [
   'dashboardNoPolls', // No poll indicator appearing on the dashboard
