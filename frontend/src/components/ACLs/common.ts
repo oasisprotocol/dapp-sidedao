@@ -1,8 +1,16 @@
 import { Choice, DecisionWithReason, FieldConfiguration } from '../InputFields'
 import { AclOptions, IPollACL } from '@oasisprotocol/blockvote-contracts'
 import { BytesLike } from 'ethers'
-import { ReactNode } from 'react'
+import { MarkdownCode } from '../../types'
+
 export type StatusUpdater = (status: string | undefined) => void
+
+export type CheckPermissionResults = {
+  canVote: DecisionWithReason
+  explanation?: MarkdownCode
+  proof: BytesLike
+  error?: string
+}
 
 /**
  * This data structure describes an ACL
@@ -56,7 +64,7 @@ export type ACL<Name, ConfigInputValues, Options extends AclOptions> = Choice<Na
     proposalId: string,
     userAddress: string,
     options: Options,
-  ) => Promise<{ canVote: DecisionWithReason; explanation?: ReactNode; proof: BytesLike; error?: string }>
+  ) => Promise<CheckPermissionResults>
 }
 
 export function defineACL<Name, ConfigInputValues, Options extends AclOptions>(

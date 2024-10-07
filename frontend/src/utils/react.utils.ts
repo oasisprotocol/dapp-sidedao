@@ -1,5 +1,4 @@
-import React, { ReactNode, useEffect, useRef } from 'react'
-import { getAsArray } from '../components/InputFields'
+import { useEffect, useRef } from 'react'
 
 const usePrevious = (value: any, initialValue: any) => {
   const ref = useRef(initialValue)
@@ -35,14 +34,4 @@ export const useEffectDebugger = (effectHook: any, dependencies: any, dependency
   }
 
   useEffect(effectHook, dependencies)
-}
-
-export const deserializeReactElement = (input: any, key?: string): ReactNode => {
-  if (typeof input === 'string') return input
-  const { children = [], ...props } = input.props
-  return React.createElement(
-    input.type || 'span',
-    { ...props, key },
-    getAsArray(children).map((c, index) => deserializeReactElement(c, `child${index}`)),
-  )
 }

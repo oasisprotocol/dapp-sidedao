@@ -1,4 +1,4 @@
-import { defineACL } from './common'
+import { CheckPermissionResults, defineACL } from './common'
 import { DecisionWithReason, denyWithReason, useLabel, useOneOfField, useTextField } from '../InputFields'
 import { abiEncode, getLocalContractDetails, isValidAddress } from '../../utils/poll.utils'
 import {
@@ -9,6 +9,8 @@ import {
 } from '../../constants/config'
 import { StringUtils } from '../../utils/string.utils'
 import { FLAG_WEIGHT_LOG10, FLAG_WEIGHT_ONE } from '../../types'
+import { renderMarkdown } from '../Markdown'
+import { getLink } from '../../utils/markdown.utils'
 
 export const tokenHolder = defineACL({
   value: 'acl_tokenHolder',
@@ -53,14 +55,7 @@ export const tokenHolder = defineACL({
       visible: hasValidSapphireTokenAddress,
       label: 'Selected token:',
       initialValue: '',
-      renderer: name =>
-        tokenUrl ? (
-          <a href={tokenUrl} target={'_blank'}>
-            {name}
-          </a>
-        ) : (
-          name
-        ),
+      renderer: name => renderMarkdown(getLink({ label: name, href: tokenUrl })),
     })
 
     const tokenSymbol = useLabel({
@@ -123,27 +118,19 @@ export const tokenHolder = defineACL({
 
   isThisMine: options => 'token' in options,
 
-  checkPermission: async (pollACL, daoAddress, proposalId, userAddress, options) => {
+  checkPermission: async (
+    pollACL,
+    daoAddress,
+    proposalId,
+    userAddress,
+    options,
+  ): Promise<CheckPermissionResults> => {
     const tokenAddress = options.token
     const tokenInfo = await getLocalContractDetails(tokenAddress)
     const url = configuredExplorerUrl
       ? StringUtils.getTokenUrl(configuredExplorerUrl, tokenAddress)
       : undefined
-    const explanation = url ? (
-      <span>
-        You need to hold some{' '}
-        <a href={url} target={'_blank'}>
-          {tokenInfo?.name ?? 'specific'}
-        </a>{' '}
-        (on the{' '}
-        <a href={configuredExplorerUrl} target={'_blank'}>
-          {configuredNetworkName}
-        </a>
-        ) to vote.
-      </span>
-    ) : (
-      `You need to hold some ${tokenInfo?.name ?? 'specific'} token (on the ${configuredNetworkName}) to vote.`
-    )
+    const explanation = `You need to hold some ${getLink({ label: tokenInfo?.name ?? StringUtils.truncateAddress(tokenAddress), href: url })} on ${getLink({ label: configuredNetworkName, href: configuredExplorerUrl })} to vote.`
     const proof = new Uint8Array()
     let canVote: DecisionWithReason
     try {
@@ -153,16 +140,7 @@ export const tokenHolder = defineACL({
         canVote = true
       } else {
         canVote = denyWithReason(
-          url ? (
-            <>
-              you don&apos;t hold any{' '}
-              <a href={url} target={'_blank'}>
-                {tokenInfo?.name ?? StringUtils.truncateAddress(tokenAddress)}
-              </a>
-            </>
-          ) : (
-            `you don't hold any ${tokenInfo?.name ?? tokenAddress}`
-          ),
+          `you don't hold any ${getLink({ label: tokenInfo?.name ?? StringUtils.truncateAddress(tokenAddress), href: url })}`,
         )
       }
     } catch {

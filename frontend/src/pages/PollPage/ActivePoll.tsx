@@ -22,6 +22,7 @@ import { SpinnerIcon } from '../../components/icons/SpinnerIcon'
 import { AnimatePresence } from 'framer-motion'
 import { MotionDiv } from '../../components/Animations'
 import { shouldPublishVoters, shouldPublishVotes } from '../../types'
+import { MarkdownBlock } from '../../components/Markdown'
 
 export const ActivePoll: FC<PollData> = ({
   hasWallet,
@@ -199,16 +200,16 @@ export const ActivePoll: FC<PollData> = ({
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
           >
-            <h4>
-              You can&apos;t vote on this poll,
-              <br /> since {getReason(canAclVote)}.
-            </h4>
+            <MarkdownBlock
+              mainTag={'h4'}
+              code={`You can't vote on this poll, since ${getReason(canAclVote) as string}.`}
+            />
           </MotionDiv>
         </AnimatePresence>
       ) : (
         aclExplanation && (
           <>
-            <h4>{aclExplanation}</h4>
+            <MarkdownBlock code={aclExplanation} mainTag={'h4'} />
             {getVerdict(canAclVote, false) && <h4>You have access.</h4>}
           </>
         )

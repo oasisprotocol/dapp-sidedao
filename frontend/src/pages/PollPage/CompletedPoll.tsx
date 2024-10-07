@@ -9,6 +9,7 @@ import { getVerdict } from '../../components/InputFields'
 import { MotionDiv } from '../../components/Animations'
 import { VoteBrowser } from '../../components/VoteBrowser/VoteBrowser'
 import { VoterBrowser } from '../../components/VoterBrowser/VoterBrowser'
+import { MarkdownBlock } from '../../components/Markdown'
 
 export const CompletedPoll: FC<
   Pick<
@@ -94,7 +95,7 @@ export const CompletedPoll: FC<
       </>
       {aclExplanation && (
         <>
-          <h4>{aclExplanation}</h4>
+          <MarkdownBlock mainTag={'h4'} code={aclExplanation} />
           {getVerdict(aclCanVote, false) ? <h4>You had access.</h4> : <h4>You didn&apos;t have access.</h4>}
         </>
       )}

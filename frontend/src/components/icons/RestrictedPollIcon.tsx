@@ -1,13 +1,13 @@
-import { FC, MouseEventHandler, ReactNode, useCallback } from 'react'
+import { FC, MouseEventHandler, useCallback } from 'react'
 import { ClosedLockIcon } from './ClosedLockIcon'
-import { IconProps } from '../../types'
+import { IconProps, MarkdownCode } from '../../types'
 import classes from './index.module.css'
 import { designDecisions } from '../../constants/config'
 import { MaybeWithTooltip } from '../Tooltip/MaybeWithTooltip'
 
 export const RestrictedPollIcon: FC<
   IconProps & {
-    explanation: ReactNode
+    explanation: MarkdownCode
     completed?: boolean
     hasAccess: boolean
     onClick: () => void
@@ -27,7 +27,7 @@ export const RestrictedPollIcon: FC<
 
   return (
     <MaybeWithTooltip
-      overlay={`${explanation} ${
+      overlay={`${explanation as string} ${
         hasAccess
           ? completed
             ? 'You had access.'

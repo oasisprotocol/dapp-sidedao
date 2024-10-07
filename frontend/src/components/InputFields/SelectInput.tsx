@@ -28,7 +28,7 @@ export const SelectInput: FC<OneOfFieldControls<any>> = props => {
                     key={choice.value}
                     value={choice.value}
                     disabled={disabled}
-                    // TODO: we can't display HTML reason here, so we just _hope_ that it will be a string.
+                    // TODO: we can't display HTML reason here, so display the markdown test.
                     // The proper solution is to use a custom select component.
                     title={(getReasonForDenial(choice.enabled) as string) ?? choice.description}
                   >
