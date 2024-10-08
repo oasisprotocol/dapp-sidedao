@@ -54,6 +54,19 @@ type TextArrayProps = Omit<InputFieldProps<string[]>, 'initialValue'> & {
   allowEmptyItems?: CoupledData<boolean, string>
 
   /**
+   * Should we just drop empty items before validation,
+   * as part of the cleaning?
+   *
+   * Default: false
+   *
+   * Please node that the value cleaning only happens
+   * when the validation reason is "submit", not "change",
+   * so won't happen if validating because validateOnChange
+   * is set to true.
+   */
+  dropEmptyItems?: boolean
+
+  /**
    * Minimum number of items
    *
    * You can specify this as a number, or as an array,
@@ -161,6 +174,7 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
     validatorsGenerator,
     itemValidator = [],
     onItemEdited,
+    dropEmptyItems,
   } = props
 
   const [pendingValidationIndex, setPendingValidationIndex] = useState<number | undefined>()
@@ -220,11 +234,14 @@ export function useTextArrayField(props: TextArrayProps): TextArrayControls {
     {
       ...props,
       initialValue,
-      cleanUp: values => values.map(s => s.trim()),
+      cleanUp: values => {
+        const cleanValues = values.map(s => s.trim())
+        return dropEmptyItems ? cleanValues.filter(s => !!s) : cleanValues
+      },
       validators: undefined,
       validatorsGenerator: values => [
         // No empty elements, please
-        allowEmptyItems
+        allowEmptyItems && dropEmptyItems
           ? undefined
           : (values, _control, reason) =>
               reason === 'change'
