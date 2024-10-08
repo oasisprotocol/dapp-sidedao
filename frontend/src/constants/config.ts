@@ -97,6 +97,7 @@ export const appDescription =
 export const appRootUrl = VITE_APP_ROOT_URL
 
 export const allowedAnimations = [
+  'walletExtend', // Expanding network name at connected wallet
   'dashboardNoPolls', // No poll indicator appearing on the dashboard
   'dashboardPollCards', // Poll cards appearing and disappearing on search etc.
   // 'conditionalField', // A field is conditionally hidden or shown

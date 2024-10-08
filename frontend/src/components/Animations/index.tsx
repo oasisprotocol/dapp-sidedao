@@ -36,7 +36,7 @@ type AnimationPolicy =
 let policy: AnimationPolicy = { id: 'denyAll' }
 export const setAnimationPolicy = (newPolicy: AnimationPolicy) => (policy = newPolicy)
 
-const shouldAnimate = (reason: string | undefined): boolean => {
+export const shouldAnimate = (reason: string | undefined): boolean => {
   switch (policy.id) {
     case 'allowAll':
       return true

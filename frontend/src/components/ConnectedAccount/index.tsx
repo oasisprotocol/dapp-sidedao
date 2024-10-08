@@ -5,9 +5,10 @@ import { StringUtils } from '../../utils/string.utils'
 import classes from './index.module.css'
 import { useAppState } from '../../hooks/useAppState'
 import { AddressShower } from '../Addresses'
-import { motion } from 'framer-motion'
 import { getChainDefinition } from '../../utils/poll.utils'
 import { getChainIconUrl } from '../../utils/crypto.demo'
+import { MotionDiv, shouldAnimate } from '../Animations'
+import { MaybeWithTooltip } from '../Tooltip/MaybeWithTooltip'
 
 interface Props {
   className?: string
@@ -37,15 +38,21 @@ export const ConnectedAccount: FC<Props> = ({ className, address, chainId }) => 
     >
       {isDesktopScreen ? (
         <div className={classes.connectedAccountDetails}>
-          <motion.span
-            layout
-            className={classes.network}
-            whileHover={{ width: 'auto' }}
-            transition={{ ease: 'easeInOut' }}
+          <MaybeWithTooltip
+            overlay={shouldAnimate('walletExtend') ? undefined : chainDefinition.name}
+            placement={'top'}
           >
-            <img src={imageUrl} width={30} height={30} />
-            {chainDefinition.name}
-          </motion.span>
+            <MotionDiv
+              reason={'walletExtend'}
+              layout
+              className={classes.network}
+              whileHover={{ width: 'auto' }}
+              transition={{ ease: 'easeInOut' }}
+            >
+              <img src={imageUrl} width={30} height={30} alt={'chain logo'} />
+              {chainDefinition.name}
+            </MotionDiv>
+          </MaybeWithTooltip>
           <JazzIcon size={30} address={address} />
           <AddressShower address={address} className={classes.connectedAccountAddress} />
         </div>
