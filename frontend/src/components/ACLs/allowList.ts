@@ -26,7 +26,7 @@ export const allowList = defineACL({
       description: 'You can just copy-paste your list here',
       addItemLabel: 'Add address',
       removeItemLabel: 'Remove address',
-      allowEmptyItems: [false, 'Please specify address, or remove this field!'],
+      dropEmptyItems: true,
       minItems: 1,
       allowDuplicates: [
         false,

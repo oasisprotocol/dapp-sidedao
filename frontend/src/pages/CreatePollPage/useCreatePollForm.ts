@@ -78,7 +78,7 @@ export const useCreatePollForm = () => {
     minItems: [2, minCount => `You need at least ${minCount} answers in order to create this poll.`],
     maxItem: [10, maxCount => `Please don't offer more than ${maxCount} answers.`],
     allowDuplicates: [false, ['This answer is repeated below.', 'The same answer was already listed above!']],
-    allowEmptyItems: [false, 'Please either fill this in, or remove this answer.'],
+    dropEmptyItems: true,
     minItemLength: [1, minLength => `Please use at least ${minLength} characters for this answer.`],
     // maxItemLength: [10, maxLength => `Please don't use more than ${maxLength} characters for this answer.`],
   })
