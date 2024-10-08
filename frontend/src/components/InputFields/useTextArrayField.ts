@@ -41,11 +41,13 @@ type TextArrayProps = Omit<InputFieldProps<string[]>, 'initialValue'> & {
   /**
    *  Do we accept empty items?
    *
+   *  The default value is false.
+   *
    *  You can specify this as a boolean, or as an array,
    *  the boolean first and then the error message.
    *
    *  Examples:
-   *     tru
+   *     true
    *     false
    *     [false, 'Please specify phone number']
    */
