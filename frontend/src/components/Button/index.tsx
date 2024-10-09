@@ -63,8 +63,10 @@ export const Button: FC<Props> = ({
       disabled={disabled || pending}
       type={type}
     >
-      {children}
-      {pending && <SpinnerIcon width={24} height={24} spinning={true} />}
+      <label>
+        {children}
+        {pending && <SpinnerIcon width={24} height={24} spinning={true} />}
+      </label>
     </button>
   </>
 )
