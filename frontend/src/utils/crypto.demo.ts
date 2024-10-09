@@ -19,14 +19,17 @@ interface AddEthereumChainParameter {
 
 export const getAddEthereumChainParameterFromDefinition = (
   def: ChainDefinition,
-): AddEthereumChainParameter => ({
-  chainId: `0x${def.chainId.toString(16)}`,
-  chainName: def.name,
-  iconUrls: def.icon ? [getChainIconUrl(def.icon)] : [],
-  nativeCurrency: def.nativeCurrency,
-  rpcUrls: def.rpcUrls,
-  blockExplorerUrls: (def.explorers || []).map(e => e.url),
-})
+): AddEthereumChainParameter => {
+  const explorerUrls = (def.explorers || []).map(e => e.url) ?? null
+  return {
+    chainId: `0x${def.chainId.toString(16)}`,
+    chainName: def.name,
+    iconUrls: def.icon ? [getChainIconUrl(def.icon)] : [],
+    nativeCurrency: def.nativeCurrency,
+    rpcUrls: def.rpcUrls,
+    blockExplorerUrls: explorerUrls.length ? explorerUrls : null,
+  }
+}
 
 export const ConfiguredNetwork = VITE_NETWORK_NUMBER
 

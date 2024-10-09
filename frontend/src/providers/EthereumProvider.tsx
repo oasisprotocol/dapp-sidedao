@@ -186,7 +186,6 @@ export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => 
   }, [state.signer])
 
   async function addNetwork(network: number = ConfiguredNetwork) {
-    console.log('Here we go, trying to add')
     if (!ethProvider) {
       throw new Error('addNetwork detectEthereumProvider = null')
     }
@@ -196,9 +195,10 @@ export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => 
       throw new Error(`Unknown network ${network}`)
     }
 
+    const params = getAddEthereumChainParameterFromDefinition(chain)
     await ethProvider.request({
       method: 'wallet_addEthereumChain',
-      params: [getAddEthereumChainParameterFromDefinition(chain)],
+      params: [params],
     })
   }
 
