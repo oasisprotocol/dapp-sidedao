@@ -1,11 +1,11 @@
-import { FC, useEffect, useState } from 'react'
-import { useWeb3 } from '../../hooks/useWeb3'
+import { FC, useState } from 'react'
 import { METAMASK_HOME_PAGE_URL } from '../../constants/config'
 import { Button, ButtonSize } from '../Button'
-import { toErrorString, UnknownNetworkError } from '../../utils/errors'
+import { UnknownNetworkError } from '../../utils/errors'
 import { ConnectedAccount } from '../ConnectedAccount'
-import { useAppState } from '../../hooks/useAppState'
+
 import classes from './index.module.css'
+import { useEthereum } from '../../hooks/useEthereum'
 
 interface Props {
   mobileSticky: boolean
@@ -14,38 +14,29 @@ interface Props {
 }
 
 export const ConnectWallet: FC<Props> = ({ mobileSticky, avoidButtonClasses = false, buttonSize }) => {
-  const { setAppError } = useAppState()
-
   const [isLoading, setIsLoading] = useState(false)
-  const [providerAvailable, setProviderAvailable] = useState(true)
 
   const {
-    state: { isConnected, account, chainId, isUnknownNetwork },
+    isConnected,
+    isProviderAvailable,
+    userAddress,
+    isHomeChain,
+    state: { chainId },
     connectWallet,
     switchNetwork,
-    isProviderAvailable,
-  } = useWeb3()
-  useEffect(() => {
-    const init = async () => {
-      setIsLoading(true)
-      setProviderAvailable(await isProviderAvailable())
-      setIsLoading(false)
-    }
+  } = useEthereum()
 
-    init().catch(ex => {
-      setAppError(toErrorString(ex as Error))
-    })
-  }, [])
+  // const { switchNetwork } = useWeb3()
 
   const handleConnectWallet = async () => {
     setIsLoading(true)
     try {
       await connectWallet()
-    } catch (ex) {
-      if (ex instanceof UnknownNetworkError) {
+    } catch (ex: any) {
+      if (ex instanceof UnknownNetworkError || ex.code === 4001) {
         // Already handled by provider layer
       } else {
-        console.log(ex)
+        console.log(Object.keys(ex), ex)
         alert((ex as Error).message ?? 'Failed to connect')
       }
     } finally {
@@ -58,9 +49,14 @@ export const ConnectWallet: FC<Props> = ({ mobileSticky, avoidButtonClasses = fa
     try {
       await switchNetwork()
       await handleConnectWallet()
-    } catch (ex) {
-      console.log(ex)
-      alert((ex as Error).message ?? 'Failed to connect')
+    } catch (ex: any) {
+      console.log('Error on switch')
+      if (ex.code === 'ACTION_REJECTED') {
+        // User rejection, nothing to do
+      } else {
+        console.log(ex)
+        alert((ex as Error).message ?? 'Failed to switch network')
+      }
     } finally {
       setIsLoading(false)
     }
@@ -68,8 +64,9 @@ export const ConnectWallet: FC<Props> = ({ mobileSticky, avoidButtonClasses = fa
 
   return (
     <>
-      {!isConnected && !providerAvailable && (
+      {!isConnected && !isProviderAvailable && (
         <a href={METAMASK_HOME_PAGE_URL} target={'_blank'} rel={'noopener noreferrer'}>
+          CP1
           <Button
             className={avoidButtonClasses ? undefined : classes.connectWalletBtn}
             color={'primary'}
@@ -80,7 +77,7 @@ export const ConnectWallet: FC<Props> = ({ mobileSticky, avoidButtonClasses = fa
           </Button>
         </a>
       )}
-      {!isConnected && providerAvailable && isUnknownNetwork && (
+      {isConnected && isProviderAvailable && !isHomeChain && (
         <Button
           className={avoidButtonClasses ? undefined : classes.connectWalletBtn}
           color={'primary'}
@@ -91,7 +88,7 @@ export const ConnectWallet: FC<Props> = ({ mobileSticky, avoidButtonClasses = fa
           Switch Network
         </Button>
       )}
-      {!isConnected && providerAvailable && !isUnknownNetwork && (
+      {!isConnected && isProviderAvailable && isHomeChain && (
         <Button
           className={avoidButtonClasses ? undefined : classes.connectWalletBtn}
           color={'primary'}
@@ -102,10 +99,10 @@ export const ConnectWallet: FC<Props> = ({ mobileSticky, avoidButtonClasses = fa
           <label className={classes.connectWalletBtnLabel}>Connect wallet</label>
         </Button>
       )}
-      {isConnected && account && chainId && (
+      {isConnected && userAddress && chainId && isHomeChain && (
         <ConnectedAccount
           className={mobileSticky ? classes.stickyConnectedAccount : undefined}
-          address={account}
+          address={userAddress}
           chainId={chainId}
         />
       )}

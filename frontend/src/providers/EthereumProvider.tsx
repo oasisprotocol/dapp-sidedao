@@ -10,24 +10,23 @@ import {
 } from '@oasisprotocol/sapphire-ethers-v6'
 import {
   ConfiguredNetwork,
-  DemoConnectionStatus,
+  ConnectionStatus,
   getAddEthereumChainParameterFromDefinition,
   getChainIdAsNumber,
 } from '../utils/crypto.demo'
-import { DemoEIP1193Provider } from '../utils/eip1193.demo'
+import { EIP1193Provider } from '../utils/eip1193'
 import { VITE_WEB3_GATEWAY } from '../constants/config'
 
 const ethereumInitialState: EthereumState = {
   signer: undefined,
   provider: wrapEthersProvider(new JsonRpcProvider(VITE_WEB3_GATEWAY, 'any')),
-  network: ConfiguredNetwork,
+  chainId: ConfiguredNetwork,
   address: undefined,
-  status: DemoConnectionStatus.Unknown,
-  isSapphire: false,
+  status: ConnectionStatus.Unknown,
 }
 
 export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => {
-  const [ethProvider, setEthProvider] = useState<DemoEIP1193Provider | null>(null)
+  const [ethProvider, setEthProvider] = useState<EIP1193Provider | null>(null)
   const [userAddress, setUserAddress] = useState<string>(ZeroAddress)
 
   const [state, setState] = useState<EthereumState>({
@@ -38,21 +37,23 @@ export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => 
     if (accounts.length) {
       setState({
         ...state,
-        status: DemoConnectionStatus.Connected,
+        status: ConnectionStatus.Connected,
       })
     } else {
       setState({
         ...state,
-        status: DemoConnectionStatus.Disconnected,
+        status: ConnectionStatus.Disconnected,
         signer: undefined,
-        network: 0,
+        chainId: 0,
         address: undefined,
       })
     }
   }
 
   useEffect(() => {
-    detectEthereumProvider<DemoEIP1193Provider>().then(provider => setEthProvider(provider))
+    detectEthereumProvider<EIP1193Provider>({
+      mustBeMetaMask: false,
+    }).then(provider => setEthProvider(provider))
   }, [])
 
   useEffect(() => {
@@ -79,8 +80,8 @@ export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => 
     ethProvider.on('connect', info => {
       setState({
         ...state,
-        network: getChainIdAsNumber(info.chainId),
-        status: DemoConnectionStatus.Connected,
+        chainId: getChainIdAsNumber(info.chainId),
+        status: ConnectionStatus.Connected,
       })
 
       console.log('connect')
@@ -142,15 +143,18 @@ export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => 
 
     // Check if we're requested to switch networks
     let l_network = getChainIdAsNumber(await l_provider.send('eth_chainId', []))
-    if (in_doSwitch && (l_network != state.network || l_network != ConfiguredNetwork)) {
+    if (in_doSwitch && (l_network != state.chainId || l_network != ConfiguredNetwork)) {
       try {
-        await l_provider.send('wallet_switchEthereumChain', [{ chainId: ConfiguredNetwork }])
+        await l_provider.send('wallet_switchEthereumChain', [
+          { chainId: `0x${ConfiguredNetwork.toString(16)}` },
+        ])
         l_network = ConfiguredNetwork
       } catch (e: any) {
-        // This error code indicates that the chain has not been added to MetaMask.
-        if ((e as any).code !== 4902) throw e
-        await addNetwork(l_network)
-        throw e
+        if ((e as any).error?.code === 4902) {
+          await addNetwork(ConfiguredNetwork)
+        } else {
+          throw e
+        }
       }
     }
 
@@ -165,10 +169,9 @@ export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => 
     setState({
       ...state,
       signer: l_signer,
-      network: l_network,
-      isSapphire: l_isSapphire,
+      chainId: l_network,
       address: hasAccount ? l_accounts[0] : state.address,
-      status: hasAccount ? DemoConnectionStatus.Connected : state.status,
+      status: hasAccount ? ConnectionStatus.Connected : state.status,
     })
 
     return l_signer
@@ -183,6 +186,7 @@ export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => 
   }, [state.signer])
 
   async function addNetwork(network: number = ConfiguredNetwork) {
+    console.log('Here we go, trying to add')
     if (!ethProvider) {
       throw new Error('addNetwork detectEthereumProvider = null')
     }
@@ -209,15 +213,20 @@ export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => 
     await getSigner(true, true)
   }
 
-  const isHomeChain = state.network === ConfiguredNetwork
+  const isHomeChain = state.chainId === ConfiguredNetwork
+
+  const explorerBaseUrl = (chain_info[state.chainId]?.explorers || [])[0]?.url ?? null
 
   const providerState: EthereumContext = {
     state: {
       ...state,
     },
     userAddress,
+    isProviderAvailable: !!ethProvider,
+    isConnected: userAddress !== ZeroAddress,
     isHomeChain,
-    connect,
+    explorerBaseUrl,
+    connectWallet: connect,
     addNetwork,
     switchNetwork,
   }
