@@ -10,7 +10,7 @@ import {
 } from '@oasisprotocol/sapphire-ethers-v6'
 import {
   ConfiguredNetwork,
-  DemoConnectionStatus,
+  ConnectionStatus,
   getAddEthereumChainParameterFromDefinition,
   getChainIdAsNumber,
 } from '../utils/crypto.demo'
@@ -22,7 +22,7 @@ const ethereumInitialState: EthereumState = {
   provider: wrapEthersProvider(new JsonRpcProvider(VITE_WEB3_GATEWAY, 'any')),
   network: ConfiguredNetwork,
   address: undefined,
-  status: DemoConnectionStatus.Unknown,
+  status: ConnectionStatus.Unknown,
 }
 
 export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => {
@@ -37,12 +37,12 @@ export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => 
     if (accounts.length) {
       setState({
         ...state,
-        status: DemoConnectionStatus.Connected,
+        status: ConnectionStatus.Connected,
       })
     } else {
       setState({
         ...state,
-        status: DemoConnectionStatus.Disconnected,
+        status: ConnectionStatus.Disconnected,
         signer: undefined,
         network: 0,
         address: undefined,
@@ -79,7 +79,7 @@ export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => 
       setState({
         ...state,
         network: getChainIdAsNumber(info.chainId),
-        status: DemoConnectionStatus.Connected,
+        status: ConnectionStatus.Connected,
       })
 
       console.log('connect')
@@ -166,7 +166,7 @@ export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => 
       signer: l_signer,
       network: l_network,
       address: hasAccount ? l_accounts[0] : state.address,
-      status: hasAccount ? DemoConnectionStatus.Connected : state.status,
+      status: hasAccount ? ConnectionStatus.Connected : state.status,
     })
 
     return l_signer

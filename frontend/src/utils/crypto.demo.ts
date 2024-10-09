@@ -80,7 +80,7 @@ export function demoNetworkName(network?: bigint): string {
   return chain?.name ?? 'Unknown network'
 }
 
-export enum DemoConnectionStatus {
+export enum ConnectionStatus {
   Unknown,
   Disconnected,
   Connected,
