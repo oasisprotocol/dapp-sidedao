@@ -1,6 +1,6 @@
 import { FC } from 'react'
 import { JazzIcon } from '../JazzIcon'
-import { useWeb3 } from '../../hooks/useWeb3'
+import { useEthereum } from '../../hooks/useEthereum'
 import { StringUtils } from '../../utils/string.utils'
 import classes from './index.module.css'
 import { useAppState } from '../../hooks/useAppState'
@@ -17,9 +17,7 @@ interface Props {
 }
 
 export const ConnectedAccount: FC<Props> = ({ className, address, chainId }) => {
-  const {
-    state: { explorerBaseUrl },
-  } = useWeb3()
+  const { explorerBaseUrl } = useEthereum()
   const {
     state: { isDesktopScreen },
   } = useAppState()

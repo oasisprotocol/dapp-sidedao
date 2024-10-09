@@ -209,6 +209,8 @@ export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => 
 
   const isHomeChain = state.network === ConfiguredNetwork
 
+  const explorerBaseUrl = (chain_info[state.network].explorers || [])[0]?.url ?? null
+
   const providerState: EthereumContext = {
     state: {
       ...state,
@@ -216,6 +218,7 @@ export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => 
     userAddress,
     isConnected: userAddress !== ZeroAddress,
     isHomeChain,
+    explorerBaseUrl,
     connect,
     addNetwork,
     switchNetwork,
