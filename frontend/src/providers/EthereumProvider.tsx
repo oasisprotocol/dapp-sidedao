@@ -14,7 +14,7 @@ import {
   getAddEthereumChainParameterFromDefinition,
   getChainIdAsNumber,
 } from '../utils/crypto.demo'
-import { DemoEIP1193Provider } from '../utils/eip1193.demo'
+import { EIP1193Provider } from '../utils/eip1193'
 import { VITE_WEB3_GATEWAY } from '../constants/config'
 
 const ethereumInitialState: EthereumState = {
@@ -26,7 +26,7 @@ const ethereumInitialState: EthereumState = {
 }
 
 export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => {
-  const [ethProvider, setEthProvider] = useState<DemoEIP1193Provider | null>(null)
+  const [ethProvider, setEthProvider] = useState<EIP1193Provider | null>(null)
   const [userAddress, setUserAddress] = useState<string>(ZeroAddress)
 
   const [state, setState] = useState<EthereumState>({
@@ -51,7 +51,7 @@ export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => 
   }
 
   useEffect(() => {
-    detectEthereumProvider<DemoEIP1193Provider>({
+    detectEthereumProvider<EIP1193Provider>({
       mustBeMetaMask: false,
     }).then(provider => setEthProvider(provider))
   }, [])
