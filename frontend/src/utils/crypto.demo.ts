@@ -1,5 +1,4 @@
 import { AEAD, NonceSize, KeySize, TagSize } from '@oasisprotocol/deoxysii'
-import { chain_info } from '@oasisprotocol/blockvote-contracts'
 import type { IconT, ChainDefinition } from '@oasisprotocol/blockvote-contracts'
 import { sha256 } from '@noble/hashes/sha256'
 import { VITE_NETWORK_NUMBER } from '../constants/config'
@@ -73,12 +72,6 @@ export const ConfiguredNetwork = VITE_NETWORK_NUMBER
 
 export const getChainIdAsNumber = (chainId: number | string): number =>
   typeof chainId === 'string' ? parseInt(chainId, 16) : chainId
-
-export function demoNetworkName(network?: bigint): string {
-  if (!network) return 'Unknown network'
-  const chain = chain_info[Number(network)]
-  return chain?.name ?? 'Unknown network'
-}
 
 export enum ConnectionStatus {
   Unknown,
