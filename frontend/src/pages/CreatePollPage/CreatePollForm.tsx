@@ -29,17 +29,22 @@ export const CreatePollForm: FC = () => {
         <InputFieldGroup key={`page-${stepIndex}`} fields={fields} />
         <div className={classes.buttons}>
           {stepIndex > 0 && (
-            <Button onClick={previousStep} color={'secondary'} variant={'outline'}>
+            <Button size={'small'} onClick={previousStep} color={'secondary'} variant={'outline'}>
               Back
             </Button>
           )}
           {stepIndex < numberOfSteps - 1 && (
-            <Button onClick={nextStep} pending={validationPending}>
+            <Button size={'small'} onClick={nextStep} pending={validationPending}>
               Next
             </Button>
           )}
           {stepIndex === numberOfSteps - 1 && (
-            <Button onClick={createPoll} disabled={hasErrorsOnCurrentPage} pending={isCreating}>
+            <Button
+              size={'small'}
+              onClick={createPoll}
+              disabled={hasErrorsOnCurrentPage}
+              pending={isCreating}
+            >
               Create poll
             </Button>
           )}
