@@ -216,6 +216,7 @@ export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => 
       ...state,
     },
     userAddress,
+    isConnected: userAddress !== ZeroAddress,
     isHomeChain,
     connect,
     addNetwork,
