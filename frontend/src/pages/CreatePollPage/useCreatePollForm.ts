@@ -76,7 +76,8 @@ export const useCreatePollForm = () => {
     initialItemCount: 3, // Let's start with 3 answers.
     placeholderTemplate: index => `Answer ${index + 1}`,
     minItems: [2, minCount => `You need at least ${minCount} answers in order to create this poll.`],
-    maxItem: [10, maxCount => `Please don't offer more than ${maxCount} answers.`],
+    // Note: the contract only supports 8 options, so we have to keep the UI in sync with that.
+    maxItem: [8, maxCount => `Please don't offer more than ${maxCount} answers.`],
     allowDuplicates: [false, ['This answer is repeated below.', 'The same answer was already listed above!']],
     dropEmptyItems: true,
     minItemLength: [1, minLength => `Please use at least ${minLength} characters for this answer.`],
