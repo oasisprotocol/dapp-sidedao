@@ -62,6 +62,19 @@ export const ConnectWallet: FC<Props> = ({ mobileSticky, avoidButtonClasses = fa
     }
   }
 
+  console.log(
+    'connected?',
+    isConnected,
+    'isProviderAvailable?',
+    isProviderAvailable,
+    'homeChain?',
+    isHomeChain,
+    'userAddress:',
+    userAddress,
+    'chainId:',
+    chainId,
+  )
+
   return (
     <>
       {!isConnected && !isProviderAvailable && (
@@ -87,7 +100,7 @@ export const ConnectWallet: FC<Props> = ({ mobileSticky, avoidButtonClasses = fa
           Switch Network
         </Button>
       )}
-      {!isConnected && isProviderAvailable && isHomeChain && (
+      {!isConnected && isProviderAvailable && (
         <Button
           className={avoidButtonClasses ? undefined : classes.connectWalletBtn}
           color={'primary'}
