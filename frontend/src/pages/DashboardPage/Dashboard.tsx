@@ -40,7 +40,12 @@ export const Dashboard: FC = () => {
           <InputFieldGroup fields={[leftFilterInputs]} />
           <div className={classes.dashboardLabel}>Polls created by me</div>
           {isLoadingPolls ? (
-            <Alert headerText="Please wait" type="loading" actions={<span>Fetching polls...</span>} />
+            <Alert
+              headerText="Please wait"
+              type="loading"
+              className={classes.waitingIndicators}
+              actions={<span>Fetching polls...</span>}
+            />
           ) : (
             <>
               {allProposals.map(proposal => (
@@ -62,7 +67,12 @@ export const Dashboard: FC = () => {
           <InputFieldGroup fields={[rightFilterInputs]} alignRight />
           <div className={classes.dashboardLabel}>Explore polls</div>
           {isLoadingPolls ? (
-            <Alert headerText="Please wait" type="loading" actions={<span>Fetching polls...</span>} />
+            <Alert
+              className={classes.waitingIndicators}
+              headerText="Please wait"
+              type="loading"
+              actions={<span>Fetching polls...</span>}
+            />
           ) : (
             <>
               {allProposals.map(proposal => (

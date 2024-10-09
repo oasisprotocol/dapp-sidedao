@@ -63,3 +63,8 @@
     color: #414749;
   }
 }
+
+.waitingIndicators {
+  width: 100%;
+  max-width: 100%;
+}
