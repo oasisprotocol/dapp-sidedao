@@ -5,7 +5,7 @@ import { ConnectionStatus } from '../utils/crypto.demo'
 export interface EthereumState {
   signer: JsonRpcSigner | undefined
   provider: JsonRpcProvider
-  network: number
+  chainId: number
   address: string | undefined
   status: ConnectionStatus
 }
@@ -14,9 +14,10 @@ export interface EthereumContext {
   readonly state: EthereumState
   readonly isHomeChain: boolean
   readonly userAddress: string
+  readonly isProviderAvailable: boolean
   readonly isConnected: boolean
   readonly explorerBaseUrl: string | undefined
-  connect: () => Promise<void>
+  connectWallet: () => Promise<void>
   addNetwork: (network: number | undefined) => Promise<void>
   switchNetwork: (network?: number | undefined) => Promise<void>
 }
