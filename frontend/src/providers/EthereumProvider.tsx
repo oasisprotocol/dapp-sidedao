@@ -23,7 +23,6 @@ const ethereumInitialState: EthereumState = {
   network: ConfiguredNetwork,
   address: undefined,
   status: DemoConnectionStatus.Unknown,
-  isSapphire: false,
 }
 
 export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => {
@@ -166,7 +165,6 @@ export const EthereumContextProvider: FC<PropsWithChildren> = ({ children }) => 
       ...state,
       signer: l_signer,
       network: l_network,
-      isSapphire: l_isSapphire,
       address: hasAccount ? l_accounts[0] : state.address,
       status: hasAccount ? DemoConnectionStatus.Connected : state.status,
     })

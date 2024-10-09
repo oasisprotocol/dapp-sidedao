@@ -8,7 +8,6 @@ export interface EthereumState {
   network: number
   address: string | undefined
   status: DemoConnectionStatus
-  isSapphire: boolean
 }
 
 export interface EthereumContext {
