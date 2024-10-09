@@ -10,6 +10,7 @@ import { EthereumContextProvider } from './providers/EthereumProvider'
 import { PollPage } from './pages/PollPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { CreatePollPage } from './pages/CreatePollPage'
+import { ContractContextProvider } from './providers/ContractProvider'
 
 const router = createHashRouter([
   {
@@ -38,13 +39,15 @@ export const App: FC = () => {
     <HelmetProvider>
       <ErrorBoundary>
         <EthereumContextProvider>
-          <EIP1193ContextProvider>
-            <Web3ContextProvider>
-              <AppStateContextProvider>
-                <RouterProvider router={router} />
-              </AppStateContextProvider>
-            </Web3ContextProvider>
-          </EIP1193ContextProvider>
+          <ContractContextProvider>
+            <EIP1193ContextProvider>
+              <Web3ContextProvider>
+                <AppStateContextProvider>
+                  <RouterProvider router={router} />
+                </AppStateContextProvider>
+              </Web3ContextProvider>
+            </EIP1193ContextProvider>
+          </ContractContextProvider>
         </EthereumContextProvider>
       </ErrorBoundary>
     </HelmetProvider>

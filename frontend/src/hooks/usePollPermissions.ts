@@ -20,7 +20,8 @@ export const usePollPermissions = (poll: ExtendedPoll | undefined, onDashboard: 
   const aclAddress = poll?.proposal.params.acl
   const creator = poll?.proposal.owner
 
-  const { eth, pollManagerAddress: daoAddress, pollACL } = useContracts(aclAddress)
+  const { eth, pollManagerAddress: daoAddress, getPollACL } = useContracts()
+  const pollACL = getPollACL(aclAddress)
 
   const [isPending, setIsPending] = useState(false)
   const [isMine, setIsMine] = useState<boolean | undefined>()
