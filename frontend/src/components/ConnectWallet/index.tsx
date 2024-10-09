@@ -66,7 +66,6 @@ export const ConnectWallet: FC<Props> = ({ mobileSticky, avoidButtonClasses = fa
     <>
       {!isConnected && !isProviderAvailable && (
         <a href={METAMASK_HOME_PAGE_URL} target={'_blank'} rel={'noopener noreferrer'}>
-          CP1
           <Button
             className={avoidButtonClasses ? undefined : classes.connectWalletBtn}
             color={'primary'}
