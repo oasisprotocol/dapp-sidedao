@@ -1,4 +1,4 @@
-import { FC } from 'react'
+import { FC, MouseEventHandler } from 'react'
 import { MarkdownCode } from '../../types'
 import Markdown from 'react-markdown'
 import type { Components } from 'react-markdown'
@@ -8,8 +8,10 @@ import IntrinsicElements = JSX.IntrinsicElements
 export const renderComponents: Components = {
   // Always links so that they open on a new tab
   a: ({ children, href }) => {
+    const handleClick: MouseEventHandler = event => event.stopPropagation()
+
     return (
-      <a href={href} target={'_blank'}>
+      <a href={href} target={'_blank'} onClick={handleClick}>
         {children}
       </a>
     )
