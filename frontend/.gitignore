@@ -32,4 +32,3 @@ stats.html
 .env.*.local
 stats.html
 .netlify
-.env.development
